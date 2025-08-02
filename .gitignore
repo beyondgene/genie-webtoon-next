@@ -1,5 +1,17 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Node.js
+node_modules/
+# Next.js build output
+.next/
+out/
+# 환경 변수
+.env.local
+.env.*.local
+# VSCode, macOS 등 편의 파일
+.vscode/
+.DS_Store
+
 # dependencies
 /node_modules
 /.pnp

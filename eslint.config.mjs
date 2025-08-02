@@ -9,8 +9,39 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [
+export default [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
 
-export default eslintConfig;
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: require.resolve("@typescript-eslint/parser"),
+      parserOptions: {
+        sourceType: "module",
+        ecmaVersion: 2020,
+        project: "./tsconfig.json", // tsconfig 경로 명시
+        tsconfigRootDir: __dirname,
+      },
+    },
+    plugins: {
+      "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
+    },
+    rules: {
+      "@typescript-eslint/no-implicit-any": "error",
+    },
+  },
+
+  {
+    ignores: [
+      "node_modules/",
+      ".next/",
+      "migrations/",
+      "seeders/",
+      "app/",
+      "controllers/",
+      "lib/",
+      "models/",
+      "app/api/feed/",
+    ],
+  },
+];
