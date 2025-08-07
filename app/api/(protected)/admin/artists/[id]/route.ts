@@ -1,63 +1,58 @@
+// app/api/(protected)/admin/artists/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
+import { getArtistById, updateArtist, deleteArtist } from '@/controllers/admin/artistsController';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
   try {
-    const artist = await db.Artist.findByPk(params.id);
-    if (!artist) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+    const artist = await getArtistById(Number(params.id));
     return NextResponse.json(artist);
   } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || '해당 작가를 찾을 수 없습니다.' },
+      { status: 404 }
+    );
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
+  let body;
   try {
-    const payload = await req.json();
-    const [count] = await db.Artist.update(
-      { ...payload, modifiedDate: new Date(), adminId: sessionOrRes.id },
-      { where: { idx: params.id } }
-    );
-    if (!count) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
-    const updated = await db.Artist.findByPk(params.id);
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: '요청 본문이 유효한 JSON이 아닙니다.' }, { status: 400 });
+  }
+
+  try {
+    const updated = await updateArtist(Number(params.id), body);
     return NextResponse.json(updated);
   } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    const notFound = err.message.includes('찾을 수 없습니다');
+    return NextResponse.json(
+      { error: err.message || '작가 수정에 실패했습니다.' },
+      { status: notFound ? 404 : 400 }
+    );
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
   try {
-    const artist = await db.Artist.findByPk(params.id);
-    if (!artist) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
-    await artist.destroy();
-    return NextResponse.json({ message: 'Deleted' });
+    await deleteArtist(Number(params.id));
+    return NextResponse.json({ message: '작가가 삭제되었습니다.' });
   } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    const notFound = err.message.includes('찾을 수 없습니다');
+    return NextResponse.json(
+      { error: err.message || '작가 삭제에 실패했습니다.' },
+      { status: notFound ? 404 : 500 }
+    );
   }
 }

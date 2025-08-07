@@ -1,36 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getActiveAds, createAd } from '@/controllers/advertisement';
-import { requireAdminAuth } from '@/lib/middlewares/requireAdminAuth';
-import { requireAuth } from '@/lib/middlewares/requireAuth'; // 로그인 전용 가드
+import { requireAdminAuth } from '@/lib/middlewares/auth';
+import { getActiveAds, createAd } from '@/controllers/advertisement/advertisementController';
 
-export async function GET(req: NextRequest) {
-  // 로그인 여부만 체크
-  const auth = await requireAuth(req);
-  if (auth instanceof NextResponse) return auth;
-
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Record<string, string> } // params는 비어있지만 시그니처 맞춤
+) {
   try {
+    const sessionOrRes = await requireAdminAuth(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
+
     const ads = await getActiveAds();
     return NextResponse.json(ads);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || '광고 목록 조회 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(req: NextRequest) {
-  // 관리자 권한 체크
-  const admin = await requireAdminAuth(req);
-  if (admin instanceof NextResponse) return admin;
-
+export async function POST(req: NextRequest, { params }: { params: Record<string, string> }) {
   try {
-    const { imageUrl, linkUrl, position, priority } = (await req.json()) as {
-      imageUrl: string;
-      linkUrl: string;
-      position: string;
-      priority: number;
-    };
-    const ad = await createAd({ imageUrl, linkUrl, position, priority });
+    const sessionOrRes = await requireAdminAuth(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
+
+    const body = await req.json();
+    if (!body.imageUrl || !body.linkUrl || !body.position || body.priority == null) {
+      return NextResponse.json(
+        { error: '필수 필드(imageUrl, linkUrl, position, priority)가 누락되었습니다.' },
+        { status: 400 }
+      );
+    }
+
+    const ad = await createAd({
+      imageUrl: body.imageUrl,
+      linkUrl: body.linkUrl,
+      position: body.position,
+      priority: body.priority,
+      adName: body.adName,
+      startDate: body.startDate ? new Date(body.startDate) : undefined,
+      endDate: body.endDate ? new Date(body.endDate) : undefined,
+      totalExposureLimit: body.totalExposureLimit,
+    });
     return NextResponse.json(ad, { status: 201 });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json(
+      { error: err.message || '광고 생성 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
   }
 }

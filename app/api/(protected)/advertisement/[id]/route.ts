@@ -1,34 +1,38 @@
-  import { NextRequest, NextResponse } from 'next/server';
-import { updateAd, deleteAd } from '@/controllers/advertisement';
-import { requireAdminAuth } from '@/lib/middlewares/requireAdminAuth';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/middlewares/auth';
+import { updateAd, deleteAd } from '@/controllers/advertisement/advertisementController';
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const admin = await requireAdminAuth(req);
-  if (admin instanceof NextResponse) return admin;
-
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const sessionOrRes = await requireAdminAuth(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
+
+    const id = Number(params.id);
     const data = await req.json();
-    const updated = await updateAd(params.id, data);
+    const updated = await updateAd(id, data);
     return NextResponse.json(updated);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    const msg = err.message.includes('찾을 수 없습니다')
+      ? err.message
+      : '광고 수정 중 오류가 발생했습니다.';
+    const status = err.message.includes('찾을 수 없습니다') ? 404 : 500;
+    return NextResponse.json({ error: msg }, { status });
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const admin = await requireAdminAuth(req);
-  if (admin instanceof NextResponse) return admin;
-
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await deleteAd(params.id);
-    return NextResponse.json({ message: '광고가 삭제되었습니다.' });
+    const sessionOrRes = await requireAdminAuth(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
+
+    const id = Number(params.id);
+    await deleteAd(id);
+    return NextResponse.json({ message: '삭제되었습니다.' });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    const msg = err.message.includes('찾을 수 없습니다')
+      ? err.message
+      : '광고 삭제 중 오류가 발생했습니다.';
+    const status = err.message.includes('찾을 수 없습니다') ? 404 : 500;
+    return NextResponse.json({ error: msg }, { status });
   }
 }

@@ -1,77 +1,47 @@
+// app/api/(protected)/admin/advertisements/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { fn, col } from 'sequelize';
-import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
+import {
+  listAdvertisements,
+  createAdvertisement,
+} from '@/controllers/admin/advertisementsController';
 
 export async function GET(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
 
   try {
-    // 광고 리스트 + 노출 카운트
-    const ads = await db.Advertisement.findAll({
-      attributes: [
-        'idx',
-        'ad_name',
-        'ad_location',
-        'status',
-        'start_date',
-        'end_date',
-        'total_exposure_limit',
-        'current_exposure_count',
-        'ad_image_url',
-        'target_url',
-        'createdAt',
-        'updatedAt',
-        [fn('COUNT', col('AdViewLogs.idx')), 'viewCount']
-      ],
-      include: [
-        { model: db.AdViewLog, attributes: [] } // 집계용
-      ],
-      group: ['Advertisement.idx']
-    });
+    const ads = await listAdvertisements();
     return NextResponse.json(ads);
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json(
+      { error: '광고 목록 조회에 실패했습니다. 잠시 후 다시 시도해 주세요.' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
+  let data;
+  try {
+    data = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: '잘못된 요청 형식입니다. JSON 바디를 확인해 주세요.' },
+      { status: 400 }
+    );
   }
 
   try {
-    const {
-      ad_name,
-      ad_location,
-      status,
-      start_date,
-      end_date,
-      total_exposure_limit,
-      ad_image_url,
-      target_url
-    } = await req.json();
-
-    const ad = await db.Advertisement.create({
-      ad_name,
-      ad_location,
-      status,
-      start_date,
-      end_date,
-      total_exposure_limit,
-      current_exposure_count: 0,
-      ad_image_url,
-      target_url,
-      adminId: sessionOrRes.id
-    });
-    return NextResponse.json(ad, { status: 201 });
+    const newAd = await createAdvertisement(data);
+    return NextResponse.json(newAd, { status: 201 });
   } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || '광고 생성에 실패했습니다.' },
+      { status: 400 }
+    );
   }
 }

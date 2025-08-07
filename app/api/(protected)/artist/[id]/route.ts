@@ -1,70 +1,52 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/middlewares/auth'
-import db from '@/models'
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/middlewares/auth';
+import { getArtistById, updateArtist, deleteArtist } from '@/controllers/artist/artistController';
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
-  const artist = await db.ARTIST.findByPk(params.id, {
-    attributes: [
-      'idx',
-      'realName',
-      'artistName',
-      'artistPhone',
-      'artistEmail',
-      'webtoonList',
-      'debutDate',
-      'modifiedDate',
-    ],
-    raw: true,
-  })
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const sessionOrRes = await requireAdmin(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
-  if (!artist) {
-    return NextResponse.json({ error: '작가를 찾을 수 없습니다.' }, { status: 404 })
+    const artist = await getArtistById(Number(params.id));
+    if (!artist) {
+      return NextResponse.json({ error: '작가를 찾을 수 없습니다.' }, { status: 404 });
+    }
+    return NextResponse.json({ artist });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || '작가 조회 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ artist })
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const sessionOrRes = await requireAdmin(req)
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes
-
   try {
-    const artist = await db.ARTIST.findByPk(params.id)
-    if (!artist) {
-      return NextResponse.json({ error: '수정할 작가가 존재하지 않습니다.' }, { status: 404 })
-    }
+    const sessionOrRes = await requireAdmin(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
-    const updates = await req.json()
-    await artist.update({
-      ...updates,
-      modifiedDate: new Date(),
-    })
-
-    return NextResponse.json({ artist })
-  } catch (err: any) {
+    const body = await req.json();
+    const artist = await updateArtist(Number(params.id), body, sessionOrRes.id as number);
+    return NextResponse.json({ artist });
+  } catch (error: any) {
     return NextResponse.json(
-      { error: err.message || '작가 수정 중 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+      { error: error.message || '작가 수정 중 오류가 발생했습니다.' },
+      { status: 400 }
+    );
   }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const sessionOrRes = await requireAdmin(req)
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes
-
   try {
-    const artist = await db.ARTIST.findByPk(params.id)
-    if (!artist) {
-      return NextResponse.json({ error: '삭제할 작가가 존재하지 않습니다.' }, { status: 404 })
-    }
+    const sessionOrRes = await requireAdmin(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
-    await artist.destroy()
-    return NextResponse.json({ message: '작가 삭제 완료' })
-  } catch (err: any) {
+    await deleteArtist(Number(params.id));
+    return NextResponse.json(null, { status: 204 });
+  } catch (error: any) {
     return NextResponse.json(
-      { error: err.message || '작가 삭제 중 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+      { error: error.message || '작가 삭제 중 오류가 발생했습니다.' },
+      { status: 400 }
+    );
   }
 }

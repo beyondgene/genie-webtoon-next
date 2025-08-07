@@ -6,6 +6,7 @@ import {
   InferCreationAttributes,
   CreationOptional,
 } from 'sequelize';
+import { Artist } from './artist';
 
 export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttributes<Webtoon>> {
   declare idx: CreationOptional<number>;
@@ -14,6 +15,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
   declare genre: 'DRAMA' | 'ROMANCE' | 'FANTASY' | 'ACTION' | 'ETC';
   declare views: number;
   declare recommend: number;
+  declare Artist?: Artist;
   declare adminIdx: number;
   declare artistIdx: number;
   declare createdAt: CreationOptional<Date>;

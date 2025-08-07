@@ -1,45 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/middlewares/auth'
-import db from '@/models'
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/middlewares/auth';
+import { getArtistList, createArtist } from '@/controllers/artist/artistController';
 
 export async function GET(req: NextRequest) {
-  const sessionOrRes = await requireAdmin(req)
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes
-
   try {
-    const artists = await db.ARTIST.findAll({
-      attributes: ['idx', 'artistName', 'realName', 'artistEmail', 'debutDate'],
-      order: [['artistName', 'ASC']],
-      raw: true,
-    })
+    const sessionOrRes = await requireAdmin(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
-    return NextResponse.json({ artists })
-  } catch (err: any) {
+    const artists = await getArtistList();
+    return NextResponse.json({ artists });
+  } catch (error: any) {
     return NextResponse.json(
-      { error: err.message || '작가 목록 조회 중 오류가 발생했습니다.' },
+      { error: error.message || '작가 목록 조회 중 오류가 발생했습니다.' },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
-  const sessionOrRes = await requireAdmin(req)
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes
-
   try {
-    const body = await req.json()
-    const newArtist = await db.ARTIST.create({
-      ...body,
-      adminId: sessionOrRes.id,
-      debutDate: body.debutDate ?? new Date(),
-      modifiedDate: new Date(),
-    })
+    const sessionOrRes = await requireAdmin(req);
+    if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
-    return NextResponse.json({ artist: newArtist }, { status: 201 })
-  } catch (err: any) {
+    const body = await req.json();
+    const artist = await createArtist(body, sessionOrRes.id as number);
+    return NextResponse.json({ artist }, { status: 201 });
+  } catch (error: any) {
     return NextResponse.json(
-      { error: err.message || '작가 등록 중 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+      { error: error.message || '작가 생성 중 오류가 발생했습니다.' },
+      { status: 400 }
+    );
   }
 }

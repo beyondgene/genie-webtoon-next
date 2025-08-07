@@ -1,30 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
+import * as ctrl from '@/controllers/admin/reportedCommentsController';
 
 export async function GET(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-  try {
-    const reports = await db.CommentReport.findAll({
-      include: [
-        {
-          model: db.Comment,
-          include: [
-            { model: db.User, attributes: ['idx','nickname'] },
-            { model: db.Webtoon, attributes: ['idx','webtoonName'] },
-            { model: db.Episode, attributes: ['idx','uploadDate'] }
-          ]
-        },
-        { model: db.User, as: 'Reporter', attributes: ['idx','nickname'] }
-      ],
-      order: [['createdAt','DESC']]
-    });
-    return NextResponse.json(reports);
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
-  }
+  await requireAuth(req);
+  const reports = await ctrl.listReportedComments();
+  return NextResponse.json(reports);
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  await requireAuth(req);
+  await ctrl.deleteReportedCommentReport(+params.id);
+  return NextResponse.json(null, { status: 204 });
 }

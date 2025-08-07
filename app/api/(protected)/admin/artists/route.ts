@@ -1,62 +1,41 @@
+// app/api/(protected)/admin/artists/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
+import { listArtists, createArtist } from '@/controllers/admin/artistsController';
 
 export async function GET(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
   try {
-    const artists = await db.Artist.findAll({
-      attributes: [
-        'idx',
-        'realName',
-        'artistName',
-        'artistPhone',
-        'artistEmail',
-        'webtoonList',
-        'debutDate',
-        'modifiedDate',
-        'createdAt',
-        'updatedAt',
-        'adminId'
-      ]
-    });
+    const artists = await listArtists();
     return NextResponse.json(artists);
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: '작가 목록 조회에 실패했습니다. 관리자에게 문의하세요.' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
+  let body;
   try {
-    const {
-      realName,
-      artistName,
-      artistPhone,
-      artistEmail,
-      webtoonList,
-      debutDate
-    } = await req.json();
-    const artist = await db.Artist.create({
-      realName,
-      artistName,
-      artistPhone,
-      artistEmail,
-      webtoonList,
-      debutDate,
-      modifiedDate: new Date(),
-      adminId: sessionOrRes.id
-    });
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 });
+  }
+
+  try {
+    const artist = await createArtist(body);
     return NextResponse.json(artist, { status: 201 });
   } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || '작가 생성 중 오류가 발생했습니다.' },
+      { status: 400 }
+    );
   }
 }

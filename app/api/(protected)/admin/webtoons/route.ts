@@ -1,49 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
+import * as ctrl from '@/controllers/admin/webtoonsController';
 
 export async function GET(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-  try {
-    const webtoons = await db.Webtoon.findAll({
-      include: [
-        { model: db.Artist, attributes: ['idx','artistName'] }
-      ]
-    });
-    return NextResponse.json(webtoons);
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
-  }
+  await requireAuth(req);
+  const list = await ctrl.listWebtoons();
+  return NextResponse.json(list);
 }
 
 export async function POST(req: NextRequest) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  if (!sessionOrRes.isAdmin) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-  try {
-    const {
-      webtoonName,
-      description,
-      genre,
-      artistIdx
-    } = await req.json();
-    const wt = await db.Webtoon.create({
-      webtoonName,
-      description,
-      genre,
-      views: 0,
-      recommend: 0,
-      adminIdx: sessionOrRes.id,
-      artistIdx
-    });
-    return NextResponse.json(wt, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
-  }
+  await requireAuth(req);
+  const data = await req.json();
+  const created = await ctrl.createWebtoon(data);
+  return NextResponse.json(created, { status: 201 });
 }
