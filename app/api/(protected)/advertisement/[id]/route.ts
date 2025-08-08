@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { updateAd, deleteAd } from '@/controllers/advertisement/advertisementController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+async function PATCHHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -20,7 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -36,3 +37,5 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: msg }, { status });
   }
 }
+export const PATCH = withErrorHandler(PATCHHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

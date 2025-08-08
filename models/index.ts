@@ -1,6 +1,5 @@
 import { Sequelize } from 'sequelize';
 import { config as dotenvConfig } from 'dotenv';
-import dbConfig from '../config/config.json';
 
 import { Admin } from './admin';
 import { Artist } from './artist';
@@ -14,12 +13,15 @@ import { AdViewLog } from './ad_view_log';
 
 dotenvConfig();
 
-const env = process.env.NODE_ENV || 'development';
-const config = (dbConfig as any)[env];
+const url = process.env.DATABASE_URL;
+if (!url) {
+  throw new Error('DATABASE_URL is not defined');
+}
 
-const sequelize = config.use_env_variable
-  ? new Sequelize(process.env[config.use_env_variable] as string, config)
-  : new Sequelize(config.database, config.username, config.password, config);
+const sequelize = new Sequelize(url, {
+  dialect: 'mysql',
+  logging: false,
+});
 
 const db: any = {
   sequelize,

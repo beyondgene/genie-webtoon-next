@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { dislikeComment, undislikeComment } from '@/controllers/comment/commentLikeController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function POST(req: NextRequest, { params }: { params: { commentId: string } }) {
+async function POSTHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: { commentId: 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { commentId: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
@@ -29,3 +30,5 @@ export async function DELETE(req: NextRequest, { params }: { params: { commentId
     return NextResponse.json({ error: err.message || '싫어요 취소 중 오류' }, { status: 400 });
   }
 }
+export const POST = withErrorHandler(POSTHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

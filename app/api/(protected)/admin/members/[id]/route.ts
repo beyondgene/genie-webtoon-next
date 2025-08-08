@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
-import * as ctrl from '@/controllers/admin/membersController';
+import * as ctrl from '@/controllers/admin/episodesController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+async function GETHandler(req: NextRequest) {
   await requireAuth(req);
-  const member = await ctrl.getMemberById(+params.id);
-  return NextResponse.json(member);
+  const episodes = await ctrl.listEpisodes();
+  return NextResponse.json(episodes);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+async function POSTHandler(req: NextRequest) {
   await requireAuth(req);
   const data = await req.json();
-  const updated = await ctrl.updateMember(+params.id, data);
-  return NextResponse.json(updated);
+  const created = await ctrl.createEpisode(data);
+  return NextResponse.json(created, { status: 201 });
 }
-
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  await requireAuth(req);
-  await ctrl.deleteMember(+params.id);
-  return NextResponse.json(null, { status: 204 });
-}
+export const GET = withErrorHandler(GETHandler);
+export const POST = withErrorHandler(POSTHandler);

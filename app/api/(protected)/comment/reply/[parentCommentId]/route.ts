@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { replyToComment } from '@/controllers/comment/commentReplyController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function POST(req: NextRequest, { params }: { params: { commentId: string } }) {
+async function POSTHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
@@ -16,3 +17,4 @@ export async function POST(req: NextRequest, { params }: { params: { commentId: 
     return NextResponse.json({ error: err.message || '답글 생성 중 오류' }, { status: 400 });
   }
 }
+export const POST = withErrorHandler(POSTHandler);

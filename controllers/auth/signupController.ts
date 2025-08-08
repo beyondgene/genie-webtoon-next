@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import db from '@/models';
+import { sendVerificationEmail } from '@/lib/emailService';
 
 export async function signup(req: NextRequest) {
   const {
@@ -9,8 +10,8 @@ export async function signup(req: NextRequest) {
     memberPassword,
     nickname,
     name,
-    birthDate,    // "YYYY-MM-DD"
-    gender,       // "MALE" | "FEMALE" | "OTHER"
+    birthDate, // "YYYY-MM-DD"
+    gender, // "MALE" | "FEMALE" | "OTHER"
     email,
     phoneNumber,
     address,
@@ -28,10 +29,7 @@ export async function signup(req: NextRequest) {
     !phoneNumber ||
     !address
   ) {
-    return NextResponse.json(
-      { error: '모든 필드를 정확히 입력해주세요.' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: '모든 필드를 정확히 입력해주세요.' }, { status: 400 });
   }
 
   // 2) 입력 형식 검증
@@ -53,18 +51,12 @@ export async function signup(req: NextRequest) {
 
   const nameRegex = /^[가-힣]+$/;
   if (!nameRegex.test(name)) {
-    return NextResponse.json(
-      { error: '이름은 한국어만 입력 가능합니다.' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: '이름은 한국어만 입력 가능합니다.' }, { status: 400 });
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return NextResponse.json(
-      { error: '유효한 이메일 형식이 아닙니다.' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: '유효한 이메일 형식이 아닙니다.' }, { status: 400 });
   }
 
   const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
@@ -76,11 +68,7 @@ export async function signup(req: NextRequest) {
   }
 
   const date = new Date(birthDate);
-  if (
-    birthDate.length !== 10 ||
-    isNaN(date.getTime()) ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)
-  ) {
+  if (birthDate.length !== 10 || isNaN(date.getTime()) || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
     return NextResponse.json(
       { error: '생년월일 형식이 잘못되었습니다. YYYY-MM-DD 로 입력해주세요.' },
       { status: 400 }
@@ -97,10 +85,7 @@ export async function signup(req: NextRequest) {
   // 4) 중복 확인
   const exists = await db.Member.findOne({ where: { memberId } });
   if (exists) {
-    return NextResponse.json(
-      { error: '이미 존재하는 ID입니다.' },
-      { status: 409 }
-    );
+    return NextResponse.json({ error: '이미 존재하는 ID입니다.' }, { status: 409 });
   }
 
   // 5) 비밀번호 해싱 및 토큰 생성
@@ -123,11 +108,13 @@ export async function signup(req: NextRequest) {
     verificationToken,
   });
 
-  // 7) 이메일 전송 (TODO)
-  // await sendVerificationEmail(email, verificationToken);
+  // 7) 이메일 전송
+  try {
+    await sendVerificationEmail(email, verificationToken);
+  } catch (err) {
+    console.error('[Signup Error] Failed to send verification email:', err);
+    return NextResponse.json({ error: '회원가입 중 이메일 전송에 실패했습니다.' }, { status: 500 });
+  }
 
-  return NextResponse.json(
-    { success: true, idx: newUser.idx },
-    { status: 201 }
-  );
+  return NextResponse.json({ success: true, idx: newUser.idx }, { status: 201 });
 }

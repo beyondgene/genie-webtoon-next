@@ -1,3 +1,4 @@
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/admin/advertisements/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
@@ -7,7 +8,7 @@ import {
   deleteAdvertisement,
 } from '@/controllers/admin/advertisementsController';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
@@ -50,7 +51,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
@@ -66,3 +67,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: msg }, { status });
   }
 }
+export const GET = withErrorHandler(GETHandler);
+export const PUT = withErrorHandler(PUTHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

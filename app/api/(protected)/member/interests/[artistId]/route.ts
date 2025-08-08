@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { addAuthorInterest, removeAuthorInterest } from '@/controllers/member/interestsController';
-export async function POST(req: NextRequest, { params }: { params: { artistId: string } }) {
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+async function POSTHandler(req: NextRequest, { params }: { params: { artistId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { artistId: s
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { artistId: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { artistId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
@@ -28,3 +29,5 @@ export async function DELETE(req: NextRequest, { params }: { params: { artistId:
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+export const POST = withErrorHandler(POSTHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

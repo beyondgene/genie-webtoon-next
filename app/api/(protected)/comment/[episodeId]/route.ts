@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { getCommentsByEpisode, createComment } from '@/controllers/comment/commentController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest, { params }: { params: { episodeId: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { episodeId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: { episodeId: s
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { episodeId: string } }) {
+async function POSTHandler(req: NextRequest, { params }: { params: { episodeId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
@@ -30,3 +31,5 @@ export async function POST(req: NextRequest, { params }: { params: { episodeId: 
     return NextResponse.json({ error: err.message || '댓글 생성 중 오류' }, { status: 400 });
   }
 }
+export const GET = withErrorHandler(GETHandler);
+export const POST = withErrorHandler(POSTHandler);

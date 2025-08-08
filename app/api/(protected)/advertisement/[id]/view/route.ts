@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireAdminAuth } from '@/lib/middlewares/auth';
 import { logAdView, getAdViewLogs } from '@/controllers/advertisement/advertisementViewController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+async function POSTHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -34,3 +35,5 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     );
   }
 }
+export const POST = withErrorHandler(POSTHandler);
+export const GET = withErrorHandler(GETHandler);

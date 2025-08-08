@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/middlewares/auth';
 import { getArtistList, createArtist } from '@/controllers/artist/artistController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   try {
     const sessionOrRes = await requireAdmin(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const sessionOrRes = await requireAdmin(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -32,3 +33,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);
+export const POST = withErrorHandler(POSTHandler);

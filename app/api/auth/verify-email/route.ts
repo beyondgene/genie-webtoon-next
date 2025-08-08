@@ -1,7 +1,8 @@
-// app/api/auth/verify-email/route.ts
-import { NextRequest } from "next/server";
-import { verifyEmail } from "@/controllers/auth/verifyEmailController";
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+import { NextRequest } from 'next/server';
+import { verifyEmail } from '@/controllers/auth/verifyEmailController';
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   return verifyEmail(req);
 }
+export const GET = withErrorHandler(GETHandler);

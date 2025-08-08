@@ -4,8 +4,9 @@ import {
   updateComment,
   deleteComment as removeComment,
 } from '@/controllers/comment/commentController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function PATCH(req: NextRequest, { params }: { params: { commentId: string } }) {
+async function PATCHHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const commentId = parseInt(params.commentId, 10);
@@ -22,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { commentId:
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { commentId: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const commentId = parseInt(params.commentId, 10);
@@ -37,3 +38,5 @@ export async function DELETE(req: NextRequest, { params }: { params: { commentId
     );
   }
 }
+export const PATCH = withErrorHandler(PATCHHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

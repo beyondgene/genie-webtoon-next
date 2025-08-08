@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { listAuthorInterests } from '@/controllers/member/interestsController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
@@ -15,3 +16,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+export const GET = withErrorHandler(GETHandler);

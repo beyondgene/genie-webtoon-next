@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { getActiveAds, createAd } from '@/controllers/advertisement/advertisementController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(
+async function GETHandler(
   req: NextRequest,
   { params }: { params: Record<string, string> } // params는 비어있지만 시그니처 맞춤
 ) {
@@ -20,7 +21,7 @@ export async function GET(
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Record<string, string> }) {
+async function POSTHandler(req: NextRequest, { params }: { params: Record<string, string> }) {
   try {
     const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -51,3 +52,5 @@ export async function POST(req: NextRequest, { params }: { params: Record<string
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);
+export const POST = withErrorHandler(POSTHandler);

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { getDailyRanking } from '@/controllers/ranking';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest, { params }: { params: { genre: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { genre: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
@@ -20,3 +21,4 @@ export async function GET(req: NextRequest, { params }: { params: { genre: strin
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);

@@ -6,7 +6,8 @@ import {
   updateMemberProfile,
   deactivateMember,
 } from '@/controllers/member/profileController';
-export async function PATCH(req: NextRequest) {
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+async function PATCHHandler(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
@@ -24,7 +25,7 @@ export async function PATCH(req: NextRequest) {
   }
   return NextResponse.json(await updateMemberProfile(memberId, body));
 }
-export async function DELETE(req: NextRequest) {
+async function DELETEHandler(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
@@ -40,3 +41,5 @@ export async function DELETE(req: NextRequest) {
   await deactivateMember(memberId);
   return NextResponse.json({ message: '회원 탈퇴 처리되었습니다.' });
 }
+export const PATCH = withErrorHandler(PATCHHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
-import { getEpisodeList } from '@/controllers/episode/listController';
+import { getEpisodeDetailWithMeta } from '@/controllers/episode/detailController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest, { params }: { params: { webtoonId: string } }) {
+async function GETHandler(
+  req: NextRequest,
+  { params }: { params: { webtoonId: string; episodeId: string } }
+) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
   const webtoonId = parseInt(params.webtoonId, 10);
+  const episodeId = parseInt(params.episodeId, 10);
 
   try {
-    const data = await getEpisodeList(userId, webtoonId);
+    const data = await getEpisodeDetailWithMeta(userId, webtoonId, episodeId);
     return NextResponse.json(data);
   } catch (err: any) {
     return NextResponse.json(
-      { error: err.message || '에피소드 목록 조회 중 오류' },
-      { status: 500 }
+      { error: err.message || '에피소드 상세 조회 중 오류' },
+      { status: err.message === '해당 에피소드를 찾을 수 없습니다.' ? 404 : 500 }
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);

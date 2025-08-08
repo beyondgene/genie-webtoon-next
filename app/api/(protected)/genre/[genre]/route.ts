@@ -1,3 +1,4 @@
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/genre/[genre]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
@@ -13,7 +14,7 @@ interface LocalWebtoon {
   alarmOn: boolean;
 }
 
-export async function GET(req: NextRequest, { params }: { params: { genre: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { genre: string } }) {
   // 로그인 검사
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -52,3 +53,4 @@ export async function GET(req: NextRequest, { params }: { params: { genre: strin
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);

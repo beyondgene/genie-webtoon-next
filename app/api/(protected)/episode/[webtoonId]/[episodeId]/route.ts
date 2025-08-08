@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { getEpisodeDetailWithMeta } from '@/controllers/episode/detailController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(
+async function GETHandler(
   req: NextRequest,
   { params }: { params: { webtoonId: string; episodeId: string } }
 ) {
@@ -22,3 +23,4 @@ export async function GET(
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);

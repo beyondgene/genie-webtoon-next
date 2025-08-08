@@ -4,15 +4,19 @@ import {
   toggleBookmarkAlarm,
   unsubscribeBookmark,
 } from '@/controllers/member/bookmarksController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function POST(req: NextRequest, { params }: { params: { webtoonId: string } }) {
+async function POSTHandler(req: NextRequest, { params }: { params: { webtoonId: string } }) {
   return subscribeBookmark(req, { params });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { webtoonId: string } }) {
+async function PATCHHandler(req: NextRequest, { params }: { params: { webtoonId: string } }) {
   return toggleBookmarkAlarm(req, { params });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { webtoonId: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { webtoonId: string } }) {
   return unsubscribeBookmark(req, { params });
 }
+export const POST = withErrorHandler(POSTHandler);
+export const PATCH = withErrorHandler(PATCHHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/middlewares/auth';
 import { getArtistById, updateArtist, deleteArtist } from '@/controllers/artist/artistController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAdmin(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+async function PATCHHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAdmin(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -36,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAdmin(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -50,3 +51,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);
+export const PATCH = withErrorHandler(PATCHHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

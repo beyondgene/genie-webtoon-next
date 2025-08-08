@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import db from '@/models';
-import { sendResetPasswordEmail } from '@/lib/mail';
+import { sendResetLinkEmail } from '@/lib/emailService';
 
 export async function findPassword(req: NextRequest) {
   const { memberId, name, phoneNumber } = await req.json();
@@ -16,10 +16,7 @@ export async function findPassword(req: NextRequest) {
     where: { memberId, name, phoneNumber },
   });
   if (!user) {
-    return NextResponse.json(
-      { error: '일치하는 회원이 없습니다.' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: '일치하는 회원이 없습니다.' }, { status: 404 });
   }
 
   // 비밀번호는 해시되어 복호화 불가하므로, 리셋 링크 발송
@@ -29,7 +26,7 @@ export async function findPassword(req: NextRequest) {
   user.resetTokenExpiry = expiry;
   await user.save();
 
-  await sendResetPasswordEmail(user.email!, resetToken);
+  await sendResetLinkEmail(user.email!, resetToken);
 
   return NextResponse.json({
     message: '비밀번호 재설정을 위한 이메일을 발송했습니다.',

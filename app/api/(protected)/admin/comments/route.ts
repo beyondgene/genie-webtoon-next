@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import * as ctrl from '@/controllers/admin/commentsController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   await requireAuth(req);
   const list = await ctrl.listComments();
   return NextResponse.json(list);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAuth(req);
   await ctrl.deleteComment(+params.id);
   return NextResponse.json(null, { status: 204 });
 }
+export const GET = withErrorHandler(GETHandler);
+export const DELETE = withErrorHandler(DELETEHandler);

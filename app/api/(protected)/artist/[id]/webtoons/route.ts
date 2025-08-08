@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { getArtistWebtoons } from '@/controllers/artist/artistController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const sessionOrRes = await requireAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -16,3 +17,4 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);

@@ -1,6 +1,8 @@
-// app/api/auth/[...nextauth]/route.ts
-import NextAuth from "next-auth";
-import { authOptions } from "@/controllers/auth/nextAuthController";
+import { NextRequest } from 'next/server';
+import { getWebtoonList } from '@/controllers/webtoon/webtoonController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+async function GETHandler(req: NextRequest) {
+  return getWebtoonList(req);
+}
+export const GET = withErrorHandler(GETHandler);

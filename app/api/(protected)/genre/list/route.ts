@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { getGenreList } from '@/controllers/genre/listGenreController';
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   // 로그인 검사
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
@@ -18,3 +19,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);

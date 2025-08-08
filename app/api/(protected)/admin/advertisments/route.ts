@@ -1,3 +1,4 @@
+import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/admin/advertisements/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
@@ -6,7 +7,7 @@ import {
   createAdvertisement,
 } from '@/controllers/admin/advertisementsController';
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
@@ -45,3 +46,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+export const GET = withErrorHandler(GETHandler);
+export const POST = withErrorHandler(POSTHandler);
