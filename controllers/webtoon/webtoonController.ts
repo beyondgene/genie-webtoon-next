@@ -67,7 +67,7 @@ export async function getWebtoonList(req: NextRequest) {
   const result: WebtoonListDTO[] = webtoons.map((w) => ({
     id: w.idx,
     name: w.webtoonName,
-    description: w.discription,
+    description: w.description,
     genre: w.genre,
     views: w.views,
     recommend: w.recommend,
@@ -115,7 +115,7 @@ export async function getWebtoonDetail(req: NextRequest, webtoonId: number) {
   const detail: WebtoonDetailDTO = {
     id: w.idx,
     name: w.webtoonName,
-    description: w.discription,
+    description: w.description,
     genre: w.genre,
     views: w.views,
     recommend: w.recommend,

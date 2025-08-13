@@ -2,6 +2,7 @@
 
 import { Op } from 'sequelize';
 import db from '@/models';
+import { literal } from 'sequelize';
 
 const { Advertisement } = db;
 
@@ -14,6 +15,31 @@ export interface CreateAdInput {
   startDate?: Date;
   endDate?: Date;
   totalExposureLimit?: number;
+}
+
+export type DetailAdDTO = {
+  idx: number;
+  ad_name: string;
+  target_url: string;
+};
+
+/**
+ * detailController가 기대하는 형태로 광고 1건 조회
+ * - 반환: { idx, ad_name, target_url } | null
+ * - 컬럼명이 snake_case(ad_name/target_url) 또는 camelCase(adName/targetUrl/linkUrl) 어느 쪽이든 대응
+ */
+export async function getAdById(id: number): Promise<DetailAdDTO | null> {
+  const ad = await Advertisement.findByPk(id, {
+    // DB에 어떤 컬럼명이 있든 아래와 같이 원하는 alias로 정규화
+    attributes: [
+      'idx',
+      [literal('COALESCE(`ad_name`, `adName`)'), 'ad_name'],
+      [literal('COALESCE(`target_url`, `targetUrl`, `linkUrl`)'), 'target_url'],
+    ],
+    raw: true,
+  });
+
+  return (ad as DetailAdDTO) ?? null;
 }
 
 /**

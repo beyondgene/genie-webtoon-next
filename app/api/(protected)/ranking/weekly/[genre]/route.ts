@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
-import { getMonthlyRanking } from '@/controllers/ranking';
+import { getWeeklyRanking } from '@/controllers/ranking';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
 async function GETHandler(req: NextRequest, { params }: { params: { genre: string } }) {
@@ -8,7 +8,7 @@ async function GETHandler(req: NextRequest, { params }: { params: { genre: strin
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
   try {
-    const data = await getMonthlyRanking(params.genre);
+    const data = await getWeeklyRanking(params.genre);
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Monthly Ranking 조회 중 오류 발생:', error);

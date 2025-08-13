@@ -1,7 +1,7 @@
 // controllers/episode/detail.ts
 import db from '@/models';
-import { getSubscriptionStatus } from '@/controllers/subscription';
-import { getAdById } from '@/controllers/advertisement';
+import { getBookmarkStatusForList } from '@/controllers/member/bookmarksController';
+import { getAdById } from '@/controllers/advertisement/advertisementController';
 
 /**
  * userId가 webtoonId, episodeId에 대해
@@ -10,6 +10,16 @@ import { getAdById } from '@/controllers/advertisement';
  * - 광고 정보(advertisement; adId가 있을 때만)
  * 을 함께 반환합니다.
  */
+
+async function getSubscriptionStatus(
+  memberId: number,
+  webtoonId: number
+): Promise<{ isSubscribed: boolean; alarmOn: boolean }> {
+  const list = await getBookmarkStatusForList(memberId, [webtoonId]);
+  const s = list?.[0];
+  return { isSubscribed: !!s?.isSubscribed, alarmOn: !!s?.alarmOn };
+}
+
 export async function getEpisodeDetailWithMeta(
   userId: number,
   webtoonId: number,

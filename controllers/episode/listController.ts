@@ -1,13 +1,16 @@
 // controllers/episode/list.ts
 import db from '@/models';
-import { getSubscriptionStatus } from '@/controllers/subscription';
+import { getBookmarkStatusForList } from '@/controllers/member/bookmarksController';
 
-/**
- * userId가 webtoonId에 대해
- * - 에피소드 목록
- * - 구독 상태(isSubscribed) 및 알림 설정(alarmOn)
- * 을 함께 반환합니다.
- */
+async function getSubscriptionStatus(
+  memberId: number,
+  webtoonId: number
+): Promise<{ isSubscribed: boolean; alarmOn: boolean }> {
+  const list = await getBookmarkStatusForList(memberId, [webtoonId]);
+  const s = list?.[0];
+  return { isSubscribed: !!s?.isSubscribed, alarmOn: !!s?.alarmOn };
+}
+
 export async function getEpisodeList(
   userId: number,
   webtoonId: number
@@ -20,21 +23,29 @@ export async function getEpisodeList(
   }>;
   subscription: { isSubscribed: boolean; alarmOn: boolean };
 }> {
-  // 1) 에피소드 목록 조회
-  const rawEpisodes = await db.Episode.findAll({
+  // 1) 에피소드 목록: 필요한 4개 컬럼만 조회
+  const episodes = (await db.Episode.findAll({
     where: { webtoonId },
-    order: [['uploadDate', 'ASC']],
-    attributes: ['idx', 'title', 'thumbnailUrl', 'uploadDate'],
-  });
-  const episodes = rawEpisodes.map((ep) => ({
-    idx: ep.idx,
-    title: ep.title,
-    thumbnailUrl: ep.thumbnailUrl,
-    uploadDate: ep.uploadDate,
-  }));
+    attributes: [
+      'idx',
+      'title',
+      // DB가 snake_case면 아래 한 줄로 alias:
+      // ['thumbnail_url', 'thumbnailUrl'],
+      'thumbnailUrl',
+      'uploadDate',
+    ],
+    order: [['uploadDate', 'DESC']],
+    raw: true,
+  })) as {
+    idx: number;
+    title: string;
+    thumbnailUrl: string; // snake_case면 위 attributes에서 alias 적용
+    uploadDate: Date;
+  }[];
 
-  // 2) 구독 상태 조회
+  // 2) 구독 상태
   const { isSubscribed, alarmOn } = await getSubscriptionStatus(userId, webtoonId);
 
+  // 선언된 반환 타입과 정확히 일치
   return { episodes, subscription: { isSubscribed, alarmOn } };
 }

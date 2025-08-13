@@ -1,5 +1,6 @@
 import db from '@/models';
-import { getSubscriptionStatusForList } from '@/controllers/subscription';
+// ✅ 변경: subscription 파사드 대신 북마크 컨트롤러 사용
+import { getBookmarkStatusForList } from '@/controllers/member/bookmarksController';
 
 // Controller functions for managing artists and their webtoons
 
@@ -117,7 +118,7 @@ export async function getArtistWebtoons(memberId: number, artistId: number) {
     attributes: [
       'idx',
       'webtoonName',
-      'discription',
+      'description',
       'genre',
       'thumbnailUrl',
       'views',
@@ -128,18 +129,19 @@ export async function getArtistWebtoons(memberId: number, artistId: number) {
   })) as Array<{
     idx: number;
     webtoonName: string;
-    discription: string;
+    description: string;
     genre: string;
     thumbnailUrl: string;
     views: number;
     recommend: number;
   }>;
 
-  // Check subscription status for these webtoons
+  // ✅ 변경: 북마크 상태 조회 후, Map(webtoonId -> alarmOn)으로 변환
   const ids = webtoons.map((w) => w.idx);
-  const subsMap = await getSubscriptionStatusForList(memberId, ids);
+  const marks = await getBookmarkStatusForList(memberId, ids);
+  const subsMap = new Map<number, boolean>(marks.map((m) => [m.webtoonId, m.alarmOn]));
 
-  // Annotate and return
+  // Annotate and return (기존 has/get 사용 패턴 유지)
   return webtoons.map((w) => ({
     ...w,
     isSubscribed: subsMap.has(w.idx),

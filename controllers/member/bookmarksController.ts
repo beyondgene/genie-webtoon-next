@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
+import { Op } from 'sequelize';
 
 interface SubscriptionDTO {
   webtoonId: number;
@@ -12,9 +13,56 @@ interface SubscriptionDTO {
   updatedAt: string;
 }
 
+// ---- 새로 추가: 라우터에서 사용할 상태 타입 ----
+export type BookmarkStatus = {
+  webtoonId: number;
+  isSubscribed: boolean;
+  alarmOn: boolean;
+};
+
 // 공통 구독 조회 헬퍼
 async function findSub(memberId: number, webtoonId: number) {
   return db.SUBSCRIPTION.findOne({ where: { memberId, webtoonId } });
+}
+
+// ---- 새로 추가: 라우터용 북마크 상태 조회 함수 ----
+/**
+ * 북마크(=구독) 상태를 webtoonIds 기준으로 묶어서 반환
+ * - ACTIVE 상태만 구독으로 인정
+ * - alarm_on을 boolean으로 변환
+ */
+export async function getBookmarkStatusForList(
+  memberId: number,
+  webtoonIds: number[]
+): Promise<BookmarkStatus[]> {
+  if (!memberId || !Array.isArray(webtoonIds) || webtoonIds.length === 0) {
+    return [];
+  }
+
+  const rows: Array<{ webtoonId: number; alarm_on?: any; status?: string }> =
+    await db.SUBSCRIPTION.findAll({
+      attributes: ['webtoonId', 'alarm_on', 'status'],
+      where: {
+        memberId,
+        webtoonId: { [Op.in]: webtoonIds },
+        status: 'ACTIVE',
+      },
+      raw: true,
+    });
+
+  // ACTIVE인 것만 isSubscribed = true로 반환
+  return rows.map((r) => ({
+    webtoonId: Number(r.webtoonId),
+    isSubscribed: true,
+    alarmOn: !!r.alarm_on,
+  }));
+}
+
+// (선택) 배열을 즉시 Map으로 변환해서 has/get 쓰고 싶을 때
+export function toBookmarkMap(marks: BookmarkStatus[]) {
+  return new Map<number, { isSubscribed: boolean; alarmOn: boolean }>(
+    marks.map((m) => [m.webtoonId, { isSubscribed: m.isSubscribed, alarmOn: m.alarmOn }])
+  );
 }
 
 /**

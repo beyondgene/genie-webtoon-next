@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/middlewares/auth';
+import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { getArtistById, updateArtist, deleteArtist } from '@/controllers/artist/artistController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
 async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const sessionOrRes = await requireAdmin(req);
+    const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
     const artist = await getArtistById(Number(params.id));
@@ -23,7 +23,7 @@ async function GETHandler(req: NextRequest, { params }: { params: { id: string }
 
 async function PATCHHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const sessionOrRes = await requireAdmin(req);
+    const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
     const body = await req.json();
@@ -39,7 +39,7 @@ async function PATCHHandler(req: NextRequest, { params }: { params: { id: string
 
 async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const sessionOrRes = await requireAdmin(req);
+    const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
     await deleteArtist(Number(params.id));

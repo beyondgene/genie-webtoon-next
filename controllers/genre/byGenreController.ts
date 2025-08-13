@@ -7,7 +7,7 @@ export interface GenreWebtoon {
   idx: number;
   webtoonName: string;
   thumbnailUrl: string;
-  discription: string;
+  description: string;
 }
 
 /**
@@ -25,10 +25,11 @@ export async function getWebtoonsByGenre(genreName: string): Promise<GenreWebtoo
         through: { attributes: [] },
       },
     ],
-    attributes: ['idx', 'webtoonName', 'thumbnailUrl', 'discription'],
+    attributes: ['idx', 'webtoonName', 'thumbnailUrl', 'description'],
     order: [['idx', 'ASC']],
+    raw: true, // ← 핵심
+    nest: true, // (선택) include 시 평탄화 방지
   });
 
-  // Sequelize 인스턴스를 평문 객체로 변환
-  return webtoons.map((w) => w.get({ plain: true })) as GenreWebtoon[];
+  return webtoons as GenreWebtoon[];
 }

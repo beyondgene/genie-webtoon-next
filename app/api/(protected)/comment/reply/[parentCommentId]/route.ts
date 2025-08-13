@@ -3,11 +3,11 @@ import { requireAuth } from '@/lib/middlewares/auth';
 import { replyToComment } from '@/controllers/comment/commentReplyController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-async function POSTHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
+async function POSTHandler(req: NextRequest, { params }: { params: { parentcommentId: string } }) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const userId = sessionOrRes.id as number;
-  const parentCommentId = parseInt(params.commentId, 10);
+  const parentCommentId = parseInt(params.parentcommentId, 10);
   const { content } = await req.json();
 
   try {

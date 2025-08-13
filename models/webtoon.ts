@@ -11,8 +11,17 @@ import { Artist } from './artist';
 export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttributes<Webtoon>> {
   declare idx: CreationOptional<number>;
   declare webtoonName: string;
-  declare discription: string; // ERD에 따라 description 대신 discription으로 작성
-  declare genre: 'DRAMA' | 'ROMANCE' | 'FANTASY' | 'ACTION' | 'ETC';
+  declare description: string; // ERD에 따라 description 대신 discription으로 작성
+  declare genre:
+    | 'DRAMA'
+    | 'ROMANCE'
+    | 'FANTASY'
+    | 'ACTION'
+    | 'LIFE'
+    | 'GAG'
+    | 'SPORTS'
+    | 'THRILLER'
+    | 'HISTORICAL';
   declare views: number;
   declare recommend: number;
   declare Artist?: Artist;
@@ -34,7 +43,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
           allowNull: false,
           unique: true,
         },
-        discription: {
+        description: {
           type: DataTypes.STRING(45),
           allowNull: true,
         },
@@ -84,8 +93,8 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
   }
 
   static associate(models: any) {
-    Webtoon.belongsTo(models.Admin, { foreignKey: 'adminIdx' });
-    Webtoon.belongsTo(models.Artist, { foreignKey: 'artistIdx' });
+    Webtoon.belongsTo(models.Admin, { foreignKey: 'adminId' });
+    Webtoon.belongsTo(models.Artist, { foreignKey: 'artistId' });
     Webtoon.hasMany(models.Episode, { foreignKey: 'webtoonId' });
     Webtoon.hasMany(models.Comment, { foreignKey: 'webtoonId' });
     Webtoon.hasMany(models.Subscription, { foreignKey: 'webtoonId' });

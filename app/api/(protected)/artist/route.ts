@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/middlewares/auth';
+import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { getArtistList, createArtist } from '@/controllers/artist/artistController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
 async function GETHandler(req: NextRequest) {
   try {
-    const sessionOrRes = await requireAdmin(req);
+    const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
     const artists = await getArtistList();
@@ -20,7 +20,7 @@ async function GETHandler(req: NextRequest) {
 
 async function POSTHandler(req: NextRequest) {
   try {
-    const sessionOrRes = await requireAdmin(req);
+    const sessionOrRes = await requireAdminAuth(req);
     if (sessionOrRes instanceof NextResponse) return sessionOrRes;
 
     const body = await req.json();
