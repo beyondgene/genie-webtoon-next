@@ -1,5 +1,38 @@
+import dynamic from 'next/dynamic';
 import ViewerNav from '@/components/public/ViewerNav';
 import Image from 'next/image';
+import { Suspense } from 'react';
+
+// 댓글 컴포넌트 동적 임포트 + G: 쉼머 스켈레톤
+const CommentSection = dynamic(() => import('@/components/viewer/CommentSection'), {
+  ssr: false,
+  loading: () => <div className="h-24 animate-pulse rounded-2xl border" />,
+});
+
+// 동적 메타데이터
+export async function generateMetadata({ params }: { params: { id: string; epId: string } }) {
+  try {
+    const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
+    const res = await fetch(`${base}/api/(protected)/episode/${params.id}/${params.epId}`, {
+      // 상세는 SSR로 바로 읽으므로 캐시 자유롭게 조정 가능
+      cache: 'no-store',
+    });
+    const raw = res.ok ? await res.json() : null;
+    const title = raw?.episode?.title ?? raw?.title ?? `에피소드 ${params.epId}`;
+    const thumb = raw?.episode?.thumbnailUrl ?? raw?.thumbnailUrl ?? '/og-episode.jpg';
+
+    return {
+      title: `${title} | 지니웹툰`,
+      description: '에피소드 상세 및 댓글',
+      openGraph: { images: [thumb] },
+    };
+  } catch {
+    return {
+      title: `에피소드 ${params.epId} | 지니웹툰`,
+      description: '에피소드 상세 및 댓글',
+    };
+  }
+}
 
 async function getEpisode(webtoonId: string, episodeId: string) {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
@@ -147,6 +180,14 @@ export default async function EpisodeViewer({ params }: { params: { id: string; 
             </a>
           ))}
         </div>
+      </section>
+
+      {/* 동적 임포트 + Suspense, 폼 검증 & 접근성은 CommentSection 내부에서 처리됨 */}
+      <section className="mt-10">
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl border" />}>
+          {/* CommentSection: episodeId만 넘기면 됩니다. (아이콘, 검증/접근성 포함) */}
+          <CommentSection episodeId={params.epId} />
+        </Suspense>
       </section>
     </main>
   );

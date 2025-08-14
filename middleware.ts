@@ -4,6 +4,22 @@ import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// (admin) 라우트 그룹이 URL에 노출하는 실경로들
+const ADMIN_GROUP_BASES = [
+  '/dashboard',
+  '/advertisements',
+  '/artists',
+  '/webtoons',
+  '/episodes',
+  '/comments',
+  '/members',
+];
+
+// 경로 매칭 헬퍼
+function matchAnyBase(pathname: string, bases: string[]) {
+  return bases.some((b) => pathname === b || pathname.startsWith(b + '/'));
+}
+
 /**
  * 페이지 가드만 담당합니다.
  * - /my/*: 비로그인 → /login?next=...
@@ -42,6 +58,20 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  if (matchAnyBase(pathname, ADMIN_GROUP_BASES)) {
+    const token = await getToken({ req }); // 기존 변수와 충돌 피하려고 새로 가져옵니다.
+    if (!token) {
+      const next = encodeURIComponent(pathname + (search || ''));
+      return NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
+    }
+    // 토큰 스키마가 프로젝트마다 다를 수 있어 느슨하게 검사
+    // (기존 /admin/* 블록이 쓰는 기준과 동일해야 합니다)
+    // @ts-ignore
+    if (!token.role || token.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/403', req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -50,5 +80,15 @@ export async function middleware(req: NextRequest) {
  * 정적 리소스도 제외.
  */
 export const config = {
-  matcher: ['/my/:path*', '/admin/:path*'],
+  matcher: [
+    '/my/:path*',
+    '/admin/:path*',
+    '/dashboard/:path*',
+    '/advertisements/:path*',
+    '/artists/:path*',
+    '/webtoons/:path*',
+    '/episodes/:path*',
+    '/comments/:path*',
+    '/members/:path*',
+  ],
 };
