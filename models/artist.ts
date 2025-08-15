@@ -71,5 +71,6 @@ export class Artist extends Model<InferAttributes<Artist>, InferCreationAttribut
     Artist.hasMany(models.Webtoon, { foreignKey: 'artistIdx' });
     // 작가는 관리자에 의해 관리된다 (N:1)
     Artist.belongsTo(models.Admin, { foreignKey: 'adminId' });
+    Artist.hasMany(models.Interest, { foreignKey: 'artistId', as: 'interests' });
   }
 }

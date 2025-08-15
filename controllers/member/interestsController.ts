@@ -14,7 +14,7 @@ export interface AuthorInterestDTO {
  * 회원이 관심 등록한 작가 목록을 조회합니다.
  */
 export async function listAuthorInterests(memberId: number): Promise<AuthorInterestDTO[]> {
-  const items = await db.INTEREST.findAll({
+  const items = await db.Interest.findAll({
     where: { memberId },
     include: [
       {
@@ -43,14 +43,14 @@ export async function listAuthorInterests(memberId: number): Promise<AuthorInter
  * 특정 작가에 대한 관심 등록 추가
  */
 export async function addAuthorInterest(memberId: number, artistIdx: number): Promise<void> {
-  await db.INTEREST.create({ memberId, artistIdx });
+  await db.Interest.create({ memberId, artistIdx });
 }
 
 /**
  * 특정 작가에 대한 관심 해제
  */
 export async function removeAuthorInterest(memberId: number, artistIdx: number): Promise<void> {
-  const item = await db.INTEREST.findOne({ where: { memberId, artistIdx } });
+  const item = await db.Interest.findOne({ where: { memberId, artistIdx } });
   if (!item) throw new Error('등록된 관심 작가가 아닙니다.');
   await item.destroy();
 }

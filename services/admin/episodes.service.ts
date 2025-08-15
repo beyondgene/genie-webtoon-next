@@ -8,4 +8,4 @@ export interface AdminEpisode {
   uploadDate: string;
 }
 
-export const listEpisodes = () => httpGet<AdminEpisode[]>('/api/(protected)/admin/episodes');
+export const listEpisodes = () => httpGet<AdminEpisode[]>('/api/admin/episodes');

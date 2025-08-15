@@ -6,7 +6,7 @@ type EpisodeLite = { idx: number; title: string; uploadDate: string };
 
 async function getWebtoonDetail(id: string) {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(protected)/webtoon/${id}`, { next: { revalidate: 60 } });
+  const res = await fetch(`${base}/api/webtoon/${id}`, { next: { revalidate: 60 } });
   if (!res.ok) return null;
 
   const raw = await res.json();
@@ -25,7 +25,7 @@ async function getWebtoonDetail(id: string) {
 async function getEpisodeList(id: string): Promise<EpisodeLite[]> {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
   // 실제 운영 경로에 맞춰 (protected)로 호출
-  const res = await fetch(`${base}/api/(protected)/webtoon/${id}/episodes`, {
+  const res = await fetch(`${base}/api/webtoon/${id}/episodes`, {
     next: { revalidate: 60 },
   });
   if (!res.ok) return [];
@@ -41,7 +41,7 @@ async function getEpisodeList(id: string): Promise<EpisodeLite[]> {
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(protected)/webtoon/${params.id}`, {
+  const res = await fetch(`${base}/api/webtoon/${params.id}`, {
     next: { revalidate: 300 },
   });
   const raw = res.ok ? await res.json() : null;

@@ -20,7 +20,7 @@ async function getRecommendations(): Promise<WebtoonCardData[]> {
   // 보호 API가 아직 없거나 미구현일 수 있으므로 실패 시 더미 데이터로 대체
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
   try {
-    const res = await fetch(`${base}/api/(protected)/genieai/recommendation`, {
+    const res = await fetch(`${base}/api/genieai/recommendation`, {
       // 개인화 데이터는 항상 최신
       cache: 'no-store',
       headers: {

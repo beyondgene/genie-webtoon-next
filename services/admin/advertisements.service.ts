@@ -12,5 +12,4 @@ export interface AdminAdvertisement {
   totalExposureLimit?: number;
 }
 
-export const listAdvertisements = () =>
-  httpGet<AdminAdvertisement[]>('/api/(protected)/admin/advertisements');
+export const listAdvertisements = () => httpGet<AdminAdvertisement[]>('/api/admin/advertisements');

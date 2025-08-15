@@ -30,7 +30,7 @@ const RankingList = dynamic<ListProps>(
 
 async function fetchRanking(genre: string): Promise<Item[]> {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(public)/ranking/daily/${encodeURIComponent(genre)}`, {
+  const res = await fetch(`${base}/api/ranking/daily/${encodeURIComponent(genre)}`, {
     next: { revalidate: 120, tags: [`ranking:daily:${genre}`] },
   });
   if (!res.ok) return [];
@@ -39,7 +39,7 @@ async function fetchRanking(genre: string): Promise<Item[]> {
 
 export async function generateStaticParams() {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const r = await fetch(`${base}/api/(public)/genre/list`, { next: { revalidate: 3600 } });
+  const r = await fetch(`${base}/api/genre/list`, { next: { revalidate: 3600 } });
   const genres: { slug: string }[] = r.ok ? await r.json() : [];
   // 너무 많으면 빌드가 길어지니 일부만 SSG, 나머지는 런타임
   return genres.slice(0, 20).map((g) => ({ genre: g.slug }));

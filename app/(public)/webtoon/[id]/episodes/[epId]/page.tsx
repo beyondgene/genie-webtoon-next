@@ -13,7 +13,7 @@ const CommentSection = dynamic(() => import('@/components/viewer/CommentSection'
 export async function generateMetadata({ params }: { params: { id: string; epId: string } }) {
   try {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-    const res = await fetch(`${base}/api/(protected)/episode/${params.id}/${params.epId}`, {
+    const res = await fetch(`${base}/api/episode/${params.id}/${params.epId}`, {
       // 상세는 SSR로 바로 읽으므로 캐시 자유롭게 조정 가능
       cache: 'no-store',
     });
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: { id: string; epId:
 
 async function getEpisode(webtoonId: string, episodeId: string) {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(protected)/episode/${webtoonId}/${episodeId}`, {
+  const res = await fetch(`${base}/api/episode/${webtoonId}/${episodeId}`, {
     cache: 'no-store',
   });
   if (!res.ok) return null;
@@ -69,7 +69,7 @@ async function getNavigation(
   episodeId: string
 ): Promise<{ prevId: number | null; nextId: number | null }> {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(protected)/episode/${webtoonId}/${episodeId}/navigation`, {
+  const res = await fetch(`${base}/api/episode/${webtoonId}/${episodeId}/navigation`, {
     cache: 'no-store',
   });
   if (!res.ok) return { prevId: null, nextId: null };
@@ -89,7 +89,7 @@ async function getNavigation(
 async function getEpisodeSiblings(webtoonId: string): Promise<{ idx: number }[]> {
   // (선택) 기존 로직이 필요하면 남겨두되, 내비게이션 API를 우선 사용합니다.
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(protected)/webtoon/${webtoonId}/episodes`, {
+  const res = await fetch(`${base}/api/webtoon/${webtoonId}/episodes`, {
     next: { revalidate: 60 },
   });
   if (!res.ok) return [];

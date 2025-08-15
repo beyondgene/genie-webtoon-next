@@ -35,9 +35,7 @@ async function safeJson(url: string) {
 async function getWeeklyRanking(): Promise<RankingItem[]> {
   // 컨트롤러가 thumbnailUrl을 안 줄 수도 있어 안전 매핑 + 더미 이미지
   const data =
-    (await safeJson('/api/(protected)/ranking/weekly/ALL')) ||
-    (await safeJson('/api/(protected)/ranking/weekly')) ||
-    null;
+    (await safeJson('/api/ranking/weekly/ALL')) || (await safeJson('/api/ranking/weekly')) || null;
 
   const items: any[] = Array.isArray(data?.data) ? data!.data : Array.isArray(data) ? data : [];
 
@@ -62,7 +60,7 @@ async function getWeeklyRanking(): Promise<RankingItem[]> {
 }
 
 async function getProfile(): Promise<{ nickname?: string } | null> {
-  const data = await safeJson('/api/(protected)/member/profile');
+  const data = await safeJson('/api/member/profile');
   return (data && (data.data ?? data)) || null;
 }
 

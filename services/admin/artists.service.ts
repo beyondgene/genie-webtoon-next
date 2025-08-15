@@ -9,4 +9,4 @@ export interface AdminArtist {
   debutDate?: string | null;
 }
 
-export const listArtists = () => httpGet<AdminArtist[]>('/api/(protected)/admin/artists');
+export const listArtists = () => httpGet<AdminArtist[]>('/api/admin/artists');

@@ -10,4 +10,4 @@ export interface AdminComment {
   creationDate: string;
 }
 
-export const listComments = () => httpGet<AdminComment[]>('/api/(protected)/admin/comments');
+export const listComments = () => httpGet<AdminComment[]>('/api/admin/comments');

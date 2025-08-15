@@ -8,7 +8,7 @@ import { getBookmarkStatusForList } from '@/controllers/member/bookmarksControll
  * Fetch a list of all artists
  */
 export async function getArtistList() {
-  return await db.ARTIST.findAll({
+  return await db.Artist.findAll({
     attributes: ['idx', 'artistName', 'realName', 'artistEmail', 'debutDate'],
     order: [['artistName', 'ASC']],
     raw: true,
@@ -31,7 +31,7 @@ export async function createArtist(
   },
   adminId: number
 ) {
-  const newArtist = await db.ARTIST.create({
+  const newArtist = await db.Artist.create({
     realName: data.realName,
     artistName: data.artistName,
     artistPhone: data.artistPhone ?? '',
@@ -49,7 +49,7 @@ export async function createArtist(
  * @param artistId Artist's primary key
  */
 export async function getArtistById(artistId: number) {
-  return await db.ARTIST.findByPk(artistId, {
+  return await db.Artist.findByPk(artistId, {
     attributes: [
       'idx',
       'realName',
@@ -82,7 +82,7 @@ export async function updateArtist(
   }>,
   adminId: number
 ) {
-  const artist = await db.ARTIST.findByPk(artistId);
+  const artist = await db.Artist.findByPk(artistId);
   if (!artist) throw new Error('작가가 존재하지 않습니다.');
 
   const updateFields = {
@@ -99,7 +99,7 @@ export async function updateArtist(
  * @param artistId Artist's primary key
  */
 export async function deleteArtist(artistId: number) {
-  const artist = await db.ARTIST.findByPk(artistId);
+  const artist = await db.Artist.findByPk(artistId);
   if (!artist) throw new Error('삭제할 작가가 존재하지 않습니다.');
 
   await artist.destroy();
@@ -113,7 +113,7 @@ export async function deleteArtist(artistId: number) {
  */
 export async function getArtistWebtoons(memberId: number, artistId: number) {
   // Retrieve raw list of webtoons
-  const webtoons = (await db.WEBTOON.findAll({
+  const webtoons = (await db.Webtoon.findAll({
     where: { artistIdx: artistId },
     attributes: [
       'idx',

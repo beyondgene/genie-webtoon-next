@@ -22,7 +22,7 @@ export type BookmarkStatus = {
 
 // 공통 구독 조회 헬퍼
 async function findSub(memberId: number, webtoonId: number) {
-  return db.SUBSCRIPTION.findOne({ where: { memberId, webtoonId } });
+  return db.Subscription.findOne({ where: { memberId, webtoonId } });
 }
 
 // ---- 새로 추가: 라우터용 북마크 상태 조회 함수 ----
@@ -40,7 +40,7 @@ export async function getBookmarkStatusForList(
   }
 
   const rows: Array<{ webtoonId: number; alarm_on?: any; status?: string }> =
-    await db.SUBSCRIPTION.findAll({
+    await db.Subscription.findAll({
       attributes: ['webtoonId', 'alarm_on', 'status'],
       where: {
         memberId,
@@ -75,7 +75,7 @@ export async function getBookmarks(req: NextRequest) {
   const memberId = sessionOrRes.id as number;
 
   try {
-    const subs = await db.SUBSCRIPTION.findAll({
+    const subs = await db.Subscription.findAll({
       where: { memberId, status: 'ACTIVE' },
       attributes: ['webtoonId', 'alarm_on', 'status', 'createdAt', 'updatedAt'],
       include: [
@@ -89,8 +89,8 @@ export async function getBookmarks(req: NextRequest) {
 
     const result: SubscriptionDTO[] = subs.map((s: any) => ({
       webtoonId: s.webtoonId,
-      webtoonName: s.WEBTOON.webtoonName,
-      thumbnailUrl: s.WEBTOON.thumbnailUrl,
+      webtoonName: s.Webtoon.webtoonName,
+      thumbnailUrl: s.Webtoon.thumbnailUrl,
       alarmOn: s.alarm_on,
       status: s.status,
       subscribedAt: s.createdAt.toISOString(),
@@ -137,7 +137,7 @@ export async function subscribeBookmark(
       );
     }
 
-    const sub = await db.SUBSCRIPTION.create({
+    const sub = await db.Subscription.create({
       memberId,
       webtoonId,
       alarm_on: false,

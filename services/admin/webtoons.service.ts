@@ -10,4 +10,4 @@ export interface AdminWebtoon {
   artistId?: number;
 }
 
-export const listWebtoons = () => httpGet<AdminWebtoon[]>('/api/(protected)/admin/webtoons');
+export const listWebtoons = () => httpGet<AdminWebtoon[]>('/api/admin/webtoons');

@@ -10,4 +10,4 @@ export interface AdminMember {
   createdAt: string;
 }
 
-export const listMembers = () => httpGet<AdminMember[]>('/api/(protected)/admin/members');
+export const listMembers = () => httpGet<AdminMember[]>('/api/admin/members');

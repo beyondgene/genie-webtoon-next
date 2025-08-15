@@ -101,5 +101,6 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
     Member.hasMany(models.AdViewLog, { foreignKey: 'memberId' });
     // Member는 Admin에 의해 관리될 수 있다 (N:1)
     Member.belongsTo(models.Admin, { foreignKey: 'adminId' });
+    Member.hasMany(models.Interest, { foreignKey: 'memberId', as: 'interests' });
   }
 }

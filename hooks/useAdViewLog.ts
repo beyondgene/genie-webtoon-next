@@ -18,7 +18,7 @@ export function useAdViewLog(adId: number, opts?: { placement?: string }) {
   const sendView = useCallback(
     async (extra?: Record<string, any>) => {
       try {
-        await api.post(`/api/(protected)/advertisement/${adId}/view`, { ...(extra ?? {}) });
+        await api.post(`/api/advertisement/${adId}/view`, { ...(extra ?? {}) });
       } catch {
         // 무시 (네트워크 불안정 시 재시도는 다음 노출에서)
       }
@@ -71,7 +71,7 @@ export function useAdViewLog(adId: number, opts?: { placement?: string }) {
       if (!viewedRef.current && typeof navigator?.sendBeacon === 'function') {
         viewedRef.current = true;
         const body = JSON.stringify({ event: 'view', placement: opts?.placement });
-        navigator.sendBeacon(`/api/(protected)/advertisement/${adId}/view`, body);
+        navigator.sendBeacon(`/api/advertisement/${adId}/view`, body);
       }
     };
     window.addEventListener('pagehide', onHide);

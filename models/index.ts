@@ -10,6 +10,7 @@ import { Episode } from './episode';
 import { Comment } from './comment';
 import { Subscription } from './subscription';
 import { AdViewLog } from './ad_view_log';
+import { Interest } from './interest';
 
 dotenvConfig();
 
@@ -37,6 +38,7 @@ db.Episode = Episode.initModel(sequelize);
 db.Comment = Comment.initModel(sequelize);
 db.Subscription = Subscription.initModel(sequelize);
 db.AdViewLog = AdViewLog.initModel(sequelize);
+db.Interest = Interest.initModel(sequelize);
 
 Object.values(db).forEach((model: any) => {
   if (model.associate) {

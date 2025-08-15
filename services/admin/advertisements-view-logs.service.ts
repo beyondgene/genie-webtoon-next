@@ -8,7 +8,7 @@ export interface AdViewLog {
 }
 
 export async function listAdViewLogs(adId: number): Promise<AdViewLog[]> {
-  const res = await fetch(`${API_BASE}/api/(protected)/admin/advertisements/${adId}/view-logs`, {
+  const res = await fetch(`${API_BASE}/api/admin/advertisements/${adId}/view-logs`, {
     cache: 'no-store',
   });
   if (!res.ok) {

@@ -27,11 +27,11 @@ export interface AdminDashboardData {
 /** 대시보드 데이터 수집(병렬 호출) */
 export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
   const [webtoons, episodes, members, advertisements, reportedComments] = await Promise.all([
-    httpGet<AdminWebtoon[]>('/api/(protected)/admin/webtoons'),
-    httpGet<AdminEpisode[]>('/api/(protected)/admin/episodes'),
-    httpGet<AdminMember[]>('/api/(protected)/admin/members'),
-    httpGet<AdminAdvertisement[]>('/api/(protected)/admin/advertisements'),
-    httpGet<ReportedComment[]>('/api/(protected)/admin/comments/reported'),
+    httpGet<AdminWebtoon[]>('/api/admin/webtoons'),
+    httpGet<AdminEpisode[]>('/api/admin/episodes'),
+    httpGet<AdminMember[]>('/api/admin/members'),
+    httpGet<AdminAdvertisement[]>('/api/admin/advertisements'),
+    httpGet<ReportedComment[]>('/api/admin/comments/reported'),
   ]);
 
   // 최근 5개씩만 노출

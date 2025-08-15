@@ -19,7 +19,7 @@ export interface ReportedComment {
 
 /** 목록 조회 */
 export async function listReportedComments(): Promise<ReportedComment[]> {
-  const res = await fetch(`${API_BASE}/api/(protected)/admin/comments/reported`, {
+  const res = await fetch(`${API_BASE}/api/admin/comments/reported`, {
     cache: 'no-store',
   });
   if (!res.ok) {
@@ -35,10 +35,9 @@ export async function listReportedComments(): Promise<ReportedComment[]> {
  *       (프로젝트의 route.ts가 params를 쓰고 있다면 버그이니 서버 쪽도 함께 정리 필요)
  */
 export async function deleteReportedComment(id: number): Promise<void> {
-  const res = await fetch(
-    `${API_BASE}/api/(protected)/admin/comments/reported?id=${encodeURIComponent(id)}`,
-    { method: 'DELETE' }
-  );
+  const res = await fetch(`${API_BASE}/api/admin/comments/reported?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
   if (!res.ok && res.status !== 204) {
     throw new Error(`DELETE reported comment failed: ${res.status} ${await res.text()}`);
   }

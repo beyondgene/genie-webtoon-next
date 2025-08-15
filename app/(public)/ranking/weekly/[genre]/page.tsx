@@ -29,7 +29,7 @@ const RankingList = dynamic<ListProps>(
 
 async function fetchRanking(genre: string): Promise<Item[]> {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const res = await fetch(`${base}/api/(public)/ranking/weekly/${encodeURIComponent(genre)}`, {
+  const res = await fetch(`${base}/api/ranking/weekly/${encodeURIComponent(genre)}`, {
     next: { revalidate: 120, tags: [`ranking:weekly:${genre}`] },
   });
   if (!res.ok) return [];
@@ -38,7 +38,7 @@ async function fetchRanking(genre: string): Promise<Item[]> {
 
 export async function generateStaticParams() {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-  const r = await fetch(`${base}/api/(public)/genre/list`, { next: { revalidate: 3600 } });
+  const r = await fetch(`${base}/api/genre/list`, { next: { revalidate: 3600 } });
   const genres: { slug: string }[] = r.ok ? await r.json() : [];
   return genres.slice(0, 20).map((g) => ({ genre: g.slug }));
 }
