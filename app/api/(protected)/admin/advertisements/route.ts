@@ -1,14 +1,14 @@
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/admin/advertisements/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/middlewares/auth';
+import { requireAdminAuth } from '@/lib/middlewares/auth';
 import {
   listAdvertisements,
   createAdvertisement,
 } from '@/controllers/admin/advertisementsController';
 
 async function GETHandler(req: NextRequest) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   try {
@@ -23,7 +23,7 @@ async function GETHandler(req: NextRequest) {
 }
 
 async function POSTHandler(req: NextRequest) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   let data;

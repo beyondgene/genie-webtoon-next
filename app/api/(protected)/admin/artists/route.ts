@@ -1,11 +1,11 @@
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/admin/artists/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/middlewares/auth';
+import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { listArtists, createArtist } from '@/controllers/admin/artistsController';
 
 async function GETHandler(req: NextRequest) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   try {
@@ -20,7 +20,7 @@ async function GETHandler(req: NextRequest) {
 }
 
 async function POSTHandler(req: NextRequest) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   let body;

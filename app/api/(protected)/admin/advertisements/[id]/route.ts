@@ -1,7 +1,7 @@
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/admin/advertisements/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/middlewares/auth';
+import { requireAdminAuth } from '@/lib/middlewares/auth';
 import {
   getAdvertisementById,
   updateAdvertisement,
@@ -9,7 +9,7 @@ import {
 } from '@/controllers/admin/advertisementsController';
 
 async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const id = Number(params.id);
@@ -25,7 +25,7 @@ async function GETHandler(req: NextRequest, { params }: { params: { id: string }
 }
 
 async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const id = Number(params.id);
@@ -52,7 +52,7 @@ async function PUTHandler(req: NextRequest, { params }: { params: { id: string }
 }
 
 async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await requireAuth(req);
+  const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const id = Number(params.id);

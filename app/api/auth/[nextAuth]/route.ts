@@ -1,8 +1,6 @@
-import { NextRequest } from 'next/server';
-import { getWebtoonList } from '@/controllers/webtoon/webtoonController';
-import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+import NextAuth from 'next-auth';
+import { authOptions } from '@/lib/middlewares/authOptions';
 
-async function GETHandler(req: NextRequest) {
-  return getWebtoonList(req);
-}
-export const GET = withErrorHandler(GETHandler);
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
