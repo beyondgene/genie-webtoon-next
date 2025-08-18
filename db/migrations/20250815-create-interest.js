@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Interests', {
+    await queryInterface.createTable('interest', {
       idx: {
         type: Sequelize.INTEGER.UNSIGNED,
         autoIncrement: true,
@@ -12,14 +12,14 @@ module.exports = {
       memberId: {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
-        references: { model: 'Members', key: 'idx' },
+        references: { model: 'member', key: 'idx' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
       artistId: {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
-        references: { model: 'Artists', key: 'idx' },
+        references: { model: 'artist', key: 'idx' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
@@ -27,7 +27,7 @@ module.exports = {
       updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('NOW') },
     });
 
-    await queryInterface.addConstraint('Interests', {
+    await queryInterface.addConstraint('interest', {
       fields: ['memberId', 'artistId'],
       type: 'unique',
       name: 'uniq_member_artist_interest',
@@ -35,6 +35,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('Interests');
+    await queryInterface.dropTable('interest');
   },
 };

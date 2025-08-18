@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('subscriptions', {
+    await queryInterface.createTable('subscription', {
       idx: {
         allowNull: false,
         autoIncrement: true,
@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'members',
+          model: 'member',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -33,7 +33,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'webtoons',
+          model: 'webtoon',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -50,13 +50,13 @@ module.exports = {
     });
 
     // memberId와 webtoonId 조합에 대한 복합 고유 키 설정 (한 명의 유저가 같은 웹툰을 여러 번 구독 방지)
-    await queryInterface.addConstraint('subscriptions', {
+    await queryInterface.addConstraint('subscription', {
       fields: ['memberId', 'webtoonId'],
       type: 'unique',
       name: 'unique_subscription_per_member_webtoon',
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('subscriptions');
+    await queryInterface.dropTable('subscription');
   },
 };

@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('webtoons', {
+    await queryInterface.createTable('webtoon', {
       idx: {
         allowNull: false,
         autoIncrement: true,
@@ -43,21 +43,21 @@ module.exports = {
         allowNull: false,
         defaultValue: 0,
       },
-      adminIdx: {
+      adminId: {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'admins',
+          model: 'admin',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      artistIdx: {
+      artistId: {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'artists',
+          model: 'artist',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -74,6 +74,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('webtoons');
+    await queryInterface.dropTable('webtoon');
   },
 };

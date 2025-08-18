@@ -3,6 +3,9 @@
 import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import type { UserRole, AdminRole } from '@/types/next-auth';
+
+const ADMIN_INTERNAL_ROLES = new Set<AdminRole>(['SUPER', 'MANAGER']);
 
 // (admin) 라우트 그룹이 URL에 노출하는 실경로들
 const ADMIN_GROUP_BASES = [
@@ -38,24 +41,24 @@ export async function middleware(req: NextRequest) {
   }
 
   // next-auth JWT 추출 (middleware 환경 전용)
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // 1) 공통 로그인 체크
+  // 1) 비로그인 → 로그인 페이지로 (원래 주소를 callbackUrl로 넘김)
   if (!token) {
-    const url = new URL('/login', req.url);
-    // 돌아올 경로 유지: /login?next=/my?a=1 처럼 전체 path+query 보존
-    url.searchParams.set('next', `${pathname}${search || ''}`);
-    return NextResponse.redirect(url);
+    const loginUrl = new URL('/login', req.url);
+    loginUrl.searchParams.set('callbackUrl', req.nextUrl.pathname + req.nextUrl.search);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // 2) 관리자 권한 페이지
-  if (isAdminArea) {
-    if (token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/403', req.url));
-    }
+  // 2) 관리자 권한 검사
+  const role = token.role as UserRole | undefined;
+  const adminRole = token.adminRole as AdminRole | undefined;
+
+  const isAdmin =
+    role === 'ADMIN' || (adminRole !== undefined && ADMIN_INTERNAL_ROLES.has(adminRole));
+
+  if (!isAdmin) {
+    return NextResponse.redirect(new URL('/403', req.url));
   }
 
   if (matchAnyBase(pathname, ADMIN_GROUP_BASES)) {

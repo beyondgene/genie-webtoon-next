@@ -2,9 +2,10 @@
 // next/font + 스킵링크
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
-import '@/styles/global.scss';
+import '@/styles/global.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import Providers from './providers';
 
 const noto = Noto_Sans_KR({
   subsets: ['latin'],
@@ -35,18 +36,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" className={noto.variable}>
       <body className="min-h-screen flex flex-col bg-white text-gray-900 font-sans">
-        {/* 접근성: 스킵링크 */}
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:text-white focus:px-3 focus:py-2 focus:rounded"
-        >
-          본문으로 건너뛰기
-        </a>
-        <Header />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          {/* 접근성: 스킵링크 */}
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:text-white focus:px-3 focus:py-2 focus:rounded"
+          >
+            본문으로 건너뛰기
+          </a>
+          <Header />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

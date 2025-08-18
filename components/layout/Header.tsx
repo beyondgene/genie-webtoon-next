@@ -1,5 +1,7 @@
 // components/layout/Header.tsx
 // next/dynamic + 로딩 스켈레톤
+'use client';
+
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 

@@ -85,7 +85,7 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
       {
         sequelize,
         modelName: 'Member',
-        tableName: 'members',
+        tableName: 'member',
         timestamps: true,
       }
     );

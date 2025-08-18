@@ -17,7 +17,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-
   // ESLint 자동 수정도 함께 사용 중이라면
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true

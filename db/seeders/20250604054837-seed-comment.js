@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'comments',
+      'comment',
       [
         {
           likes: 'LIKE',
@@ -29,6 +29,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('comments', null, {});
+    await queryInterface.bulkDelete('comment', null, {});
   },
 };

@@ -82,7 +82,7 @@ export class Advertisement extends Model<
       {
         sequelize,
         modelName: 'Advertisement',
-        tableName: 'advertisements',
+        tableName: 'advertisement',
         timestamps: true,
       }
     );

@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'subscriptions',
+      'subscription',
       [
         {
           status: 'ACTIVE',
@@ -35,6 +35,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('subscriptions', null, {});
+    await queryInterface.bulkDelete('subscription', null, {});
   },
 };

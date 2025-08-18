@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('artists', {
+    await queryInterface.createTable('artist', {
       idx: {
         allowNull: false,
         autoIncrement: true,
@@ -39,7 +39,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'admins', // 참조할 테이블
+          model: 'admin', // 참조할 테이블
           key: 'idx', // 참조할 컬럼
         },
         onUpdate: 'CASCADE',
@@ -52,6 +52,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('artists');
+    await queryInterface.dropTable('artist');
   },
 };

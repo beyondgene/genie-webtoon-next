@@ -51,7 +51,7 @@ export class Subscription extends Model<
       {
         sequelize,
         modelName: 'Subscription',
-        tableName: 'subscriptions',
+        tableName: 'subscription',
         timestamps: true,
       }
     );

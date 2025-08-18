@@ -41,7 +41,7 @@ export class AdViewLog extends Model<
       {
         sequelize,
         modelName: 'AdViewLog',
-        tableName: 'ad_view_logs',
+        tableName: 'ad_view_log',
         timestamps: false,
       }
     );

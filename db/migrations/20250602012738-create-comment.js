@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('comments', {
+    await queryInterface.createTable('comment', {
       idx: {
         allowNull: false,
         autoIncrement: true,
@@ -29,7 +29,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'members',
+          model: 'member',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -39,7 +39,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'webtoons',
+          model: 'webtoon',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -49,7 +49,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'episodes',
+          model: 'episode',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -59,7 +59,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: true,
         references: {
-          model: 'admins',
+          model: 'admin',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -68,6 +68,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('comments');
+    await queryInterface.dropTable('comment');
   },
 };

@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'episodes',
+      'episode',
       [
         {
           title: '1화: 모든 것의 시작',
@@ -35,6 +35,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('episodes', null, {});
+    await queryInterface.bulkDelete('episode', null, {});
   },
 };

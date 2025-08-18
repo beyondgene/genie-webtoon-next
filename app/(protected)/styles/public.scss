@@ -1,0 +1,16 @@
+.hover-zoom {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+}
+/* 모바일 접근성: hover 미지원 환경에서 과도한 확대 방지 */
+@media (hover: none) {
+  .hover-zoom:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

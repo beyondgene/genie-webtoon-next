@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'webtoons',
+      'webtoon',
       [
         {
           webtoonName: '세상을 구하는 방법',
@@ -33,6 +33,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('webtoons', null, {});
+    await queryInterface.bulkDelete('webtoon', null, {});
   },
 };

@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import { config as dotenvConfig } from 'dotenv';
+import { sequelize as sequelizeInstance } from '@/db/sequelize';
 
 import { Admin } from './admin';
 import { Artist } from './artist';
@@ -12,36 +12,26 @@ import { Subscription } from './subscription';
 import { AdViewLog } from './ad_view_log';
 import { Interest } from './interest';
 
-dotenvConfig();
+// 공용 인스턴스
+export const sequelize: Sequelize = sequelizeInstance;
 
-const url = process.env.DATABASE_URL;
-if (!url) {
-  throw new Error('DATABASE_URL is not defined');
-}
-
-const sequelize = new Sequelize(url, {
-  dialect: 'mysql',
-  logging: false,
-});
-
-const db: any = {
+const db = {
   sequelize,
-  Sequelize,
-};
+  Admin: Admin.initModel(sequelize),
+  Artist: Artist.initModel(sequelize),
+  Member: Member.initModel(sequelize),
+  Advertisement: Advertisement.initModel(sequelize),
+  Webtoon: Webtoon.initModel(sequelize),
+  Episode: Episode.initModel(sequelize),
+  Comment: Comment.initModel(sequelize),
+  Subscription: Subscription.initModel(sequelize),
+  AdViewLog: AdViewLog.initModel(sequelize),
+  Interest: Interest.initModel(sequelize),
+} as const;
 
-db.Admin = Admin.initModel(sequelize);
-db.Artist = Artist.initModel(sequelize);
-db.Member = Member.initModel(sequelize);
-db.Advertisement = Advertisement.initModel(sequelize);
-db.Webtoon = Webtoon.initModel(sequelize);
-db.Episode = Episode.initModel(sequelize);
-db.Comment = Comment.initModel(sequelize);
-db.Subscription = Subscription.initModel(sequelize);
-db.AdViewLog = AdViewLog.initModel(sequelize);
-db.Interest = Interest.initModel(sequelize);
-
+// 연관관계 설정 (associate가 있는 항목에만 호출)
 Object.values(db).forEach((model: any) => {
-  if (model.associate) {
+  if (model && typeof model.associate === 'function') {
     model.associate(db);
   }
 });

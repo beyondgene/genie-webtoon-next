@@ -6,7 +6,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'admins',
+      'admin',
       [
         {
           adminId: 'superadmin',
@@ -32,6 +32,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('admins', null, {});
+    await queryInterface.bulkDelete('admin', null, {});
   },
 };

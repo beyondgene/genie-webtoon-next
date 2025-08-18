@@ -1,0 +1,196 @@
+/* styles/expanding-grid.css */
+
+/* 루트/그리드 */
+.EG__root {
+  min-height: 100vh;
+  background: #0b0b0e;
+  color: white;
+}
+.EG__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 38vh;
+  gap: 12px;
+  padding: 16px;
+}
+@media (max-width: 900px) {
+  .EG__grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 32vh;
+  }
+}
+
+/* 각 타일 */
+.EG__tile {
+  position: relative;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.EG__tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  filter: brightness(1.05);
+}
+.EG__tileInner {
+  text-align: center;
+  padding: 24px;
+}
+.EG__title {
+  font-size: clamp(20px, 2.8vw, 32px);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+.EG__subtitle {
+  opacity: 0.9;
+  margin-top: 8px;
+}
+
+/* 오버레이(전체화면) */
+.EG__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.15s ease;
+  display: grid;
+  place-items: center;
+  z-index: 50;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.EG__overlayCard {
+  width: min(1060px, 92vw);
+  max-height: 88vh;
+  border-radius: 24px;
+  background: #111218;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.98);
+  animation: popIn 0.16s ease forwards;
+}
+@keyframes popIn {
+  to {
+    transform: scale(1);
+  }
+}
+.EG__overlayHeader,
+.EG__overlayFooter {
+  padding: 18px 20px;
+  background: linear-gradient(180deg, #151823, #12131a);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.EG__overlayFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: none;
+}
+.EG__overlayTitle {
+  font-size: 20px;
+  font-weight: 700;
+}
+.EG__close {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.EG__close:hover {
+  color: #fff;
+}
+.EG__overlayHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.EG__overlayBody {
+  overflow: auto;
+  padding: 22px;
+  gap: 16px;
+  display: grid;
+}
+.EG__section h4 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.EG__chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.EG__chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #1a1c25;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  color: white;
+}
+.EG__chip:hover {
+  background: #202433;
+}
+.EG__hint {
+  opacity: 0.7;
+  margin-top: 10px;
+}
+
+.EG__podium {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.EG__links {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.EG__linkBtn,
+.EG__linkGhost,
+.EG__quick {
+  text-decoration: none;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.EG__linkBtn {
+  background: #2b36ff;
+}
+.EG__linkGhost {
+  background: transparent;
+}
+.EG__quickGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.EG__quick {
+  background: #1a1c25;
+  text-align: center;
+}
+.EG__tip {
+  opacity: 0.7;
+  font-size: 13px;
+}

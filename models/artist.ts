@@ -58,7 +58,7 @@ export class Artist extends Model<InferAttributes<Artist>, InferCreationAttribut
       {
         sequelize,
         modelName: 'Artist',
-        tableName: 'artists',
+        tableName: 'artist',
         timestamps: true,
         updatedAt: 'modifiedDate', // ERD의 modifiedDate를 updatedAt으로 매핑
       }

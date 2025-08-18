@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('advertisements', {
+    await queryInterface.createTable('advertisement', {
       idx: {
         allowNull: false,
         autoIncrement: true,
@@ -52,7 +52,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false,
         references: {
-          model: 'admins',
+          model: 'admin',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -69,6 +69,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('advertisements');
+    await queryInterface.dropTable('advertisement');
   },
 };

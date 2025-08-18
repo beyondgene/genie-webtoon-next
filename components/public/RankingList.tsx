@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatK } from '@/lib/format';
 
-type Item = {
+export type Item = {
   idx: number;
   webtoonName: string;
   thumbnailUrl: string;

@@ -43,7 +43,6 @@ export const authOptions: NextAuthOptions = {
           id: user.idx, // ← number | string 허용(우리 타입 확장과 일치)
           status: user.status, // 커스텀 필드 (JWT로 전달)
           memberId: user.memberId, // 커스텀 필드
-          role: user.role, // 'MEMBER' | 'ADMIN'
           nickname: user.nickname, // 커스텀 필드
           name: user.nickname, // DefaultUser.name
           email: user.email, // DefaultUser.email
@@ -52,13 +51,13 @@ export const authOptions: NextAuthOptions = {
     }),
 
     KakaoProvider({
-      clientId: process.env.KAKAO_CLIENT_ID!,
-      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+      clientId: process.env.KAKAO_ID!,
+      clientSecret: process.env.KAKAO_SECRET!,
     }),
 
     NaverProvider({
-      clientId: process.env.NAVER_CLIENT_ID!,
-      clientSecret: process.env.NAVER_CLIENT_SECRET!,
+      clientId: process.env.NAVER_ID!,
+      clientSecret: process.env.NAVER_SECRET!,
     }),
 
     EmailProvider({
@@ -77,7 +76,6 @@ export const authOptions: NextAuthOptions = {
         token.status = (user as any).status;
         token.memberId = (user as any).memberId;
         token.nickname = (user as any).nickname;
-        token.role = (user as any).role;
       }
       return token;
     },
@@ -88,7 +86,6 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).status = token.status;
         (session.user as any).memberId = token.memberId;
         (session.user as any).nickname = token.nickname;
-        (session.user as any).role = token.role ?? 'MEMBER';
       }
       return session;
     },

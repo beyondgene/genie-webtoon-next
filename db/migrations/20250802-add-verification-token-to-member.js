@@ -2,7 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn('Members', 'verificationToken', {
+    await queryInterface.addColumn('member', 'verificationToken', {
       type: Sequelize.STRING,
       allowNull: true,
       comment: '이메일 검증용 토큰(UUID)',
@@ -10,6 +10,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn('Members', 'verificationToken');
-  }
+    await queryInterface.removeColumn('member', 'verificationToken');
+  },
 };

@@ -35,7 +35,7 @@ export class Interest
       },
       {
         sequelize,
-        tableName: 'Interests',
+        tableName: 'interests',
         modelName: 'Interest',
         timestamps: true,
       }

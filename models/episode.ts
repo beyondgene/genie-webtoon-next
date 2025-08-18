@@ -10,7 +10,7 @@ import {
 export class Episode extends Model<InferAttributes<Episode>, InferCreationAttributes<Episode>> {
   declare idx: CreationOptional<number>;
   declare title: string; // ERD에 없지만 필수적이므로 추가
-  declare thumbnail_url: string; // ERD에 없지만 필수적이므로 추가
+  declare thumbnailUrl: string; // ERD에 없지만 필수적이므로 추가
   declare uploadDate: CreationOptional<Date>;
   declare webtoonId: number;
   declare adId: number | null;
@@ -28,7 +28,7 @@ export class Episode extends Model<InferAttributes<Episode>, InferCreationAttrib
           type: DataTypes.STRING(255),
           allowNull: false,
         },
-        thumbnail_url: {
+        thumbnailUrl: {
           type: DataTypes.STRING(2048),
           allowNull: false,
           comment: '회차 썸네일 이미지 주소',

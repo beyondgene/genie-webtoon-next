@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'ad_view_logs',
+      'ad_view_log',
       [
         {
           viewedAt: new Date(),
@@ -26,6 +26,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('ad_view_logs', null, {});
+    await queryInterface.bulkDelete('ad_view_log', null, {});
   },
 };

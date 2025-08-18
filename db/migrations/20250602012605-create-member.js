@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('members', {
+    await queryInterface.createTable('member', {
       idx: {
         allowNull: false,
         autoIncrement: true,
@@ -57,7 +57,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: true,
         references: {
-          model: 'admins',
+          model: 'admin',
           key: 'idx',
         },
         onUpdate: 'CASCADE',
@@ -74,6 +74,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('members');
+    await queryInterface.dropTable('member');
   },
 };

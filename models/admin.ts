@@ -54,7 +54,7 @@ export class Admin extends Model<InferAttributes<Admin>, InferCreationAttributes
       {
         sequelize,
         modelName: 'Admin',
-        tableName: 'admins',
+        tableName: 'admin',
         timestamps: true,
       }
     );

@@ -59,7 +59,7 @@ export class Comment extends Model<InferAttributes<Comment>, InferCreationAttrib
       {
         sequelize,
         modelName: 'Comment',
-        tableName: 'comments',
+        tableName: 'comment',
         timestamps: false, // creationDate, modifiedDate를 직접 관리
       }
     );

@@ -46,6 +46,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
         description: {
           type: DataTypes.STRING(45),
           allowNull: true,
+          field: 'discription',
         },
         genre: {
           type: DataTypes.ENUM(
@@ -85,7 +86,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
       {
         sequelize,
         modelName: 'Webtoon',
-        tableName: 'webtoons',
+        tableName: 'webtoon',
         timestamps: true,
       }
     );

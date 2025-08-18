@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      'advertisements',
+      'advertisement',
       [
         {
           adName: '여름맞이 특별 할인 이벤트',
@@ -39,6 +39,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('advertisements', null, {});
+    await queryInterface.bulkDelete('advertisement', null, {});
   },
 };
