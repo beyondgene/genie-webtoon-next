@@ -1,7 +1,17 @@
-/* Tailwind v4 entry (single import) */
+/* Tailwind v4: single import */
 @import 'tailwindcss';
 
+/* 전역 컬러/타이포 토큰 */
 :root {
+  /* ✅ 전역 기본 폰트: 시스템 + 한국어 폴백 */
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Noto Sans KR',
+    sans-serif;
+
   --background: #ffffff;
   --foreground: #111827;
   --muted: #6b7280;
@@ -15,6 +25,7 @@
   }
 }
 
+/* 기본 리셋 */
 * {
   box-sizing: border-box;
 }
@@ -31,9 +42,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Example utility scope (optional) */
+/* 컨테이너 유틸 (선택) */
 .container {
   max-width: 1200px;
   margin-inline: auto;
   padding-inline: 1rem;
+}
+
+/* 컴포넌트 레이어 확장 */
+@layer components {
+  .btn-link {
+    @apply px-4 py-2 rounded-xl bg-black/25 border border-white/25 text-white hover:bg-black/35 transition;
+  }
 }

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as yup from 'yup';
 import { findId } from '@/controllers/auth/findIdController';
 import { validateBody } from '@/lib/middlewares/validate';
@@ -12,9 +12,7 @@ const findIdSchema = yup.object({
 });
 
 export async function POST(req: NextRequest) {
-  const validation = await validateBody(findIdSchema)(req.clone());
-  if (!validation.headers.get('x-middleware-next')) {
-    return validation;
-  }
-  return findId(req);
+  const error = await validateBody(findIdSchema)(req.clone());
+  if (error) return error; // ← 성공: null, 실패: NextResponse(400)
+  return findId(req); // ← 컨트롤러 호출
 }

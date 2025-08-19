@@ -1,3 +1,4 @@
+// app/api/auth/checkduplicate/route.ts
 import { NextRequest } from 'next/server';
 import * as yup from 'yup';
 import { checkDuplicateId } from '@/controllers/auth/checkDuplicateController';
@@ -8,9 +9,7 @@ const checkDuplicateSchema = yup.object({
 });
 
 export async function POST(req: NextRequest) {
-  const validation = await validateBody(checkDuplicateSchema)(req.clone());
-  if (!validation.headers.get('x-middleware-next')) {
-    return validation;
-  }
-  return checkDuplicateId(req);
+  const error = await validateBody(checkDuplicateSchema)(req.clone());
+  if (error) return error; // 에러면 그대로 반환
+  return checkDuplicateId(req); // 검증 통과 → 컨트롤러 실행
 }

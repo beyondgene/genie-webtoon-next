@@ -20,6 +20,7 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
   declare address: string;
   declare status: 'ACTIVE' | 'DELETED';
   declare adminId: number | null;
+  declare verificationToken: string | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -75,9 +76,12 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
           allowNull: false,
           defaultValue: 'ACTIVE',
         },
+        verificationToken: { type: DataTypes.STRING(255), allowNull: true, defaultValue: null },
         adminId: {
           type: DataTypes.INTEGER.UNSIGNED,
-          allowNull: true, // 관리자에 의해 관리될 수 있지만, 필수항목은 아님
+          allowNull: true,
+          defaultValue: null,
+          references: { model: 'admin', key: 'idx' },
         },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,
@@ -100,7 +104,12 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
     // Member는 여러 광고 조회 기록을 가질 수 있다 (1:N)
     Member.hasMany(models.AdViewLog, { foreignKey: 'memberId' });
     // Member는 Admin에 의해 관리될 수 있다 (N:1)
-    Member.belongsTo(models.Admin, { foreignKey: 'adminId' });
+    Member.belongsTo(models.Admin, {
+      as: 'admin',
+      foreignKey: { name: 'adminId', allowNull: true },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE',
+    });
     Member.hasMany(models.Interest, { foreignKey: 'memberId', as: 'interests' });
   }
 }

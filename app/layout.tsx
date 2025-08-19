@@ -2,8 +2,8 @@
 // next/font + 스킵링크
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
+import { montserrat } from '@/styles/font';
 import '@/styles/global.css';
-import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Providers from './providers';
 
@@ -44,7 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             본문으로 건너뛰기
           </a>
-          <Header />
           <main id="main" className="flex-1">
             {children}
           </main>

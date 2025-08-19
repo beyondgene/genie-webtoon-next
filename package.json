@@ -17,6 +17,7 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.1",
+    "framer-motion": "^12.23.12",
     "multer": "^2.0.2",
     "mysql2": "^3.14.3",
     "next": "^15.4.2",

@@ -26,7 +26,9 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials): Promise<User | null> {
-        if (!credentials?.memberId || !credentials.password) {
+        const suppliedPassword =
+          (credentials as any)?.password ?? (credentials as any)?.memberPassword;
+        if (!credentials?.memberId || !suppliedPassword) {
           throw new Error('아이디와 비밀번호를 모두 입력해주세요.');
         }
 
@@ -35,7 +37,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (!user) return null;
 
-        const isValid = await bcrypt.compare(credentials.password, user.memberPassword);
+        const isValid = await bcrypt.compare(suppliedPassword, user.memberPassword);
         if (!isValid) throw new Error('비밀번호가 일치하지 않습니다.');
 
         // 반드시 `id` 필드 제공 (우리 DB PK: idx)
@@ -91,6 +93,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  pages: { signIn: '/auth/login' },
+  pages: { signIn: '/login' },
   secret: process.env.NEXTAUTH_SECRET,
 };

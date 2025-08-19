@@ -1,110 +1,105 @@
 'use client';
+import { createContext, useCallback, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
 
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+/** 타입 */
+export type ToastType = 'info' | 'success' | 'error';
 
-type ToastType = 'info' | 'success' | 'error';
+export type ToastOptions = {
+  type?: ToastType;
+  duration?: number;
+  icon?: ReactNode;
+};
+
 export interface ToastItem {
   id: string;
   type: ToastType;
   message: string;
-  duration?: number; // ms
+  icon?: ReactNode;
+  duration?: number;
 }
 
 type Ctx = {
-  push: (message: string, opts?: { type?: ToastType; duration?: number }) => void;
+  push: (message: string, opts?: ToastOptions) => void;
   info: (m: string, d?: number) => void;
   success: (m: string, d?: number) => void;
   error: (m: string, d?: number) => void;
   dismiss: (id: string) => void;
 };
 
+/** 컨텍스트 */
 const ToastContext = createContext<Ctx | null>(null);
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+/** Provider */
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const containerRef = useRef<HTMLElement | null>(null);
 
   const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const push = useCallback(
-    (message: string, opts?: { type?: ToastType; duration?: number }) => {
-      const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      const next: ToastItem = {
+    (message: string, opts?: ToastOptions) => {
+      // ✅ 옵션 타입 교체
+      const id = crypto.randomUUID?.() ?? String(Date.now());
+      const item: ToastItem = {
         id,
         type: opts?.type ?? 'info',
         message,
-        duration: opts?.duration ?? 2500,
+        icon: opts?.icon, // ✅ 이제 오류 없음
+        duration: opts?.duration ?? 3000,
       };
-      setToasts((prev) => [...prev, next]);
-      window.setTimeout(() => dismiss(id), next.duration);
+      setToasts((prev) => [...prev, item]);
+
+      if (item.duration) {
+        window.setTimeout(() => dismiss(id), item.duration);
+      }
     },
     [dismiss]
   );
 
-  const api = useMemo<Ctx>(
-    () => ({
-      push,
-      info: (m, d) => push(m, { type: 'info', duration: d }),
-      success: (m, d) => push(m, { type: 'success', duration: d }),
-      error: (m, d) => push(m, { type: 'error', duration: d }),
-      dismiss,
-    }),
-    [dismiss, push]
+  const info = useCallback(
+    (m: string, d?: number) => push(m, { type: 'info', duration: d }),
+    [push]
+  );
+  const success = useCallback(
+    (m: string, d?: number) => push(m, { type: 'success', duration: d }),
+    [push]
+  );
+  const error = useCallback(
+    (m: string, d?: number) => push(m, { type: 'error', duration: d }),
+    [push]
   );
 
-  // 포털 대상
-  React.useEffect(() => {
-    const el =
-      document.getElementById('toast-root') ||
-      (() => {
-        const n = document.createElement('div');
-        n.id = 'toast-root';
-        document.body.appendChild(n);
-        return n;
-      })();
-    containerRef.current = el;
-  }, []);
-
   return (
-    <ToastContext.Provider value={api}>
+    <ToastContext.Provider value={{ push, info, success, error, dismiss }}>
       {children}
-      {containerRef.current &&
-        createPortal(
-          // 반응형/안전영역: 상단 여백을 iOS 안전영역까지 고려.
+      {/* 렌더링부에서 아이콘 표시 */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] space-y-2">
+        {toasts.map((t) => (
           <div
-            className="pointer-events-none fixed inset-x-0 z-[100] mx-auto
-                 top-[calc(env(safe-area-inset-top,0px)+12px)]
-                 flex w-full max-w-sm sm:max-w-md lg:max-w-lg flex-col gap-2 px-3"
+            key={t.id}
+            className="pointer-events-auto flex items-center gap-3 rounded-md bg-neutral-700/85 text-white px-3 py-2 shadow-lg"
           >
-            {toasts.map((t) => (
-              <div
-                key={t.id}
-                className={[
-                  'pointer-events-auto rounded-xl px-4 py-3 text-sm shadow',
-                  t.type === 'success' && 'bg-emerald-600 text-white',
-                  t.type === 'error' && 'bg-rose-600 text-white',
-                  t.type === 'info' && 'bg-zinc-900 text-white',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                role="status"
-                aria-live="polite"
-              >
-                {t.message}
-              </div>
-            ))}
-          </div>,
-          containerRef.current
-        )}
+            {t.icon && <div className="shrink-0">{t.icon}</div>}
+            <div className="text-sm">{t.message}</div>
+            <button
+              onClick={() => dismiss(t.id)}
+              className="ms-auto opacity-70 hover:opacity-100"
+              aria-label="닫기"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 }
 
+/** 훅 */
 export function useToast() {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within <ToastProvider>');
+  if (!ctx) throw new Error('useToast must be used within ToastProvider');
   return ctx;
 }

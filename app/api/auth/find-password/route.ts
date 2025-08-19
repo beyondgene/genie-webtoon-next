@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as yup from 'yup';
 import { findPassword } from '@/controllers/auth/findPasswordController';
 import { validateBody } from '@/lib/middlewares/validate';
@@ -13,9 +13,7 @@ const findPasswordSchema = yup.object({
 });
 
 export async function POST(req: NextRequest) {
-  const validation = await validateBody(findPasswordSchema)(req.clone());
-  if (!validation.headers.get('x-middleware-next')) {
-    return validation;
-  }
-  return findPassword(req);
+  const error = await validateBody(findPasswordSchema)(req.clone());
+  if (error) return error;
+  return findPassword(req); // ← 컨트롤러 호출
 }

@@ -2,6 +2,8 @@
 'use client';
 import { z } from 'zod';
 
+export const genderEnum = z.enum(['MALE', 'FEMALE', 'OTHER']);
+
 export const memberIdSchema = z
   .string({ required_error: '아이디를 입력해주세요.' })
   .min(4, '아이디는 최소 4자 이상입니다.')
@@ -40,6 +42,8 @@ export const signupSchema = z
     birth: z
       .string({ required_error: '생년월일을 입력해주세요.' })
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 형식으로 입력해주세요.'),
+    address: z.string({ required_error: '주소를 입력해주세요.' }).min(1, '주소를 입력해주세요.'),
+    gender: genderEnum.default('OTHER'),
   })
   .refine((v) => v.password === v.passwordConfirm, {
     message: '비밀번호가 일치하지 않습니다.',

@@ -25,19 +25,16 @@ const signupSchema = yup.object({
     .string()
     .matches(/^\d{4}-\d{2}-\d{2}$/, '생년월일은 YYYY-MM-DD 형식이어야 합니다.')
     .required(),
-  gender: yup.string().oneOf(['MALE', 'FEMALE', 'OTHER']).required(),
+  gender: yup.mixed<'MALE' | 'FEMALE' | 'OTHER'>().oneOf(['MALE', 'FEMALE', 'OTHER']).required(),
   email: yup.string().email().required(),
   phoneNumber: yup
     .string()
     .matches(/^(\d{2,3}-\d{3,4}-\d{4})$/, '전화번호는 000-0000-0000 형식이어야 합니다.')
     .required(),
-  address: yup.string().required(),
 });
 
 export async function POST(req: NextRequest) {
-  const validation = await validateBody(signupSchema)(req.clone());
-  if (!validation.headers.get('x-middleware-next')) {
-    return validation;
-  }
-  return signup(req);
+  const error = await validateBody(signupSchema)(req.clone());
+  if (error) return error;
+  return signup(req); // ← 컨트롤러 호출
 }
