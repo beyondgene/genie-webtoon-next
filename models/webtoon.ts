@@ -29,6 +29,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
   declare artistIdx: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare wbthumbnailUrl: CreationOptional<string>;
 
   static initModel(sequelize: Sequelize): typeof Webtoon {
     Webtoon.init(
@@ -79,6 +80,11 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
         artistIdx: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
+        },
+        wbthumbnailUrl: {
+          type: DataTypes.STRING(2048),
+          allowNull: false,
+          field: 'wbthumbnailUrl',
         },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,

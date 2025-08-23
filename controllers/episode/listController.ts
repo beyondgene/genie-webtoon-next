@@ -18,7 +18,7 @@ export async function getEpisodeList(
   episodes: Array<{
     idx: number;
     title: string;
-    thumbnailUrl: string;
+    epthumbnailUrl: string;
     uploadDate: Date;
   }>;
   subscription: { isSubscribed: boolean; alarmOn: boolean };
@@ -31,7 +31,7 @@ export async function getEpisodeList(
       'title',
       // DB가 snake_case면 아래 한 줄로 alias:
       // ['thumbnail_url', 'thumbnailUrl'],
-      'thumbnailUrl',
+      'epthumbnailUrl',
       'uploadDate',
     ],
     order: [['uploadDate', 'DESC']],
@@ -39,7 +39,7 @@ export async function getEpisodeList(
   })) as {
     idx: number;
     title: string;
-    thumbnailUrl: string; // snake_case면 위 attributes에서 alias 적용
+    epthumbnailUrl: string; // snake_case면 위 attributes에서 alias 적용
     uploadDate: Date;
   }[];
 

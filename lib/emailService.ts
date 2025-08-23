@@ -141,7 +141,7 @@ export async function sendVerificationEmail(to: string, a: string, b?: string): 
 
   // (1) token 전달 → 기본 템플릿
   const base = (NEXTAUTH_URL || '').replace(/\/+$/, '');
-  const verifyUrl = `${base}/auth/verify-email?token=${encodeURIComponent(a)}`;
+  const verifyUrl = `${base}/verify-email?token=${encodeURIComponent(a)}`;
   const subject = '[Genie Webtoon] 이메일 인증을 완료해주세요';
   const html = verificationEmailTemplate(verifyUrl);
 

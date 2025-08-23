@@ -9,3 +9,16 @@ export async function httpGet<T>(url: string): Promise<T> {
   }
   return res.json();
 }
+
+export async function httpPut<T>(url: string, body: any): Promise<T> {
+  const res = await fetch(`${API_BASE}${url}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body ?? {}),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PUT ${url} failed: ${res.status} ${text}`);
+  }
+  return res.json();
+}

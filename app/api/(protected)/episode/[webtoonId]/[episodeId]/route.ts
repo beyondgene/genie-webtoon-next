@@ -1,26 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/middlewares/auth';
-import { getEpisodeDetailWithMeta } from '@/controllers/episode/detailController';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/middlewares/authOptions';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+import { getEpisodeDetailWithMeta } from '@/controllers/episode/detailController';
+
+function toImagesFromEpisode(episode: any): string[] {
+  const s = episode?.contentUrl;
+  if (Array.isArray(s)) return s.filter(Boolean);
+  if (typeof s === 'string' && s.trim()) {
+    try {
+      const arr = JSON.parse(s);
+      if (Array.isArray(arr)) return arr.filter(Boolean);
+    } catch {}
+    return s
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
 
 async function GETHandler(
-  req: NextRequest,
-  { params }: { params: { webtoonId: string; episodeId: string } }
+  _req: NextRequest,
+  ctx: { params: Promise<{ webtoonId: string; episodeId: string }> } // ✅ Promise
 ) {
-  const sessionOrRes = await requireAuth(req);
-  if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  const userId = sessionOrRes.id as number;
-  const webtoonId = parseInt(params.webtoonId, 10);
-  const episodeId = parseInt(params.episodeId, 10);
+  const { webtoonId, episodeId } = await ctx.params; // ✅ await
+  const w = parseInt(webtoonId, 10);
+  const e = parseInt(episodeId, 10);
 
-  try {
-    const data = await getEpisodeDetailWithMeta(userId, webtoonId, episodeId);
-    return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || '에피소드 상세 조회 중 오류' },
-      { status: err.message === '해당 에피소드를 찾을 수 없습니다.' ? 404 : 500 }
-    );
+  const session = await getServerSession(authOptions);
+  const userId = (session as any)?.user?.id ?? 0;
+
+  const data = await getEpisodeDetailWithMeta(userId, w, e);
+  const episode = data?.episode ?? null;
+
+  // contentUrl이 반드시 포함되도록 보정 (없으면 한 번 더 조회)
+  if (!episode?.contentUrl) {
+    const db = (await import('@/models')).default;
+    const row = await db.Episode.unscoped().findByPk(e, { attributes: ['contentUrl'], raw: true });
+    if (row) data.episode = { ...(data.episode ?? {}), contentUrl: row.contentUrl };
   }
+
+  const images = toImagesFromEpisode(data?.episode);
+  return NextResponse.json({ ok: true, data: { ...data, images } }, { status: 200 });
 }
+
 export const GET = withErrorHandler(GETHandler);

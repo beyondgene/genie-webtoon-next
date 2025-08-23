@@ -39,7 +39,7 @@ declare module 'next-auth' {
     /** 앱 구분용 롤 */
     role: UserRole;
     /** 회원 상태 — Member 모델 기준 */
-    status?: 'ACTIVE' | 'DELETED';
+    status?: 'PENDING' | 'ACTIVE' | 'DELETED' | 'SUSPENDED';
     /** 로그인용 아이디 */
     memberId: string;
     /** 닉네임 */

@@ -21,6 +21,7 @@ export interface WebtoonInput {
     | 'HISTORICAL';
   artistIdx: number;
   adminIdx: number;
+  wbthumbnailUrl?: string;
 }
 
 export async function createWebtoon(data: WebtoonInput) {
@@ -49,6 +50,7 @@ export interface WebtoonUpdateInput {
     | 'THRILLER'
     | 'HISTORICAL';
   artistIdx?: number;
+  wbthumbnailUrl?: string;
 }
 
 export async function updateWebtoon(id: number, data: Partial<WebtoonUpdateInput>) {

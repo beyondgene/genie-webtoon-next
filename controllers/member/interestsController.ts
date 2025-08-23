@@ -42,15 +42,15 @@ export async function listAuthorInterests(memberId: number): Promise<AuthorInter
 /**
  * 특정 작가에 대한 관심 등록 추가
  */
-export async function addAuthorInterest(memberId: number, artistIdx: number): Promise<void> {
-  await db.Interest.create({ memberId, artistIdx });
+export async function addAuthorInterest(memberId: number, artistId: number): Promise<void> {
+  await db.Interest.create({ memberId, artistId });
 }
 
 /**
  * 특정 작가에 대한 관심 해제
  */
-export async function removeAuthorInterest(memberId: number, artistIdx: number): Promise<void> {
-  const item = await db.Interest.findOne({ where: { memberId, artistIdx } });
+export async function removeAuthorInterest(memberId: number, artistId: number): Promise<void> {
+  const item = await db.Interest.findOne({ where: { memberId, artistId } });
   if (!item) throw new Error('등록된 관심 작가가 아닙니다.');
   await item.destroy();
 }

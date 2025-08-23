@@ -65,14 +65,14 @@ export default function HomePage() {
 
           {/* RIGHT: 333 / 691 */}
           <div className="grid gap-0" style={{ gridTemplateRows: '32.52% 67.48%' }}>
-            {/* 우상: 금주의 랭킹(아래 선) */}
+            {/* 우상: 랭킹(아래 선) */}
             <motion.div
               layoutId="tile-ranking"
               onMouseEnter={() => handleEnter('ranking')}
               onClick={() => handleEnter('ranking')}
               className="relative border-b border-white"
             >
-              <Tile title="금주의 랭킹" subtitle="이번 주 인기 TOP" />
+              <Tile title="랭킹" subtitle="이번 주 인기 TOP" />
             </motion.div>
 
             {/* 우하: 지니와 함께하는 웹툰생활 */}
@@ -192,7 +192,7 @@ function getVerticalMenu(id: TileId): { title: string; items: { href: string; la
       };
     case 'ranking':
       return {
-        title: '금주의 랭킹',
+        title: ' 랭킹',
         items: [
           { label: '주간 랭킹', href: '/ranking/daily/all' },
           { label: '주간 랭킹', href: '/ranking/weekly/all' },

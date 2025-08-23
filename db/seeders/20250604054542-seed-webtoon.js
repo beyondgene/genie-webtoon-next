@@ -13,6 +13,7 @@ module.exports = {
           recommend: 8500,
           adminIdx: 2, // manager01
           artistIdx: 1, // 귀귀 작가
+          wbthumbnailUrl: 'https://example.com/webtoon/w1.jpg',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -24,6 +25,7 @@ module.exports = {
           recommend: 15000,
           adminIdx: 2, // manager01
           artistIdx: 2, // 뺵뺵 작가
+          wbthumbnailUrl: 'https://example.com/webtoon/w2.jpg',
           createdAt: new Date(),
           updatedAt: new Date(),
         },

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatK } from '@/lib/format';
 
-type Item = { idx: number; webtoonName: string; thumbnailUrl: string; views?: number };
+type Item = { idx: number; webtoonName: string; wbthumbnailUrl: string; views?: number };
 export default function Podium({ items }: { items: Item[] }) {
   const top3 = items.slice(0, 3);
   return (
@@ -12,7 +12,7 @@ export default function Podium({ items }: { items: Item[] }) {
         <Link key={w.idx} href={`/webtoon/${w.idx}`} className="group">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow">
             <Image
-              src={w.thumbnailUrl}
+              src={w.wbthumbnailUrl}
               alt={w.webtoonName}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"

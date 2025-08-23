@@ -13,10 +13,14 @@ module.exports = {
         type: Sequelize.STRING(255),
         allowNull: false,
       },
-      thumbnailUrl: {
+      epthumbnailUrl: {
         type: Sequelize.STRING(2048),
         allowNull: false,
         comment: '회차 썸네일 이미지 주소',
+      },
+      contentUrl: {
+        type: Sequelize.STRING(2048),
+        allowNull: false,
       },
       uploadDate: {
         type: Sequelize.DATE,

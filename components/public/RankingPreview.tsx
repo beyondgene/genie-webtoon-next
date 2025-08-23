@@ -34,7 +34,7 @@ export default function RankingPreview({ endpoint = '/api/ranking/weekly', limit
           const mapped: RankingItem[] = list.slice(0, limit).map((r: any, i: number) => ({
             idx: r.idx ?? r.webtoonId ?? i + 1,
             webtoonName: r.webtoonName ?? r.title ?? '제목 미상',
-            thumbnailUrl: r.thumbnailUrl ?? '/next.svg',
+            wbthumbnailUrl: r.wbthumbnailUrl ?? '/next.svg',
             rank: r.rank ?? i + 1,
             href: r.href ?? `/webtoon/${r.idx ?? r.webtoonId ?? i + 1}`,
           }));

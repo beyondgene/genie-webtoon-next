@@ -11,6 +11,7 @@ import {
 export class Comment extends Model<InferAttributes<Comment>, InferCreationAttributes<Comment>> {
   declare idx: CreationOptional<number>;
   declare likes: 'LIKE' | 'DISLIKE' | 'NONE'; // '좋아요 수'가 아닌 상태값으로 ERD에 명시됨
+  declare commentCol: string; // 실제 댓글 내용 컬럼
   declare creationDate: CreationOptional<Date>;
   declare modifiedDate: CreationOptional<Date>;
   declare memberId: number;
@@ -30,6 +31,10 @@ export class Comment extends Model<InferAttributes<Comment>, InferCreationAttrib
           type: DataTypes.ENUM('LIKE', 'DISLIKE', 'NONE'),
           allowNull: false,
           defaultValue: 'NONE',
+        },
+        commentCol: {
+          type: DataTypes.STRING(512),
+          allowNull: false,
         },
         creationDate: {
           type: DataTypes.DATE,

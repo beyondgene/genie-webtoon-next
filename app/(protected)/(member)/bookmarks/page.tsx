@@ -24,7 +24,7 @@ export default async function MyBookmarksPage() {
         : {
             idx: w.idx,
             webtoonName: w.webtoonName,
-            thumbnailUrl: w.thumbnailUrl ?? '',
+            wbthumbnailUrl: w.wbthumbnailUrl ?? '',
             artistName: w.artist?.artistName,
             views: w.views,
             webtoonId: w.idx,
@@ -34,7 +34,7 @@ export default async function MyBookmarksPage() {
     .filter(Boolean) as Array<{
     idx: number;
     webtoonName: string;
-    thumbnailUrl: string;
+    wbthumbnailUrl: string;
     artistName?: string;
     views?: number;
     webtoonId: number;

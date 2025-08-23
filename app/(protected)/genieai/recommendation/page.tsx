@@ -36,7 +36,7 @@ async function getRecommendations(): Promise<WebtoonCardData[]> {
       (w: any, i: number): WebtoonCardData => ({
         idx: Number(w.idx ?? i + 1),
         webtoonName: String(w.webtoonName ?? w.title ?? `추천작 ${i + 1}`),
-        thumbnailUrl: w.thumbnailUrl ?? `https://picsum.photos/seed/reco-${i + 1}/400/533`, // 더미 이미지
+        wbthumbnailUrl: w.thumbnailUrl ?? `https://picsum.photos/seed/reco-${i + 1}/400/533`, // 더미 이미지
         artistName: w.artistName ?? w.artist?.artistName,
         views: typeof w.views === 'number' ? w.views : undefined,
       })
@@ -46,7 +46,7 @@ async function getRecommendations(): Promise<WebtoonCardData[]> {
     return Array.from({ length: 12 }).map((_, i) => ({
       idx: i + 1,
       webtoonName: `추천작 ${i + 1}`,
-      thumbnailUrl: `https://picsum.photos/seed/reco-${i + 1}/400/533`,
+      wbthumbnailUrl: `https://picsum.photos/seed/reco-${i + 1}/400/533`,
       views: 1000 * (12 - i),
     }));
   }
@@ -83,7 +83,7 @@ export default async function Page() {
               items={recos.slice(0, 3).map((w) => ({
                 idx: w.idx,
                 webtoonName: w.webtoonName,
-                thumbnailUrl: w.thumbnailUrl,
+                wbthumbnailUrl: w.wbthumbnailUrl,
                 views: w.views,
               }))}
             />
@@ -106,7 +106,7 @@ export default async function Page() {
                 items={recos.slice(0, 10).map((w, i) => ({
                   idx: w.idx,
                   webtoonName: w.webtoonName,
-                  thumbnailUrl: w.thumbnailUrl,
+                  wbthumbnailUrl: w.wbthumbnailUrl,
                   views: w.views,
                   rank: i + 1,
                 }))}

@@ -18,7 +18,7 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
   declare email: string;
   declare phoneNumber: string;
   declare address: string;
-  declare status: 'ACTIVE' | 'DELETED';
+  declare status: 'PENDING' | 'ACTIVE' | 'DELETED' | 'SUSPENDED';
   declare adminId: number | null;
   declare verificationToken: string | null;
   declare createdAt: CreationOptional<Date>;
@@ -72,7 +72,7 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
           allowNull: false,
         },
         status: {
-          type: DataTypes.ENUM('ACTIVE', 'DELETED'),
+          type: DataTypes.ENUM('PENDING', 'ACTIVE', 'DELETED', 'SUSPENDED'),
           allowNull: false,
           defaultValue: 'ACTIVE',
         },

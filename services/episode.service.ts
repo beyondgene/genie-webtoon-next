@@ -27,7 +27,7 @@ export interface EpisodeListResponseDTO {
   episodes: Array<{
     idx: number;
     title: string;
-    thumbnailUrl: string;
+    epthumbnailUrl: string;
     uploadDate: string; // ISO
   }>;
   subscription: { isSubscribed: boolean; alarmOn: boolean };
@@ -117,7 +117,7 @@ export async function loadViewerBundle(params: {
 
 /** (관리툴/작가툴 연계를 대비한) 에피소드 생성 */
 export async function createEpisode(
-  body: Pick<EpisodeDTO, 'title' | 'webtoonId'> & { thumbnailUrl?: string }
+  body: Pick<EpisodeDTO, 'title' | 'webtoonId'> & { epthumbnailUrl?: string }
 ) {
   try {
     return await api.post<EpisodeDTO>('/api/episode', body);

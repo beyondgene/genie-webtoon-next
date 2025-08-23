@@ -5,7 +5,7 @@
 import * as React from 'react';
 import Podium from '@/components/public/Podium';
 
-type Item = { idx: number; webtoonName: string; thumbnailUrl: string; views?: number };
+type Item = { idx: number; webtoonName: string; wbthumbnailUrl: string; views?: number };
 
 type Props = {
   items?: Item[];

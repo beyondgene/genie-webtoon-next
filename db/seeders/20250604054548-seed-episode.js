@@ -7,7 +7,8 @@ module.exports = {
       [
         {
           title: '1화: 모든 것의 시작',
-          thumbnailUrl: 'https://example.com/thumbnails/webtoon1_ep1.jpg',
+          epthumbnailUrl: 'https://example.com/thumbnails/webtoon1_ep1.jpg',
+          contexntUrl: 'https://example.com/content/webtoon1_ep1.mp4',
           uploadDate: new Date(),
           webtoonId: 1, // '세상을 구하는 방법'
           adId: 2,
@@ -15,7 +16,8 @@ module.exports = {
         },
         {
           title: '2화: 새로운 동료',
-          thumbnailUrl: 'https://example.com/thumbnails/webtoon1_ep2.jpg',
+          epthumbnailUrl: 'https://example.com/thumbnails/webtoon1_ep2.jpg',
+          contexntUrl: 'https://example.com/content/webtoon1_ep2.mp4',
           uploadDate: new Date(),
           webtoonId: 1,
           adId: 2,
@@ -23,7 +25,8 @@ module.exports = {
         },
         {
           title: '1화: 첫 만남',
-          thumbnailUrl: 'https://example.com/thumbnails/webtoon2_ep1.jpg',
+          epthumbnailUrl: 'https://example.com/thumbnails/webtoon3_ep1.jpg',
+          contexntUrl: 'https://example.com/content/webtoon1_ep3.mp4',
           uploadDate: new Date(),
           webtoonId: 2, // '그해 여름, 우리'
           adId: 1,

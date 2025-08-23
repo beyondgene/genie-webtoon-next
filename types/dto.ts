@@ -78,7 +78,7 @@ export interface WebtoonDTO extends Timestamps {
   adminId?: ID;
   artistId?: ID;
   /** UI 용 썸네일 — 모델에 없을 수 있어 optional, 서비스에서 매핑 */
-  thumbnailUrl?: string | null;
+  wbthumbnailUrl?: string | null;
   /** 필요 시 함께 내려주는 작가 요약 */
   artist?: ArtistSummaryDTO;
 }
@@ -91,7 +91,7 @@ export interface EpisodeDTO {
    * 모델은 thumbnail_url(snake) 이지만 프런트는 camelCase 사용.
    * 서비스 계층에서 키 변환하여 이 필드로 맞춰 주세요.
    */
-  thumbnailUrl: string;
+  epthumbnailUrl: string;
   uploadDate: string; // ISO
   webtoonId: ID;
   adId?: ID | null;
@@ -126,7 +126,7 @@ export interface SubscriptionSummaryDTO {
 export interface EpisodeListItemDTO {
   idx: ID;
   title: string;
-  thumbnailUrl: string;
+  epthumbnailUrl: string;
   uploadDate: string;
 }
 export interface EpisodeListResponseDTO {

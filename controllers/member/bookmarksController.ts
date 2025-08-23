@@ -6,9 +6,9 @@ import { Op } from 'sequelize';
 interface SubscriptionDTO {
   webtoonId: number;
   webtoonName: string;
-  thumbnailUrl: string;
   alarmOn: boolean;
   status: 'ACTIVE' | 'INACTIVE';
+  wbthumbnailUrl: string;
   subscribedAt: string;
   updatedAt: string;
 }
@@ -80,8 +80,8 @@ export async function getBookmarks(req: NextRequest) {
       attributes: ['webtoonId', 'alarm_on', 'status', 'createdAt', 'updatedAt'],
       include: [
         {
-          model: db.WEBTOON,
-          attributes: ['idx', 'webtoonName', 'thumbnailUrl'],
+          model: db.Webtoon,
+          attributes: ['idx', 'webtoonName', 'wbthumbnailUrl'],
         },
       ],
       order: [['createdAt', 'DESC']],
@@ -90,7 +90,7 @@ export async function getBookmarks(req: NextRequest) {
     const result: SubscriptionDTO[] = subs.map((s: any) => ({
       webtoonId: s.webtoonId,
       webtoonName: s.Webtoon.webtoonName,
-      thumbnailUrl: s.Webtoon.thumbnailUrl,
+      wbthumbnailUrl: s.Webtoon.wbthumbnailUrl,
       alarmOn: s.alarm_on,
       status: s.status,
       subscribedAt: s.createdAt.toISOString(),

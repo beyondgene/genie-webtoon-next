@@ -12,7 +12,7 @@ type ArtistDTO = {
 type ArtistWebtoonDTO = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl?: string | null;
+  wbthumbnailUrl?: string | null;
   genre?: string;
   views?: number;
 };
@@ -76,7 +76,7 @@ export default async function ArtistPage({ params }: { params: { id: string } })
               <Link href={`/webtoon/${w.idx}`} className="block">
                 <div className="relative aspect-[3/4]">
                   <Image
-                    src={w.thumbnailUrl || '/placeholder.png'}
+                    src={w.wbthumbnailUrl || '/placeholder.png'}
                     alt={w.webtoonName}
                     fill
                     className="object-cover"

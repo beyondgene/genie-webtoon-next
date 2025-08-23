@@ -12,7 +12,7 @@ export async function listEpisodes() {
 
 export interface EpisodeInput {
   title: string;
-  thumbnail_url: string;
+  epthumbnailUrl: string;
   uploadDate: Date;
   webtoonId: number;
   adId: number | null;

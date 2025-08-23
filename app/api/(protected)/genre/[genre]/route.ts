@@ -6,7 +6,7 @@ import { getBookmarkStatusForList, BookmarkStatus } from '@/controllers/member/b
 type LocalWebtoon = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl: string;
+  wbthumbnailUrl: string;
   description: string;
   isSubscribed: boolean;
   alarmOn: boolean;
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest, { params }: { params: { genre: strin
       return {
         idx: Number(w.idx),
         webtoonName: String(w.webtoonName),
-        thumbnailUrl: String(w.thumbnailUrl ?? w.thumnailUrl ?? ''), // 스키마 오타 대비
+        wbthumbnailUrl: String(w.wbthumbnailUrl ?? w.wbthumnailUrl ?? ''), // 스키마 오타 대비
         description: String(w.description ?? w.discription ?? ''),
         isSubscribed: mark?.isSubscribed ?? false,
         alarmOn: mark?.alarmOn ?? false,

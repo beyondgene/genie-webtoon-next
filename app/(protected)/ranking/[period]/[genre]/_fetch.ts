@@ -21,7 +21,7 @@ export async function fetchRanking(period: RankingPeriod, genre: string) {
   return (arr ?? []).map((w: any, i: number) => ({
     idx: w.idx,
     webtoonName: w.webtoonName,
-    thumbnailUrl: w.thumbnailUrl ?? '/placeholder.png',
+    wbthumbnailUrl: w.wbthumbnailUrl ?? '/placeholder.png',
     views: w[viewKey] ?? w.views ?? 0,
     rank: i + 1,
   }));

@@ -10,7 +10,7 @@ import * as React from 'react';
 export type EpisodeItem = {
   idx: number;
   title: string;
-  thumbnailUrl: string;
+  epthumbnailUrl: string;
   uploadDate: string | Date;
 };
 
@@ -120,7 +120,7 @@ export default function EpisodeList({
                     >
                       <div className="relative h-24 w-40 shrink-0 sm:h-28 sm:w-48 md:h-32 md:w-56">
                         <Image
-                          src={ep.thumbnailUrl}
+                          src={ep.epthumbnailUrl}
                           alt={ep.title}
                           fill
                           sizes="(max-width:640px) 40vw, (max-width:768px) 33vw, 25vw"
@@ -158,7 +158,7 @@ export default function EpisodeList({
           >
             <div className="relative aspect-[3/2] w-full">
               <Image
-                src={ep.thumbnailUrl}
+                src={ep.epthumbnailUrl}
                 alt={ep.title}
                 fill
                 sizes="(max-width:640px) 50vw, (max-width:768px) 33vw, (max-width:1024px) 25vw, 20vw"

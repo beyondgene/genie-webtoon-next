@@ -14,7 +14,7 @@ const RankingList = dynamic(() => import('@/components/public/RankingList'), { s
 type RankingItem = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl: string;
+  wbthumbnailUrl: string;
   views?: number;
   rank?: number;
 };
@@ -44,7 +44,7 @@ async function getWeeklyRanking(): Promise<RankingItem[]> {
     return Array.from({ length: 10 }).map((_, i) => ({
       idx: i + 1,
       webtoonName: `인기작 ${i + 1}`,
-      thumbnailUrl: `https://picsum.photos/seed/weekly-${i + 1}/400/533`,
+      wbthumbnailUrl: `https://picsum.photos/seed/weekly-${i + 1}/400/533`,
       views: 5000 - i * 137,
       rank: i + 1,
     }));
@@ -53,7 +53,7 @@ async function getWeeklyRanking(): Promise<RankingItem[]> {
   return items.map((w, i) => ({
     idx: Number(w.idx ?? i + 1),
     webtoonName: String(w.webtoonName ?? w.title ?? `웹툰 ${i + 1}`),
-    thumbnailUrl: w.thumbnailUrl ?? `https://picsum.photos/seed/weekly-${i + 1}/400/533`,
+    wbthumbnailUrl: w.thumbnailUrl ?? `https://picsum.photos/seed/weekly-${i + 1}/400/533`,
     views: typeof w.weeklyViews === 'number' ? w.weeklyViews : w.views,
     rank: i + 1,
   }));
@@ -103,7 +103,7 @@ export default async function FeedPage() {
               items={weekly.slice(0, 3).map((w) => ({
                 idx: w.idx,
                 webtoonName: w.webtoonName,
-                thumbnailUrl: w.thumbnailUrl!,
+                wbthumbnailUrl: w.wbthumbnailUrl!,
                 views: w.views,
               }))}
             />
@@ -124,7 +124,7 @@ export default async function FeedPage() {
                 webtoon={{
                   idx: 900 + i,
                   webtoonName: `북마크 ${i + 1}`,
-                  thumbnailUrl: `https://picsum.photos/seed/bm-${i + 1}/400/533`,
+                  wbthumbnailUrl: `https://picsum.photos/seed/bm-${i + 1}/400/533`,
                 }}
                 href={`/webtoon/${900 + i}`}
               />

@@ -13,6 +13,7 @@ export class Artist extends Model<InferAttributes<Artist>, InferCreationAttribut
   declare artistName: string;
   declare artistPhone: string | null;
   declare artistEmail: string;
+  declare webtoonList: string | null;
   declare debutDate: Date | null;
   declare adminId: number;
   declare createdAt: CreationOptional<Date>;
@@ -43,6 +44,10 @@ export class Artist extends Model<InferAttributes<Artist>, InferCreationAttribut
           type: DataTypes.STRING(45),
           allowNull: false,
           unique: true,
+        },
+        webtoonList: {
+          type: DataTypes.STRING(1024),
+          allowNull: true,
         },
         debutDate: {
           type: DataTypes.DATE,

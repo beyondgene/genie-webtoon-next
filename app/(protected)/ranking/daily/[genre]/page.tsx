@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 type Item = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl: string;
+  wbthumbnailUrl: string;
   views?: number;
   rank?: number;
 };

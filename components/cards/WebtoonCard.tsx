@@ -9,7 +9,7 @@ import * as React from 'react';
 export type WebtoonCardData = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl: string;
+  wbthumbnailUrl: string;
   artistName?: string;
   views?: number;
   badge?: React.ReactNode;
@@ -55,7 +55,7 @@ export default function WebtoonCard({ webtoon, href, loading, error, className =
     >
       <div className="relative aspect-[3/4] w-full">
         <Image
-          src={webtoon.thumbnailUrl}
+          src={webtoon.wbthumbnailUrl}
           alt={webtoon.webtoonName}
           fill
           sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 20vw"

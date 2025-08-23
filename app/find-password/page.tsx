@@ -1,52 +1,163 @@
+// app/find-password/page.tsx
 'use client';
+
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+// 프로젝트의 인증 전용 스키마를 사용합니다.
 import { findPasswordSchema, type FindPasswordInput } from '@/lib/validators/auth';
-import FormField from '@/components/public/FormField';
+
+function formatPhone(v: string) {
+  const digits = v.replace(/\D/g, '').slice(0, 11);
+  if (digits.length < 4) return digits;
+  if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
 
 export default function FindPasswordPage() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setError,
-  } = useForm<FindPasswordInput>({
-    resolver: zodResolver(findPasswordSchema),
-  });
+    setValue,
+    reset,
+  } = useForm<FindPasswordInput>({ resolver: zodResolver(findPasswordSchema) });
+
+  const [serverMsg, setServerMsg] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const onSubmit = async (data: FindPasswordInput) => {
-    const res = await fetch('/api/auth/find-password', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) return setError('phoneNumber', { message: '일치하는 정보가 없습니다.' });
-    alert('비밀번호 재설정 링크를 전송했습니다. (임시 로직)');
+    setServerMsg(null);
+    setServerError(null);
+
+    try {
+      const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
+      const res = await fetch(`${base}/api/auth/find-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setServerError(
+          typeof json?.error === 'string'
+            ? json.error
+            : Array.isArray(json?.error)
+              ? json.error.join('\n')
+              : '비밀번호 찾기 요청이 실패했습니다.'
+        );
+        return;
+      }
+
+      // 성공 메시지 표기 (임시 비밀번호 메일 발송)
+      setServerMsg(
+        json?.message ||
+          '임시 비밀번호를 이메일로 발송했습니다. 로그인 후 반드시 비밀번호를 변경해주세요.'
+      );
+      // 개인정보 입력값은 비워주기
+      reset({ memberId: '', name: '', phoneNumber: '' });
+    } catch (e) {
+      setServerError('비밀번호 찾기 처리 중 오류가 발생했습니다.');
+    }
   };
 
   return (
-    <main className="mx-auto max-w-md space-y-6 p-6">
-      <h1 className="text-2xl font-bold">비밀번호 찾기</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          label="아이디"
-          placeholder="genie123"
-          {...register('memberId')}
-          error={errors.memberId}
-        />
-        <FormField label="이름" placeholder="홍길동" {...register('name')} error={errors.name} />
-        <FormField
-          label="전화번호"
-          placeholder="010-1234-5678"
-          {...register('phoneNumber')}
-          error={errors.phoneNumber}
-        />
-        <button
-          disabled={isSubmitting}
-          className="w-full rounded-xl bg-indigo-600 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
-        >
-          재설정 링크 받기
-        </button>
-      </form>
-    </main>
+    <div
+      className="min-h-screen w-full flex items-start sm:items-center justify-center"
+      style={{ background: '#929292' }}
+    >
+      <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
+        {/* 상단 로고 박스 */}
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[rgba(0,0,0,0.07)]">
+          <span className="text-[22px] font-semibold tracking-wide text-white/90">
+            GENIE WEBTOON
+          </span>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-[14px]">
+          {/* 아이디 */}
+          <div>
+            <label className="mb-[6px] block text-[16px] font-medium text-white">ID</label>
+            <input
+              type="text"
+              placeholder="genie1234"
+              className="h-[46px] w-[300px] rounded-[4px] bg-[#D9D9D9] px-3 text-[16px] text-black outline-none"
+              style={{ border: '1px solid white', lineHeight: '20px' }}
+              {...register('memberId')}
+            />
+            {errors.memberId && (
+              <p className="mt-1 text-xs text-white/90">{errors.memberId.message}</p>
+            )}
+          </div>
+
+          {/* 이름 */}
+          <div>
+            <label className="mb-[6px] block text-[16px] font-medium text-white">Name</label>
+            <input
+              type="text"
+              placeholder="홍길동"
+              className="h-[46px] w-[300px] rounded-[4px] bg-[#D9D9D9] px-3 text-[16px] text-black outline-none"
+              style={{ border: '1px solid white', lineHeight: '20px' }}
+              {...register('name')}
+            />
+            {errors.name && <p className="mt-1 text-xs text-white/90">{errors.name.message}</p>}
+          </div>
+
+          {/* 전화번호 */}
+          <div>
+            <label className="mb-[6px] block text-[16px] font-medium text-white">Phone</label>
+            <input
+              type="tel"
+              inputMode="numeric"
+              placeholder="010-1234-5678"
+              className="h-[46px] w-[300px] rounded-[4px] bg-[#D9D9D9] px-3 text-[16px] text-black outline-none"
+              style={{ border: '1px solid white', lineHeight: '20px' }}
+              {...register('phoneNumber')}
+              onChange={(e) =>
+                setValue('phoneNumber', formatPhone(e.target.value), { shouldValidate: true })
+              }
+            />
+            {errors.phoneNumber && (
+              <p className="mt-1 text-xs text-white/90">{errors.phoneNumber.message}</p>
+            )}
+          </div>
+
+          {/* 제출 버튼 */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-[45px] w-[300px] rounded-[4px] uppercase font-semibold text-[16px] shadow-md disabled:opacity-60"
+            style={{ background: 'white', color: '#2148C0' }}
+          >
+            {isSubmitting ? '요청 중…' : '임시 비밀번호 받기'}
+          </button>
+        </form>
+
+        {/* 결과/오류 */}
+        <div className="mt-4 space-y-2">
+          {serverMsg && (
+            <div
+              className="rounded-[6px] p-3 text-white"
+              style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid white' }}
+            >
+              <div className="text-sm opacity-90">안내</div>
+              <div className="text-[15px]">{serverMsg}</div>
+            </div>
+          )}
+          {serverError && <p className="text-[14px] text-red-100">{serverError}</p>}
+        </div>
+
+        {/* 하단 링크 */}
+        <div className="mt-3 flex w-[300px] justify-between text-white">
+          <a href="/login" className="text-[16px] font-medium hover:opacity-90">
+            로그인
+          </a>
+          <a href="/find-id" className="text-[16px] font-medium hover:opacity-90">
+            아이디 찾기
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -6,7 +6,7 @@ import { formatK } from '@/lib/format';
 export type Item = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl: string;
+  wbthumbnailUrl: string;
   views?: number;
   rank?: number;
 };
@@ -18,7 +18,7 @@ export default function RankingList({ items }: { items: Item[] }) {
         <li key={w.idx} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
           <Link href={`/webtoon/${w.idx}`} className="block">
             <div className="relative aspect-[3/4]">
-              <Image src={w.thumbnailUrl} alt={w.webtoonName} fill className="object-cover" />
+              <Image src={w.wbthumbnailUrl} alt={w.webtoonName} fill className="object-cover" />
               <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white">
                 #{w.rank ?? i + 4}
               </div>

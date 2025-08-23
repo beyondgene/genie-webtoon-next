@@ -38,7 +38,6 @@ export async function createArtist(
     artistEmail: data.artistEmail,
     webtoonList: data.webtoonList ?? '',
     debutDate: data.debutDate ?? new Date(),
-    modifiedDate: new Date(),
     adminId,
   });
   return newArtist.get({ plain: true });
@@ -58,7 +57,6 @@ export async function getArtistById(artistId: number) {
       'artistEmail',
       'webtoonList',
       'debutDate',
-      'modifiedDate',
     ],
     raw: true,
   });
@@ -120,7 +118,7 @@ export async function getArtistWebtoons(memberId: number, artistId: number) {
       'webtoonName',
       'description',
       'genre',
-      'thumbnailUrl',
+      'wbthumbnailUrl',
       'views',
       'recommend',
     ],
@@ -131,7 +129,7 @@ export async function getArtistWebtoons(memberId: number, artistId: number) {
     webtoonName: string;
     description: string;
     genre: string;
-    thumbnailUrl: string;
+    wbthumbnailUrl: string;
     views: number;
     recommend: number;
   }>;

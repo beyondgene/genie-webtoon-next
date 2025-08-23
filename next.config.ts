@@ -1,5 +1,18 @@
 import type { NextConfig } from 'next';
 
+const s3Host = process.env.S3_PUBLIC_BASE
+  ? new URL(process.env.S3_PUBLIC_BASE).hostname
+  : process.env.S3_BUCKET_NAME && process.env.AWS_REGION
+    ? `${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com`
+    : undefined;
+
+const remotePatterns = [
+  ...(s3Host ? [{ protocol: 'https' as const, hostname: s3Host }] : []),
+  ...(process.env.CDN_DOMAIN
+    ? [{ protocol: 'https' as const, hostname: process.env.CDN_DOMAIN }]
+    : []),
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
@@ -14,7 +27,9 @@ const nextConfig: NextConfig = {
     ],
   },
   images: {
-    remotePatterns: [],
+    remotePatterns,
+    // CloudFront로 전환 시 여기에 CDN 도메인 추가
+    // { protocol: 'https', hostname: 'dxxxx.cloudfront.net' },
   },
   eslint: {
     // keep build failing when ESLint errors exist

@@ -14,7 +14,7 @@ const WebtoonCard = dynamic(() => import('@/components/cards/WebtoonCard').then(
 type Item = {
   idx: number;
   webtoonName: string;
-  thumbnailUrl: string;
+  wbthumbnailUrl: string;
   artistName?: string;
   views?: number;
   webtoonId: number;

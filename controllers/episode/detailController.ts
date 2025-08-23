@@ -1,7 +1,7 @@
 // controllers/episode/detail.ts
 import db from '@/models';
 import { getBookmarkStatusForList } from '@/controllers/member/bookmarksController';
-import { getAdById } from '@/controllers/advertisement/advertisementController';
+import { getAdById, type DetailAdDTO } from '@/controllers/advertisement/advertisementController';
 
 /**
  * userId가 webtoonId, episodeId에 대해
@@ -28,7 +28,8 @@ export async function getEpisodeDetailWithMeta(
   episode: {
     idx: number;
     title: string;
-    thumbnailUrl: string;
+    epthumbnailUrl: string;
+    contentUrl: string;
     uploadDate: Date;
     webtoonId: number;
     adId: number | null;
@@ -44,7 +45,16 @@ export async function getEpisodeDetailWithMeta(
   // 1) 에피소드 기본 정보 조회
   const episode = await db.Episode.findOne({
     where: { webtoonId, idx: episodeId },
-    attributes: ['idx', 'title', 'thumbnailUrl', 'uploadDate', 'webtoonId', 'adId', 'adminId'],
+    attributes: [
+      'idx',
+      'title',
+      'epthumbnailUrl',
+      'contentUrl',
+      'uploadDate',
+      'webtoonId',
+      'adId',
+      'adminId',
+    ],
   });
   if (!episode) {
     throw new Error('해당 에피소드를 찾을 수 없습니다.');
@@ -54,16 +64,24 @@ export async function getEpisodeDetailWithMeta(
   const { isSubscribed, alarmOn } = await getSubscriptionStatus(userId, webtoonId);
 
   // 3) 광고 정보 조회 (adId가 있을 때만)
-  let advertisement = null;
-  if (episode.adId) {
-    advertisement = await getAdById(episode.adId);
-  }
+
+  const adRaw: DetailAdDTO | null = episode?.adId ? await getAdById(episode.adId) : null;
+  const advertisement = adRaw
+    ? {
+        idx: adRaw.idx,
+        ad_name: adRaw.adName ?? '',
+        target_url: adRaw.targetUrl ?? '',
+        // 필요하면 ad_image_url도 추가 가능:
+        // ad_image_url: adRaw.adImageUrl ?? null,
+      }
+    : null;
 
   return {
     episode: {
       idx: episode.idx,
       title: episode.title,
-      thumbnailUrl: episode.thumbnailUrl,
+      epthumbnailUrl: episode.epthumbnailUrl,
+      contentUrl: episode.contentUrl,
       uploadDate: episode.uploadDate,
       webtoonId: episode.webtoonId,
       adId: episode.adId,
