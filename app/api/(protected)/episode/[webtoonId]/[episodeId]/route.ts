@@ -22,25 +22,41 @@ function toImagesFromEpisode(episode: any): string[] {
 
 async function GETHandler(
   _req: NextRequest,
-  ctx: { params: Promise<{ webtoonId: string; episodeId: string }> } // ✅ Promise
+  ctx: { params: Promise<{ webtoonId: string; episodeId: string }> } // ✅ Next.js 15: params는 Promise
 ) {
-  const { webtoonId, episodeId } = await ctx.params; // ✅ await
-  const w = parseInt(webtoonId, 10);
-  const e = parseInt(episodeId, 10);
+  const { webtoonId, episodeId } = await ctx.params;
+  const w = Number(webtoonId);
+  const e = Number(episodeId);
 
   const session = await getServerSession(authOptions);
   const userId = (session as any)?.user?.id ?? 0;
 
+  // ① 에피소드/메타 조회(기존)
   const data = await getEpisodeDetailWithMeta(userId, w, e);
-  const episode = data?.episode ?? null;
 
-  // contentUrl이 반드시 포함되도록 보정 (없으면 한 번 더 조회)
+  // ② ✅ 조회수 + 일자별 통계 upsert (KST 기준)
+  const db = (await import('@/models')).default;
+
+  await db.Webtoon.increment('views', { by: 1, where: { idx: w } });
+
+  const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  const ymd = kst.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  await db.sequelize.query(
+    `INSERT INTO webtoon_view_stat (webtoonId, date, views, createdAt, updatedAt)
+     VALUES (?, ?, 1, NOW(), NOW())
+     ON DUPLICATE KEY UPDATE views = views + 1, updatedAt = NOW();`,
+    { replacements: [w, ymd] }
+  );
+
+  // ③ contentUrl 보정(기존) — ⚠️ db 재선언 제거
+  const episode = data?.episode ?? null;
   if (!episode?.contentUrl) {
-    const db = (await import('@/models')).default;
     const row = await db.Episode.unscoped().findByPk(e, { attributes: ['contentUrl'], raw: true });
     if (row) data.episode = { ...(data.episode ?? {}), contentUrl: row.contentUrl };
   }
 
+  // ④ 응답(기존)
   const images = toImagesFromEpisode(data?.episode);
   return NextResponse.json({ ok: true, data: { ...data, images } }, { status: 200 });
 }

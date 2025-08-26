@@ -6,6 +6,7 @@ import { montserrat } from '@/styles/font';
 import '@/styles/global.css';
 import Footer from '@/components/layout/Footer';
 import Providers from './providers';
+import OverlayCleaner from '@/app/components/OverlayCleaner';
 
 const noto = Noto_Sans_KR({
   subsets: ['latin'],
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             본문으로 건너뛰기
           </a>
           <main id="main" className="flex-1">
+            <OverlayCleaner />
             {children}
           </main>
           <Footer />

@@ -1,115 +1,82 @@
-//# 공통 fetch(에러/재시도)
+function isAbsoluteUrl(u: string) {
+  return /^https?:\/\//i.test(u);
+}
+
+function getBaseUrl(): string {
+  // 클라이언트면 상대경로 그대로 쓰기
+  if (typeof window !== 'undefined') return '';
+
+  // 서버일 때: 환경변수 우선 → Vercel → 로컬 폴백
+  const envBase = process.env.NEXT_PUBLIC_BASE_URL; // 예: http://localhost:3000 or https://your-domain.com
+  if (envBase) return envBase.replace(/\/$/, '');
+
+  const vurl = process.env.VERCEL_URL; // 예: my-app.vercel.app
+  if (vurl) return `https://${vurl}`;
+
+  const port = process.env.PORT ?? '3000';
+  return `http://localhost:${port}`;
+}
+
+function toAbsoluteUrl(input: string): string {
+  if (isAbsoluteUrl(input)) return input;
+  // 클라: 상대경로, 서버: 베이스 붙이기
+  return `${getBaseUrl()}${input}`;
+}
+
+// 아래는 기존 로직 그대로, url 만들 때만 보정
+function toQueryString(query?: Record<string, any>) {
+  if (!query) return '';
+  const s = new URLSearchParams();
+  for (const [k, v] of Object.entries(query)) {
+    if (v === undefined || v === null) continue;
+    s.append(k, String(v));
+  }
+  const q = s.toString();
+  return q ? `?${q}` : '';
+}
+
+// BodyInit 판별 유틸이 있으면 사용, 없으면 간단히 처리
+const isBodyInit = (b: any): b is BodyInit =>
+  typeof b === 'string' ||
+  b instanceof FormData ||
+  (typeof Blob !== 'undefined' && b instanceof Blob) ||
+  (typeof ReadableStream !== 'undefined' && b instanceof ReadableStream);
 
 export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-
-export interface ApiErrorPayload {
-  status: number;
-  code?: string;
-  message: string;
-  details?: unknown;
-}
-
-export class ApiError extends Error implements ApiErrorPayload {
-  status: number;
-  code?: string;
-  details?: unknown;
-
-  constructor(payload: ApiErrorPayload) {
-    super(payload.message);
-    this.name = 'ApiError';
-    this.status = payload.status;
-    this.code = payload.code;
-    this.details = payload.details;
-  }
-}
-
-export type QueryLike = Record<string, unknown>;
-
-// toQueryString도 QueryLike를 받아 안전하게 문자열화
-function toQueryString(q?: QueryLike): string {
-  if (!q) return '';
-  const sp = new URLSearchParams();
-
-  Object.entries(q).forEach(([k, v]) => {
-    if (v === undefined || v === null) return;
-
-    if (Array.isArray(v)) {
-      // 배열은 여러 값으로 append
-      v.forEach((item) => sp.append(k, String(item)));
-      return;
-    }
-
-    // 날짜는 ISO 문자열로
-    if (v instanceof Date) {
-      sp.set(k, v.toISOString());
-      return;
-    }
-
-    // 객체는 JSON 문자열로 (필요 시 백엔드에서 JSON.parse)
-    if (typeof v === 'object') {
-      sp.set(k, JSON.stringify(v));
-      return;
-    }
-
-    // 그 외는 문자열 캐스팅
-    sp.set(k, String(v));
-  });
-
-  const s = sp.toString();
-  return s ? `?${s}` : '';
-}
-
-// ApiFetchOptions의 query 타입을 넓혀서 서비스 인터페이스들이 그대로 들어오게
-export type JsonLike = Record<string, unknown> | unknown[];
-
-export type ApiFetchOptions = Omit<RequestInit, 'body' | 'headers'> & {
-  body?: BodyInit | JsonLike | null;
+type ApiFetchOptions = {
+  method?: HttpMethod;
   headers?: HeadersInit;
-  query?: QueryLike; // ✅ 여기만 바꿔도 서비스 쪽 인터페이스들이 바로 호환됨
+  body?: BodyInit | Record<string, unknown> | null;
+  query?: Record<string, any>;
+  cache?: RequestCache;
+  next?: NextFetchRequestConfig;
+  credentials?: RequestCredentials;
 };
 
-function isBodyInit(x: unknown): x is BodyInit {
-  if (x == null) return false;
-  if (typeof x === 'string') return true;
-  if (typeof Blob !== 'undefined' && x instanceof Blob) return true;
-  if (typeof FormData !== 'undefined' && x instanceof FormData) return true;
-  if (typeof URLSearchParams !== 'undefined' && x instanceof URLSearchParams) return true;
-  if (x instanceof ArrayBuffer) return true;
-  // ArrayBufferView(예: Uint8Array)
-  if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView?.(x)) return true;
-  return false;
-}
-
 async function parseJsonSafe(res: Response) {
-  const text = await res.text();
-  if (!text) return null;
   try {
-    return JSON.parse(text);
+    return await res.json();
   } catch {
-    return text; // 비-JSON 응답 대비
+    return undefined;
   }
 }
 
 export async function apiFetch<T = unknown>(
   input: string,
-  { query, headers, body, ...init }: ApiFetchOptions = {}
+  { query, headers: hdrs, body, ...init }: ApiFetchOptions = {}
 ): Promise<T> {
-  const url = `${input}${toQueryString(query)}`;
+  const url = toAbsoluteUrl(`${input}${toQueryString(query)}`);
 
-  const finalHeaders = new Headers(headers);
+  const finalHeaders = new Headers(hdrs);
   let finalBody: BodyInit | undefined;
 
   if (body == null) {
     finalBody = undefined;
   } else if (isBodyInit(body)) {
-    // FormData/Blob/URLSearchParams/ArrayBuffer 등
     finalBody = body;
   } else {
-    // JSON object/array로 간주
+    finalHeaders.set('Content-Type', 'application/json');
     finalBody = JSON.stringify(body);
-    if (!finalHeaders.has('Content-Type')) {
-      finalHeaders.set('Content-Type', 'application/json');
-    }
   }
 
   const res = await fetch(url, {
@@ -124,42 +91,26 @@ export async function apiFetch<T = unknown>(
   const data = await parseJsonSafe(res);
 
   if (!res.ok) {
-    const payload: ApiErrorPayload = {
-      status: res.status,
-      message:
-        (data && (data.message || data.error || data.msg)) || res.statusText || 'Request failed',
-      code: data?.code,
-      details: data?.details ?? data,
-    };
-    throw new ApiError(payload);
+    const msg =
+      (data && (data.message || data.error || data.msg)) || res.statusText || 'Request failed';
+    const err: any = new Error(msg);
+    err.status = res.status;
+    err.details = data;
+    throw err;
   }
-
   return data as T;
 }
 
 /** 편의 메소드 — body에 JSON object 또는 BodyInit 모두 허용 */
 export const api = {
-  get: <T>(url: string, opts?: Omit<ApiFetchOptions, 'method' | 'body'>) =>
+  get: <T>(url: string, opts?: Omit<ApiFetchOptions, 'method'>) =>
     apiFetch<T>(url, { ...opts, method: 'GET' }),
-
-  post: <T>(
-    url: string,
-    body?: BodyInit | JsonLike | null,
-    opts?: Omit<ApiFetchOptions, 'method' | 'body'>
-  ) => apiFetch<T>(url, { ...opts, method: 'POST', body }),
-
-  patch: <T>(
-    url: string,
-    body?: BodyInit | JsonLike | null,
-    opts?: Omit<ApiFetchOptions, 'method' | 'body'>
-  ) => apiFetch<T>(url, { ...opts, method: 'PATCH', body }),
-
-  put: <T>(
-    url: string,
-    body?: BodyInit | JsonLike | null,
-    opts?: Omit<ApiFetchOptions, 'method' | 'body'>
-  ) => apiFetch<T>(url, { ...opts, method: 'PUT', body }),
-
-  delete: <T>(url: string, opts?: Omit<ApiFetchOptions, 'method' | 'body'>) =>
+  post: <T>(url: string, body?: any, opts?: Omit<ApiFetchOptions, 'method' | 'body'>) =>
+    apiFetch<T>(url, { ...opts, method: 'POST', body }),
+  patch: <T>(url: string, body?: any, opts?: Omit<ApiFetchOptions, 'method' | 'body'>) =>
+    apiFetch<T>(url, { ...opts, method: 'PATCH', body }),
+  put: <T>(url: string, body?: any, opts?: Omit<ApiFetchOptions, 'method' | 'body'>) =>
+    apiFetch<T>(url, { ...opts, method: 'PUT', body }),
+  delete: <T>(url: string, opts?: Omit<ApiFetchOptions, 'method'>) =>
     apiFetch<T>(url, { ...opts, method: 'DELETE' }),
 };

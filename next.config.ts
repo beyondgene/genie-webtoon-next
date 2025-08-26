@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
     // keep build failing when TS errors exist
     ignoreBuildErrors: false,
   },
+  compiler: { styledComponents: true },
 
   // ⬇️ pg / pg-hstore는 선택적 의존성이라 서버 번들에서 제외
   webpack: (config, { isServer }) => {

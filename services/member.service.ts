@@ -1,21 +1,31 @@
 // services/member.service.ts
 import { api } from '@/lib/fetcher';
-import type { MemberProfileDTO, SubscriptionDTO, ArtistDTO, WebtoonDTO } from '@/types/dto';
+import type { MemberProfileDTO } from '@/types/dto';
+
+export type SubscriptionItemDTO = {
+  webtoonId: number;
+  webtoonName: string;
+  wbthumbnailUrl: string;
+  alarmOn: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
+  subscribedAt: string;
+  updatedAt: string;
+};
 
 // 명확한 반환 타입 지정 (제네릭)
 export async function getProfile() {
   return api.get<MemberProfileDTO>('/api/member/profile', {
     cache: 'no-store',
-    next: { tags: ['member:profile'] }, // 캐시,태그
+    next: { tags: ['member:profile'] },
   });
 }
 
 /** 내 구독(=북마크) 목록 */
 export async function getMySubscriptions() {
-  return api.get<SubscriptionItem[]>('/api/member/subscriptions', {
+  const r = await api.get<{ subscriptions: SubscriptionItemDTO[] }>('/api/member/bookmarks', {
     cache: 'no-store',
-    next: { tags: ['member:bookmarks'] }, // 캐시,태그
   });
+  return r.subscriptions;
 }
 
 /** 북마크 구독 */
@@ -24,13 +34,15 @@ export async function subscribeBookmark(webtoonId: number) {
 }
 
 /** 북마크 알림 토글 */
-export async function toggleBookmarkAlarm(webtoonId: number, alarmOn: boolean) {
-  return api.patch(`/api/member/bookmarks/${webtoonId}`, { alarmOn });
+export async function toggleBookmarkAlarm(webtoonId: number, alarm: boolean) {
+  return api.patch<{ message: string; alarmOn: boolean }>(`/api/member/bookmarks/${webtoonId}`, {
+    alarm,
+  });
 }
 
 /** 북마크 해지 */
 export async function unsubscribeBookmark(webtoonId: number) {
-  return api.delete(`/api/member/bookmarks/${webtoonId}`);
+  return api.delete<{ message: string }>(`/api/member/bookmarks/${webtoonId}`);
 }
 
 /** 관심 작가 목록 */
@@ -48,10 +60,7 @@ export type SubscriptionItem = {
 };
 
 export async function getMyInterests() {
-  return api.get<InterestItem[]>('/api/member/interests', {
-    cache: 'no-store',
-    next: { tags: ['member:interests'] }, // 캐시,태그
-  });
+  return api.get<any[]>('/api/member/interests', { cache: 'no-store' });
 }
 
 /** 관심 작가 등록/해제 */
@@ -63,19 +72,12 @@ export async function removeInterest(artistId: number) {
 }
 
 /** 프로필 업데이트(비밀번호 변경 포함) */
-export type UpdateProfilePayload = Partial<
-  Pick<MemberProfileDTO, 'nickname' | 'email' | 'phoneNumber' | 'address'>
-> & {
+export type UpdateProfilePayload = Partial<MemberProfileDTO> & {
   currentPassword?: string;
   newPassword?: string;
 };
 
-export async function updateProfile(
-  payload: Partial<MemberProfileDTO> & {
-    currentPassword?: string;
-    newPassword?: string;
-  }
-) {
+export async function updateProfile(payload: UpdateProfilePayload) {
   return api.patch<MemberProfileDTO>('/api/member/profile/update', payload, {
     next: { tags: ['member:profile'] },
   });

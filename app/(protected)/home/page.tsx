@@ -194,7 +194,7 @@ function getVerticalMenu(id: TileId): { title: string; items: { href: string; la
       return {
         title: ' 랭킹',
         items: [
-          { label: '주간 랭킹', href: '/ranking/daily/all' },
+          { label: '일간 랭킹', href: '/ranking/daily/all' },
           { label: '주간 랭킹', href: '/ranking/weekly/all' },
           { label: '월간 랭킹', href: '/ranking/monthly/all' },
           { label: '연간 랭킹', href: '/ranking/yearly/all' },
@@ -212,10 +212,10 @@ function getVerticalMenu(id: TileId): { title: string; items: { href: string; la
       return {
         title: '마이페이지',
         items: [
-          { label: '마이 홈', href: '/member/my' },
-          { label: '북마크', href: '/member/bookmarks' },
-          { label: '관심 작가', href: '/member/interests' },
-          { label: '프로필', href: '/member/profile' },
+          { label: '북마크', href: '/bookmarks' },
+          { label: '관심 작가', href: '/interests' },
+          { label: '프로필', href: '/profile' },
+          { label: '로그아웃', href: '/logout' },
         ],
       };
   }

@@ -45,7 +45,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
           unique: true,
         },
         description: {
-          type: DataTypes.STRING(45),
+          type: DataTypes.STRING(1024),
           allowNull: true,
           field: 'discription',
         },
@@ -101,6 +101,7 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
 
   static associate(models: any) {
     Webtoon.belongsTo(models.Admin, { foreignKey: 'adminId' });
+    Webtoon.hasMany(models.WebtoonViewStat, { foreignKey: 'webtoonId', as: 'viewStats' });
     Webtoon.belongsTo(models.Artist, { foreignKey: 'artistId' });
     Webtoon.hasMany(models.Episode, { foreignKey: 'webtoonId' });
     Webtoon.hasMany(models.Comment, { foreignKey: 'webtoonId' });

@@ -3,8 +3,16 @@ import Link from 'next/link';
 import db from '@/models';
 import ImageFallBack from '@/components/ui/ImageFallBack';
 import { Op, QueryTypes } from 'sequelize';
+import ViewTracker from './ViewTracker';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/middlewares/authOptions';
+import SubscribeControls from '@/components/webtoon/SubscribeControls';
+import { cookies } from 'next/headers';
+import { toNumericId } from '@/lib/toNumericId';
 
 export const dynamic = 'force-dynamic';
+
+type PageProps = { params: { id: string } };
 
 const SLUG_TO_KOR: Record<string, string> = {
   DRAMA: '드라마',
@@ -30,10 +38,33 @@ function resolveThumb(u?: string | null, fallback = '/images/placeholder-webtoon
 }
 
 export default async function WebtoonDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  // Next.js 15: params는 Promise이므로 await 필요
   const { id } = await params;
-  const numId = Number(id);
 
+  // 숫자 id로 강제 변환 (객체/NaN 유입 차단)
+  const wid = toNumericId(id);
+  if (!wid) {
+    return (
+      <main className="min-h-screen bg-[#929292] text-white">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <h1 className="text-2xl font-semibold">잘못된 작품 ID입니다.</h1>
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+          >
+            홈으로
+          </Link>
+        </div>
+      </main>
+    );
+  }
+  const numId = wid;
+
+  // [keep] 기존 모델 참조
   const { Webtoon, Episode, Artist, sequelize } = db as any;
+
+  // 로그인 세션 (보호 라우트지만 방어코드 유지)
+  const session = await getServerSession(authOptions);
 
   // 1) 웹툰
   const webtoon = await Webtoon.findOne({
@@ -65,14 +96,12 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
         }).catch(() => null)
       : null;
 
-  // 3) 에피소드 — 모델기반 + 실패시 SQL 우회
-  // 3-1) 모델 속성/테이블 진단 로그
+  // 3) 에피소드 — 모델기반 + 실패시 SQL 우회 (기존 그대로)
   const eTable = Episode.getTableName?.() || Episode.tableName;
   const eAttrs = (Episode.getAttributes?.() || Episode.rawAttributes || {}) as Record<string, any>;
   console.log('[Episode] table =', eTable, 'attrs =', Object.keys(eAttrs));
   console.log('[DB] database =', sequelize?.config?.database);
 
-  // 3-2) 일반 조회
   let episodes: any[] = await Episode.findAll({
     where: { webtoonId: webtoon.idx },
     attributes: ['idx', 'title', 'epthumbnailUrl', 'contentUrl', 'uploadDate'],
@@ -85,7 +114,6 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
 
   console.log('[Episode] via model count =', episodes.length);
 
-  // 3-3) 비면 원시 SQL로 강제 조회 (모델 매핑 오류 진단용)
   if (episodes.length === 0) {
     const sql = `
       SELECT idx, title, epthumbnailUrl, contentUrl, uploadDate
@@ -109,6 +137,7 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
 
   return (
     <main className="min-h-screen bg-[#929292] text-white">
+      <ViewTracker webtoonId={numId} />
       <div className="mx-auto max-w-[1200px] px-6 py-12">
         <div className="grid grid-cols-12 gap-8">
           {/* 왼쪽 */}
@@ -125,8 +154,14 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
                 decoding="async"
               />
             </div>
+
+            {/* 제목 행 + 구독 컨트롤 */}
             <div className="mt-8 text-center">
-              <h1 className="text-2xl font-bold">{title}</h1>
+              <div className="flex items-center justify-center gap-3">
+                <h1 className="text-2xl font-bold">{title}</h1>
+                {session ? <SubscribeControls webtoon={numId} /> : null}
+              </div>
+
               <p className="mt-4 text-sm text-white/80">
                 글 {artist?.artistName || artist?.realName || '작가 미상'} / 장르 {genreLabel}
               </p>
@@ -144,12 +179,12 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
                   <div className="p-6 text-sm text-white/80">등록된 에피소드가 없습니다.</div>
                 ) : (
                   <ul className="divide-y divide-white/10">
-                    {episodes.map(async (ep: any, i: number) => {
+                    {episodes.map((ep: any, i: number) => {
                       const thumb = resolveThumb(
                         ep.epthumbnailUrl,
                         '/images/placeholder-webtoon.png'
                       );
-                      const webtoonId = Number((await params)?.id ?? webtoon?.idx ?? webtoon?.id);
+                      const webtoonId = numId;
                       const epTitle = ep.title || `Ep. ${episodes.length - i}`;
                       const href = `/webtoon/${webtoonId}/episodes/${ep.idx}`;
                       return (

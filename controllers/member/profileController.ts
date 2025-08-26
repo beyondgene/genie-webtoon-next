@@ -27,7 +27,7 @@ export async function updateMemberProfile(memberId: number, data: Partial<any>) 
 export async function verifyMemberPassword(memberId: number, plain: string) {
   const member: any = await db.Member.findByPk(memberId);
   if (!member) return false;
-  return bcrypt.compare(plain, member.password);
+  return bcrypt.compare(plain, member.memberPassword);
 }
 export async function deactivateMember(memberId: number) {
   return db.Member.update({ status: 'DELETED' }, { where: { idx: memberId } });

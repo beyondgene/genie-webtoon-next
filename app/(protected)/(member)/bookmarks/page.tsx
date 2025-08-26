@@ -1,52 +1,68 @@
-// app/(member)/my/bookmarks/page.tsx
-// 서스펜스/동적 임포트 + (옵션) 가상 스크롤
-// app/(member)/my/bookmarks/page.tsx
-import { getMySubscriptions } from '@/services/member.service';
-import { getWebtoonDetail } from '@/services/webtoon.service';
+// app/(protected)/(member)/bookmarks/page.tsx
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/middlewares/authOptions';
+import db from '@/models';
+import { QueryTypes } from 'sequelize';
 import BookmarksListClient from './BookmarksListClient';
 
 export const dynamic = 'force-dynamic';
-export async function generateMetadata() {
-  return { title: '북마크 | 마이페이지' };
-}
+
+type Row = {
+  subscriptionIdx: number;
+  alarmOn: 0 | 1 | boolean;
+  webtoonId: number;
+  webtoonName: string;
+  wbthumbnailUrl?: string | null;
+  genre?: string;
+  views?: number;
+  recommend?: number;
+};
 
 export default async function MyBookmarksPage() {
-  const subs = await getMySubscriptions();
+  const session = await getServerSession(authOptions);
+  if (!session) redirect('/login');
 
-  // 간단 구현: 상세 N회 호출 (추후 /api/webtoon/bulk로 개선 권장)
-  const details = await Promise.all(
-    subs.map((s) => getWebtoonDetail(s.webtoonId).catch(() => null))
+  const memberId = Number((session.user as any)?.idx ?? (session.user as any)?.id);
+  if (!memberId) redirect('/login');
+
+  // ✅ 서버에서 DB 직조회 (API 우회)
+  const rows = await db.sequelize.query<Row>(
+    `
+    SELECT
+      s.idx AS subscriptionIdx,
+      s.alarm_on AS alarm_on,
+      w.idx AS webtoonId,
+      w.webtoonName,
+      w.wbthumbnailUrl,
+      w.genre,
+      w.views,
+      w.recommend
+    FROM subscription s
+    JOIN webtoon w ON w.idx = s.webtoonId
+    WHERE s.memberId = ? AND s.status = 'ACTIVE'
+    ORDER BY w.recommend DESC, w.views DESC
+    `,
+    { replacements: [memberId], type: QueryTypes.SELECT }
   );
-  const items = details
-    .map((w, i) =>
-      !w
-        ? null
-        : {
-            idx: w.idx,
-            webtoonName: w.webtoonName,
-            wbthumbnailUrl: w.wbthumbnailUrl ?? '',
-            artistName: w.artist?.artistName,
-            views: w.views,
-            webtoonId: w.idx,
-            alarmOn: subs[i].alarmOn,
-          }
-    )
-    .filter(Boolean) as Array<{
-    idx: number;
-    webtoonName: string;
-    wbthumbnailUrl: string;
-    artistName?: string;
-    views?: number;
-    webtoonId: number;
-    alarmOn: boolean;
-  }>;
+
+  const items = rows.map((x) => ({
+    idx: Number(x.subscriptionIdx ?? x.webtoonId),
+    webtoonId: Number(x.webtoonId),
+    webtoonName: x.webtoonName ?? '',
+    wbthumbnailUrl: x.wbthumbnailUrl ?? undefined,
+    genre: x.genre,
+    views: x.views,
+    recommend: x.recommend,
+    alarmOn: x.alarmOn === true || x.alarmOn === 1,
+  }));
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-6 md:py-10">
-      <h1 className="mb-4 text-xl font-semibold md:text-2xl">북마크</h1>
-      <BookmarksListClient items={items} />
-    </section>
+    <div className="page-on-gray">
+      <section className="mx-auto max-w-6xl px-4 py-6 md:py-10">
+        <h1 className="mb-4 text-xl font-semibold md:text-2xl">북마크</h1>
+        <BookmarksListClient items={items} />
+      </section>
+    </div>
   );
 }
-
-// 분리: 클라이언트 상호작용(알림 토글/해지, 가상 스크롤)

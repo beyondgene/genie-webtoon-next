@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import {
   subscribeBookmark,
   toggleBookmarkAlarm,
@@ -6,17 +6,42 @@ import {
 } from '@/controllers/member/bookmarksController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
-async function POSTHandler(req: NextRequest, { params }: { params: { webtoonId: string } }) {
-  return subscribeBookmark(req, { params });
+function toValidId(v: unknown): number | null {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-async function PATCHHandler(req: NextRequest, { params }: { params: { webtoonId: string } }) {
-  return toggleBookmarkAlarm(req, { params });
+// 구독 생성/복구
+async function POSTHandler(req: NextRequest, ctx: { params: Promise<{ webtoonId: string }> }) {
+  const { webtoonId } = await ctx.params;
+  const id = toValidId(webtoonId);
+  if (id === null) {
+    return NextResponse.json({ error: 'Invalid webtoonId' }, { status: 400 });
+  }
+  // 컨트롤러는 string을 기대하므로 안전한 숫자 문자열로 전달
+  return subscribeBookmark(req, { params: { webtoonId: String(id) } });
 }
 
-async function DELETEHandler(req: NextRequest, { params }: { params: { webtoonId: string } }) {
-  return unsubscribeBookmark(req, { params });
+// 알림 토글
+async function PATCHHandler(req: NextRequest, ctx: { params: Promise<{ webtoonId: string }> }) {
+  const { webtoonId } = await ctx.params;
+  const id = toValidId(webtoonId);
+  if (id === null) {
+    return NextResponse.json({ error: 'Invalid webtoonId' }, { status: 400 });
+  }
+  return toggleBookmarkAlarm(req, { params: { webtoonId: String(id) } });
 }
+
+// 구독 해제
+async function DELETEHandler(req: NextRequest, ctx: { params: Promise<{ webtoonId: string }> }) {
+  const { webtoonId } = await ctx.params;
+  const id = toValidId(webtoonId);
+  if (id === null) {
+    return NextResponse.json({ error: 'Invalid webtoonId' }, { status: 400 });
+  }
+  return unsubscribeBookmark(req, { params: { webtoonId: String(id) } });
+}
+
 export const POST = withErrorHandler(POSTHandler);
 export const PATCH = withErrorHandler(PATCHHandler);
 export const DELETE = withErrorHandler(DELETEHandler);

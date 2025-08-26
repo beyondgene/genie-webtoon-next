@@ -44,12 +44,16 @@ export const routes = {
     interests: `${API_BASE}/member/interests`,
     bookmarks: `${API_BASE}/member/bookmarks`,
     bookmarkByWebtoon: (webtoonId: number | string) => `${API_BASE}/member/bookmark/${webtoonId}`,
-    subscriptions: `${API_BASE}/member/subscriptions`,
+    subscription: `${API_BASE}/member/subscription`,
+    subscriptionByWebtoon: (webtoonId: number | string) =>
+      `${API_BASE}/member/subscription/${webtoonId}`,
+    subscriptionAlarm: (webtoonId: number | string) =>
+      `${API_BASE}/member/subscription/${webtoonId}/alarm`,
   },
 
   // Domain (protected)
   artist: {
-    list: `${API_BASE}//artist`,
+    list: `${API_BASE}/artist`,
     detail: (id: number | string) => `${API_BASE}/artist/${id}`,
   },
   webtoon: {
@@ -82,7 +86,7 @@ export const routes = {
   ranking: {
     base: `${API_BASE}/ranking`,
     daily: (genre?: string) =>
-      genre ? `${API_BASE}/ranking/daily/${genre}` : `${API_BASE}ranking/daily`,
+      genre ? `${API_BASE}/ranking/daily/${genre}` : `${API_BASE}/ranking/daily`,
     weekly: (genre?: string) =>
       genre ? `${API_BASE}/ranking/weekly/${genre}` : `${API_BASE}/ranking/weekly`,
     monthly: (genre?: string) =>

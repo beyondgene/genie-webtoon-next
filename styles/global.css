@@ -55,3 +55,95 @@ body {
     @apply px-4 py-2 rounded-xl bg-black/25 border border-white/25 text-white hover:bg-black/35 transition;
   }
 }
+
+/* === Genie Gray Theme (페이지 스코프) === */
+.page-on-gray {
+  --page-bg: #929292;
+  --page-fg: #ffffff;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  min-height: 100vh;
+  font-family:
+    'Montserrat',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Noto Sans KR',
+    sans-serif;
+}
+
+/* 텍스트/보더 기본 흰색으로 */
+.page-on-gray
+  :where(h1, h2, h3, h4, h5, h6, p, span, small, strong, em, abbr, li, dt, dd, a, label) {
+  color: var(--page-fg) !important;
+}
+.page-on-gray :where(.border, .divide-y, .divide-x, .ring, .ring-1, .ring-2, .outline) {
+  border-color: var(--page-fg) !important;
+}
+
+/* 입력 컨트롤: 회색 배경 + 흰 글씨/테두리 */
+.page-on-gray :where(input, textarea, select) {
+  background: #929292 !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+  caret-color: #ffffff !important;
+}
+.page-on-gray :where(input::placeholder, textarea::placeholder) {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.page-on-gray :where(input, textarea, select):focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8) !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+/* 버튼 공통 */
+.page-on-gray .btn-gray {
+  background: #929292 !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+}
+.page-on-gray .btn-gray:hover {
+  filter: brightness(105%);
+}
+.page-on-gray .btn-gray:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* === 오버레이 라벨 필드 (디자인 반영) === */
+.field {
+  position: relative;
+  border-radius: 4px;
+}
+.field__input {
+  width: 100%;
+  height: 46px;
+  border-radius: 4px;
+  padding-left: 112px; /* 라벨 박스 공간 */
+}
+.field__label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 88px; /* 라벨 넓이 고정(영문/국문 길이 대응) */
+  padding: 0 4px;
+  text-transform: uppercase;
+  font-weight: 300; /* Montserrat 300 */
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: #ffffff;
+  pointer-events: none;
+  /* 라벨 테두리는 없고 텍스트만 흰색(원본처럼) */
+}
+
+/* 멀티라인(주소 등) */
+.field__textarea {
+  height: auto;
+  min-height: 46px;
+  padding-top: 12px;
+}

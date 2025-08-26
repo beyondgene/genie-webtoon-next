@@ -44,7 +44,7 @@ export async function getWebtoonList(req: NextRequest) {
     attributes: [
       'idx',
       'webtoonName',
-      'discription',
+      'description',
       'genre',
       'views',
       'recommend',
@@ -91,7 +91,7 @@ export async function getWebtoonDetail(req: NextRequest, webtoonId: number) {
     attributes: [
       'idx',
       'webtoonName',
-      'discription',
+      'description',
       'genre',
       'views',
       'recommend',

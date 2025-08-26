@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
           nickname: user.nickname, // 커스텀 필드
           name: user.nickname, // DefaultUser.name
           email: user.email, // DefaultUser.email
+          role: 'MEMBER',
         } as unknown as User;
       },
     }),
@@ -78,6 +79,7 @@ export const authOptions: NextAuthOptions = {
         token.status = (user as any).status;
         token.memberId = (user as any).memberId;
         token.nickname = (user as any).nickname;
+        token.role = (user as any).role ?? 'MEMBER';
       }
       return token;
     },
@@ -88,6 +90,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).status = token.status;
         (session.user as any).memberId = token.memberId;
         (session.user as any).nickname = token.nickname;
+        (session.user as any).role = (token as any).role ?? 'MEMBER';
       }
       return session;
     },
