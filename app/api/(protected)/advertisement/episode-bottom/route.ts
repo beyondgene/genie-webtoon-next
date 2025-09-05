@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import db from '@/models';
 import { Op, col, where } from 'sequelize';
 
+export const revalidate = 30;
+
+export const dynamic = 'force-static';
+
+// 에피소드 하단에 있는 광고에 대한 설정 get 핸들러 라우터
 export async function GET(req: Request) {
   const now = new Date();
 
@@ -13,12 +18,12 @@ export async function GET(req: Request) {
         startDate: { [Op.lte]: now },
         endDate: { [Op.gte]: now },
 
-        // ✅ 컬럼-컬럼/NULL 비교는 실제 컬럼명으로!
+        // 컬럼-컬럼/NULL 비교는 실제 컬럼명으로!
         [Op.or]: [
           // total_exposure_limit IS NULL
-          where(col('total_exposure_limit'), Op.is, null),
+          where(col('totalExposureLimit'), Op.is, null),
           // current_exposure_count < total_exposure_limit
-          where(col('current_exposure_count'), Op.lt, col('total_exposure_limit')),
+          where(col('currentExposureCount'), Op.lt, col('totalExposureLimit')),
         ],
       },
       order: db.sequelize.random(),

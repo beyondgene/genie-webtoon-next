@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import db from '@/models';
 import { getWebtoonDetail } from '@/controllers/webtoon/webtoonController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
-
+// 웹툰 정보 전부 불러오는 컨트롤러 호출하는 라우터
 // 조회수 + 일자별 통계 업서트
 async function recordView(webtoonId: number) {
   try {

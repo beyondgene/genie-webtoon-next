@@ -1,4 +1,5 @@
 // app/genre/[genre]/loading.tsx
+// 장르별 카드들이 로딩되는 동안 뜨는 스켈레톤 코드
 export default function LoadingGenre() {
   return (
     <main className="min-h-screen bg-[#9f9f9f] text-white">

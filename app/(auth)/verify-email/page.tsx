@@ -1,99 +1,28 @@
 // app/(auth)/verify-email/page.tsx
-'use client';
+// 이 파일은 Server Component입니다.
+// 핵심 아이디어: 페이지 레벨에서는 useSearchParams 같은 클라이언트 훅을 쓰지 않고
+// 서버가 제공하는 searchParams 인자를 이용해 쿼리(token)를 안전히 파싱한 뒤
+// 클라이언트 하위 컴포넌트로 전달합니다. (CSR bail-out / Suspense 요구 회피)
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import VerifyEmailClient from './Client';
 
-type State =
-  | { type: 'idle' }
-  | { type: 'loading' }
-  | { type: 'success'; msg: string }
-  | { type: 'error'; msg: string };
+export const dynamic = 'force-dynamic';
+// ↑ (선택) 정적 프리렌더를 강제하지 않고 매 요청/빌드 시점에서 동작하도록 설정.
+//    인증 토큰 검증 페이지 특성상 캐싱을 원치 않으면 유지하세요. 필요 없으면 제거해도 무방합니다.
 
-export default function VerifyEmailPage() {
-  const router = useRouter();
-  const qs = useSearchParams();
-  const token = qs.get('token') ?? '';
+// searchParams의 타입: Next 15 App Router에서 page는 아래 시그니처를 가질 수 있습니다.
+// - searchParams는 Promise 형태로 전달되므로 await가 필요합니다.
+type Search = Record<string, string | string[] | undefined>;
 
-  const [state, setState] = useState<State>({ type: 'idle' });
+export default async function Page({ searchParams }: { searchParams: Promise<Search> }) {
+  // Next 15: searchParams는 Promise이므로 반드시 await
+  const sp = await searchParams;
 
-  const boxClass = 'mx-auto max-w-[480px] rounded-[8px] bg-black/15 px-6 py-8 text-white shadow-md';
-  const buttonClass = 'h-[46px] w-full rounded-[4px] uppercase text-white disabled:opacity-60';
-  const inputStyle = useMemo(() => ({ border: '1px solid white' }), []);
+  // token 쿼리 추출 (배열/undefined 케이스까지 방어적으로 처리)
+  const tokenParam = sp.token;
+  const token = Array.isArray(tokenParam) ? (tokenParam[0] ?? '') : (tokenParam ?? '');
 
-  useEffect(() => {
-    if (!token) {
-      setState({ type: 'error', msg: '유효하지 않은 인증 요청입니다.(토큰 누락)' });
-      return;
-    }
-    const run = async () => {
-      setState({ type: 'loading' });
-      try {
-        const res = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
-          method: 'GET',
-          cache: 'no-store',
-        });
-        const json = await res.json();
-        if (res.ok) {
-          setState({ type: 'success', msg: json?.message ?? '이메일 인증이 완료되었습니다.' });
-        } else {
-          setState({ type: 'error', msg: json?.error ?? '인증 처리에 실패했습니다.' });
-        }
-      } catch {
-        setState({ type: 'error', msg: '인증 처리 중 오류가 발생했습니다.' });
-      }
-    };
-    run();
-  }, [token]);
-
-  return (
-    <div className="min-h-screen w-full" style={{ background: '#929292' }}>
-      <main className="mx-auto max-w-[1040px] px-4 py-12">
-        <div className="mx-auto mb-10 grid h-[186px] w-[309px] place-content-center rounded bg-black/10 text-white">
-          <span className="text-xl font-semibold tracking-wide">GENIE WEBTOON</span>
-        </div>
-
-        <section className={boxClass} style={inputStyle}>
-          <h1 className="mb-4 text-lg font-semibold">이메일 인증</h1>
-
-          {state.type === 'loading' && <p className="text-white/90">인증을 처리 중입니다…</p>}
-
-          {state.type === 'success' && (
-            <>
-              <p className="mb-6 text-white/90">{state.msg}</p>
-              <button
-                className={buttonClass}
-                style={{ border: '1px solid white' }}
-                onClick={() => router.push('/login')}
-              >
-                로그인하기
-              </button>
-            </>
-          )}
-
-          {state.type === 'error' && (
-            <>
-              <p className="mb-6 text-red-200">{state.msg}</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  className={buttonClass}
-                  style={{ border: '1px solid white' }}
-                  onClick={() => router.push('/signup')}
-                >
-                  재가입 시도
-                </button>
-                <button
-                  className={buttonClass}
-                  style={{ border: '1px solid white' }}
-                  onClick={() => router.push('/')}
-                >
-                  메인으로
-                </button>
-              </div>
-            </>
-          )}
-        </section>
-      </main>
-    </div>
-  );
+  // 페이지 레벨에선 훅을 쓰지 않고, 클라이언트 컴포넌트에 prop으로 내려줍니다.
+  // 이렇게 하면 "useSearchParams() should be wrapped in a suspense boundary" 에러를 피할 수 있습니다.
+  return <VerifyEmailClient token={token} />;
 }

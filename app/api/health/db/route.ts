@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { sequelize } from '@/db/sequelize';
 
+// db에서 정보 갖고올때 sequelize 에러 방지
 export async function GET() {
   try {
     await sequelize.authenticate();

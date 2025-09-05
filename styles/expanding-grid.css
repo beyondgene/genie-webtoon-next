@@ -34,6 +34,7 @@
   place-items: center;
   overflow: hidden;
 }
+/*위에서부터 순서대로 호버,클릭,제목,부제목 설정*/
 .EG__tile:hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
@@ -72,6 +73,7 @@
     opacity: 1;
   }
 }
+/* 오버레이(카드전용) */
 .EG__overlayCard {
   width: min(1060px, 92vw);
   max-height: 88vh;
@@ -103,7 +105,7 @@
 .EG__overlayTitle {
   font-size: 20px;
   font-weight: 700;
-}
+} /*닫기 버튼 디자인 설정*/
 .EG__close {
   margin-left: auto;
   border: none;
@@ -115,7 +117,7 @@
 }
 .EG__close:hover {
   color: #fff;
-}
+} /*오버레이 디자인 설정*/
 .EG__overlayHeader {
   display: flex;
   align-items: center;
@@ -131,7 +133,7 @@
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 12px;
-}
+} /*칩버튼 설정 이하 동일*/
 .EG__chipRow {
   display: flex;
   flex-wrap: wrap;
@@ -152,7 +154,7 @@
   opacity: 0.7;
   margin-top: 10px;
 }
-
+/*단상 디자인 설정*/
 .EG__podium {
   list-style: none;
   padding: 0;
@@ -174,13 +176,13 @@
   border-radius: 10px;
   display: inline-block;
   border: 1px solid rgba(255, 255, 255, 0.12);
-}
+} /*링크 걸린 버튼 글씨 색상*/
 .EG__linkBtn {
   background: #2b36ff;
 }
 .EG__linkGhost {
   background: transparent;
-}
+} /*그리드 오버레이*/
 .EG__quickGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -10,7 +10,7 @@ type Props = {
   className?: string;
   children?: React.ReactNode;
 };
-
+// 빈 내용에 대한 반응 처리 컴포넌트
 export default function EmptyState({
   title = '내용이 없습니다',
   description,
@@ -18,6 +18,7 @@ export default function EmptyState({
   className = '',
   children,
 }: Props) {
+  // 로딩중 처리 로직
   if (variant === 'loading') {
     return (
       <div className={`space-y-3 ${className}`}>
@@ -27,7 +28,7 @@ export default function EmptyState({
       </div>
     );
   }
-
+  // 에러 발생시 처리 로직
   if (variant === 'error') {
     return (
       <div className={`rounded-2xl border border-red-200 bg-red-50 p-6 ${className}`}>
@@ -37,7 +38,7 @@ export default function EmptyState({
       </div>
     );
   }
-
+  // 그 이외 상황 처리 로직
   return (
     <div className={`rounded-2xl border border-dashed p-8 text-center ${className}`}>
       <div className="text-base font-medium text-zinc-800">{title}</div>

@@ -1,5 +1,6 @@
 // app/(member)/my/profile/error.tsx
 'use client';
+// 로딩중 에러 발생시 에러문구와 함께 다시시도 버튼 제공
 import EmptyState from '@/components/feedback/EmptyState';
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
   return (

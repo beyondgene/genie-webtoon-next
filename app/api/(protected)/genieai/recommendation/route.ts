@@ -9,7 +9,7 @@ import { Op } from 'sequelize';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30; // 스트리밍 허용 시간 (초)
-
+// 장르 타입 정의
 const GENRES = [
   'DRAMA',
   'ROMANCE',
@@ -59,7 +59,7 @@ const GENRE_MAP: Record<string, (typeof GENRES)[number]> = {
   스릴러: 'THRILLER',
   사극: 'HISTORICAL',
 };
-
+// 장르 정규화
 function normalizeGenre(input: string) {
   const key = (input ?? '').toString().trim().toUpperCase();
   return (
@@ -150,7 +150,7 @@ async function recommendByTasteTool({ memberId }: { memberId: number }) {
     discription: w.description ?? '',
   }));
 }
-
+// ai 추천 컨트롤러 로직 호출하는 라우터
 export async function POST(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof Response) return sessionOrRes;
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     model: openai('gpt-4o-mini'),
     messages: convertToModelMessages(uiMessages),
 
-    // ✅ 툴 정의
+    // 툴 정의
     tools: {
       listByGenre: tool({
         description: '주어진 장르의 상위 웹툰을 반환한다',
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
       }),
     },
 
-    // ✅ 핵심: 툴 호출 후 이어서 답변 생성까지 하도록 단계 2 이상 허용
+    // 핵심: 툴 호출 후 이어서 답변 생성까지 하도록 단계 2 이상 허용
     stopWhen: stepCountIs(2),
     // toolChoice: 'auto', // (기본값) 굳이 명시 안 해도 됨
 

@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import BackNavigator from '@/components/ui/BackNavigator';
 
 type Quiz = { q: string; choices: string[]; answer: number };
-
+// 도전 골든벨에 나올 문제와 정답을 미리 저장하고 있는 배열
 const DEMO_QUIZ: Quiz[] = [
   {
     q: '나 혼자만 레벨업의 주인공 이름은?',
@@ -58,36 +59,38 @@ const DEMO_QUIZ: Quiz[] = [
     answer: 1,
   },
 ];
-
+// 버튼 스타일 디자인
 const btnStyle: React.CSSProperties = {
   background: 'white',
   color: '#2148C0',
   boxShadow: '0px 4px 4px rgba(0,0,0,0.30)',
   borderRadius: 4,
 };
-
+// 도전 골든벨 페이지
 export default function GoldenBellPage() {
   const [step, setStep] = useState<'idle' | 'playing' | 'done'>('idle');
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const current = useMemo(() => DEMO_QUIZ[idx], [idx]);
-
+  // 시작 버튼 로직
   const start = () => {
     setScore(0);
     setIdx(0);
     setStep('playing');
   };
-
+  // 마우스로 정답 클릭 로직
   const pick = (i: number) => {
     if (current?.answer === i) setScore((s) => s + 1);
     if (idx + 1 >= DEMO_QUIZ.length) setStep('done');
     else setIdx((v) => v + 1);
   };
-
+  // STEP 3개 순서대로 시작 로직, 문제 푸는 도중 로직, 문제를 다풀고 점수가 나온 후 로직
   return (
     <>
+      <BackNavigator />
+
       {/* 전체 화면 배경(양옆 포함) */}
-      <div className="fixed inset-0 bg-[#929292]" aria-hidden />
+      <div className="fixed inset-0 bg-[#4f4f4f]" aria-hidden />
       <main className="relative z-10 mx-auto min-h-screen max-w-4xl px-4 py-10 text-white md:px-6">
         <header className="mb-6 flex items-end justify-between">
           <div>

@@ -4,14 +4,14 @@
 import * as React from 'react';
 import ViewerNav from '@/components/public/ViewerNav';
 import { useRouter } from 'next/navigation';
-
+// 사용할 속성 타입 사전 정의
 type Props = {
   webtoonId: string | number;
   prevEpId?: string | number | null;
   nextEpId?: string | number | null;
   className?: string;
 };
-
+// 웹툰 이전화,다음화,목록 컨트롤러
 export default function ReaderControls({ webtoonId, prevEpId, nextEpId, className = '' }: Props) {
   const router = useRouter();
 

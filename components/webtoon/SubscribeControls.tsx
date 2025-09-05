@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { toNumericId } from '@/lib/toNumericId';
-
+// 구독에서 사용할 속성 타입 사전정의
 type Props = {
   webtoon: { idx?: number; id?: number } | number | string;
 };
-
+// 웹툰 구독 여부와 관련된 컨트롤
 export default function SubscribeControls({ webtoon }: Props) {
   const wid = toNumericId(webtoon);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export default function SubscribeControls({ webtoon }: Props) {
       }
     })();
   }, [wid]);
-
+  // 구독은 되어있지만 알람은 없는 상탱
   const subscribe = useCallback(async () => {
     if (!wid) return;
     setLoading(true);
@@ -41,7 +41,7 @@ export default function SubscribeControls({ webtoon }: Props) {
       setLoading(false);
     }
   }, [wid]);
-
+  // 구독이 되어있지 않아 알람 또한 없는 상태
   const unsubscribe = useCallback(async () => {
     if (!wid) return;
     setLoading(true);
@@ -54,7 +54,7 @@ export default function SubscribeControls({ webtoon }: Props) {
       setLoading(false);
     }
   }, [wid]);
-
+  // 알람 설정 버튼 관련 콜백
   const toggleAlarm = useCallback(async () => {
     if (!wid) return;
     const next = !state.alarmOn;

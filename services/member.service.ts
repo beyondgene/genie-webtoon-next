@@ -2,6 +2,7 @@
 import { api } from '@/lib/fetcher';
 import type { MemberProfileDTO } from '@/types/dto';
 
+// 프런트 내부에서 쓰는 확정된 구독 타입
 export type SubscriptionItemDTO = {
   webtoonId: number;
   webtoonName: string;

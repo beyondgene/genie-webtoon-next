@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { listArtists, createArtist } from '@/controllers/admin/artistsController';
 
+// 작가 정보를 불러오는 컨트롤러를 호출하는 get 라우터
 async function GETHandler(req: NextRequest) {
   const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
@@ -18,7 +19,7 @@ async function GETHandler(req: NextRequest) {
     );
   }
 }
-
+// 작가 정보를 불러와서 붙여놓는 컨트롤러를 호출하는 POST 라우터
 async function POSTHandler(req: NextRequest) {
   const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;

@@ -12,7 +12,7 @@ interface MailOptions {
 
 const { NEXTAUTH_URL, EMAIL_PRIMARY, REPLY_TO } = process.env;
 
-// -------------------- config helpers --------------------
+// -------------------- config helpers --------------------(보낼 메일의 기본 핵심 값들을 env파일에서 불러오는 함수)
 function readCfg(p: Provider) {
   // 기존 단일 설정(legacy: EMAIL_*)도 호환
   if (p === 'legacy') {
@@ -41,7 +41,7 @@ function isCfgReady(p: Provider) {
   const c = readCfg(p);
   return Boolean(c.host && c.port && c.user && c.pass && c.from);
 }
-
+// nodemailer 값 전송
 async function mkTransport(p: Provider) {
   const cfg = readCfg(p);
   // 동적 import: Next.js/Edge 환경 충돌 방지
@@ -54,7 +54,7 @@ async function mkTransport(p: Provider) {
   } as any);
   return { transporter, from: cfg.from! };
 }
-
+// 보내는 메일 사이트 우선순위 지정
 function providerOrder(explicit?: Provider): Provider[] {
   // 우선순위: 명시 → EMAIL_PRIMARY → gmail → naver → legacy
   const primary = explicit || (EMAIL_PRIMARY as Provider) || 'gmail';
@@ -83,7 +83,7 @@ export async function sendEmail(
     console.warn('[email] not configured, skip sending');
     return { ok: false as const, skipped: true as const };
   }
-
+  // 이메일 보내는 메인 정보들 정의
   const order = providerOrder(opts?.provider);
   for (const p of order) {
     if (!isCfgReady(p)) continue;

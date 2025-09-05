@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { use } from 'react';
 import { getEpisodeNavigation } from '@/services/episode.service';
 import { ChevronLeftIcon, ChevronRightIcon, ListBulletIcon } from '@heroicons/react/24/outline'; // (C)
-
+// 사용할 속성 타입 사전 정의 인터페이스(확장x)
 interface Props {
   webtoonId: number | string;
   episodeId: number | string;
   dataPromise?: ReturnType<typeof getEpisodeNavigation>;
 }
-
+// 에피소드 조종 리모컨 컴포넌트
 export default function EpisodeNavigator({ webtoonId, episodeId, dataPromise }: Props) {
   const data = dataPromise ? use(dataPromise) : undefined;
   const state = data ?? { prev: null, next: null, totalCount: 0 };

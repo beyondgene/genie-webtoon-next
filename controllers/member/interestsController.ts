@@ -1,4 +1,4 @@
-// controllers/member/interestsController.ts
+// controllers/member/interestsController.ts(이번 프로젝트에서 미사용하므로 주석 미표기)
 
 import db from '@/models';
 

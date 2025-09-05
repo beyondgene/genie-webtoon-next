@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 type MenuKey = 'genre' | 'ranking' | 'my';
-
+// 장르 타입 선지정
 const GENRES = [
   'DRAMA',
   'ROMANCE',
@@ -18,12 +18,12 @@ const GENRES = [
   'THRILLER',
   'HISTORICAL',
 ] as const;
-
+// 홈 화면에서 사용되는 메뉴들 컴포넌트
 export default function MegaMenu() {
   const [open, setOpen] = useState<MenuKey | null>(null);
   const timerRef = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
-
+  // 마우스가 클릭되거나 엔터가 눌렸을때 액션 useEffect로 관리
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(null);
@@ -39,7 +39,7 @@ export default function MegaMenu() {
   const onLeave = () => {
     timerRef.current = window.setTimeout(() => setOpen(null), 120);
   };
-
+  // 각 그리드 디자인 내부에 있는 메뉴들 설정
   return (
     <div ref={rootRef} className="relative" role="menubar" aria-label="메가메뉴">
       <ul className="flex items-center gap-6 text-sm font-medium">
@@ -215,7 +215,7 @@ export default function MegaMenu() {
     </div>
   );
 }
-
+// 영어 장르를 한국어 장르로 변환해서 화면 표시
 function translateGenre(g: (typeof GENRES)[number]) {
   switch (g) {
     case 'DRAMA':

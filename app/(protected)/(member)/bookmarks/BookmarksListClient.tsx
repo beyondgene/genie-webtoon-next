@@ -2,8 +2,9 @@
 
 import useSWR from 'swr';
 import dynamic from 'next/dynamic';
+import styled from 'styled-components';
 
-// WebtoonCard expects: { webtoon?: { idx, webtoonName, wbthumbnailUrl, artistName?, views?, badge? }, href?, loading?, error?, className? }
+// 웹툰 카드 불러오기
 const WebtoonCard = dynamic<any>(
   () => import('@/components/cards/WebtoonCard').then((m) => m.default as any),
   {
@@ -12,6 +13,7 @@ const WebtoonCard = dynamic<any>(
   }
 );
 
+// API 응답 가능한 형태들
 type ApiSub = {
   webtoonId: number;
   webtoonName: string;
@@ -21,7 +23,7 @@ type ApiSub = {
   views?: number;
 };
 
-type ApiItem = {
+export type ApiItem = {
   idx: number;
   webtoonName: string;
   wbthumbnailUrl: string;
@@ -29,8 +31,10 @@ type ApiItem = {
   alarmOn: boolean;
   artistName?: string;
   views?: number;
+  recommend?: number;
 };
 
+// 카드 데이터
 type WebtoonCardData = {
   idx: number;
   webtoonName: string;
@@ -39,18 +43,25 @@ type WebtoonCardData = {
   views?: number;
 };
 
+type Props = {
+  /** 서버에서 미리 만든 초기 데이터(선택) */
+  items?: ApiItem[];
+};
+
 const fetcher = (url: string) =>
   fetch(url, { cache: 'no-store' }).then(async (r) => {
     if (!r.ok) throw new Error('failed');
     return r.json();
   });
 
-export default function BookmarksListClient() {
+export default function BookmarksListClient({ items: initialItems }: Props) {
   const { data, error, isLoading } = useSWR('/api/member/bookmarks', fetcher, {
     revalidateOnFocus: false,
+    // 서버에서 내려준 items가 있으면 SWR의 초기값으로 사용
+    fallbackData: initialItems ? { items: initialItems } : undefined,
   });
 
-  // 서버가 items 또는 subscriptions 중 어떤 형태로 응답해도 카드용 데이터로 맵핑
+  // 서버/클라이언트 어떤 경로든 items 배열로 수렴
   const items: ApiItem[] =
     data?.items ??
     (Array.isArray(data?.subscriptions)
@@ -63,7 +74,7 @@ export default function BookmarksListClient() {
           artistName: s.artistName,
           views: s.views,
         }))
-      : []);
+      : (initialItems ?? []));
 
   const cards: WebtoonCardData[] = items.map((w) => ({
     idx: w.idx,
@@ -81,8 +92,7 @@ export default function BookmarksListClient() {
     );
   }
 
-  // 응답이 왔으면 0건이어도 스켈레톤을 끝내야 함
-  if (isLoading && !data) {
+  if (isLoading && !data && !initialItems) {
     return (
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -94,17 +104,26 @@ export default function BookmarksListClient() {
 
   if (!cards.length) {
     return (
-      <div className="rounded-md border border-zinc-200 p-6 text-sm text-zinc-600">
+      <div className="rounded-md border border-zinc-200 p-6 text-sm text-white">
         아직 구독한 웹툰이 없습니다.
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <StyledGrid className="grid grid-cols-2 gap-4 md:grid-cols-4">
       {cards.map((w) => (
         <WebtoonCard key={w.idx} webtoon={w} href={`/webtoon/${w.idx}`} />
       ))}
-    </div>
+    </StyledGrid>
   );
 }
+
+// 이 파일 안에서만 적용되는 스타일 오버라이드
+const StyledGrid = styled.div`
+  /* 카드 루트가 <a>이고, 그 마지막 자식이 '제목 바'라는 가정(현재 마크업과 일치) */
+  & a > *:last-child {
+    background: #929292 !important; /* 제목 영역 배경 */
+    color: #fff !important; /* 제목 텍스트 */
+  }
+`;

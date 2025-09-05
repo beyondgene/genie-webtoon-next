@@ -14,7 +14,7 @@ type Props = {
   emptyText?: string;
   className?: string;
 };
-
+// 랭킹에서 사용되는 단상 컴포넌트
 export default function RankingPodium({
   items,
   loading,
@@ -34,7 +34,7 @@ export default function RankingPodium({
       </div>
     );
   }
-
+  // 에러 발생 또는 랭킹에 사용될 작품이 없을때 에러 처리
   if (error) {
     return (
       <div

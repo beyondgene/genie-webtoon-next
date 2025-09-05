@@ -12,15 +12,15 @@ export class WebtoonViewStat extends Model<
   InferAttributes<WebtoonViewStat>,
   InferCreationAttributes<WebtoonViewStat>
 > {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare webtoonId: number;
   declare date: string; // YYYY-MM-DD (KST 기준 일자 스냅샷)
   declare views: number;
-
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
-  // Webtoon과 동일한 패턴의 초기화 메서드
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof WebtoonViewStat {
     WebtoonViewStat.init(
       {
@@ -67,8 +67,7 @@ export class WebtoonViewStat extends Model<
     );
     return WebtoonViewStat;
   }
-
-  // 관계 정의(웹툰 쪽 스타일과 동일한 위치/형식)
+  // fk 설정
   static associate(models: any) {
     WebtoonViewStat.belongsTo(models.Webtoon, {
       foreignKey: 'webtoonId',

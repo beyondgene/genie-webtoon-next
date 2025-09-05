@@ -1,6 +1,5 @@
 // app/login/page.tsx
 'use client';
-
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -49,7 +48,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormValues) => {
     setSubmitting(true);
-    // ✅ 기존 로직 그대로: credentials 사용, username 필드로 전송
+    // credentials 로그인 후 post-login으로 이동
     const res = await signIn('credentials', {
       memberId: data.id,
       password: data.password,
@@ -58,7 +57,7 @@ export default function LoginPage() {
     setSubmitting(false);
 
     if (res?.ok) {
-      router.replace('/home');
+      router.replace('/post-login');
     } else {
       reset({ id: '', password: '' });
       alert('로그인 실패: ID/PW를 확인하세요.');
@@ -69,14 +68,14 @@ export default function LoginPage() {
     <div
       className={`${mont.variable} min-h-screen w-full flex items-start sm:items-center justify-center`}
       style={{
-        background: '#929292',
+        background: '#4f4f4f' /* #929292 */,
         fontFamily: 'var(--font-mont), system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
       }}
     >
       {/* 가운데 컬럼 (피그마 기준 고정폭 요소들) */}
       <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
-        {/* 로고 영역: 실제 이미지를 쓰실 거면 src 교체하세요 */}
-        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[rgba(0,0,0,0.07)]">
+        {/* 로고 영역: 실제 이미지를 쓰실 거면 src 교체하세요, bg rgba(0,0,0,0.7) */}
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[#696969]">
           {/* 예비 텍스트 (이미지 없을 때) */}
           <span className="text-[22px] font-semibold tracking-wide text-white/90">
             GENIE WEBTOON
@@ -141,17 +140,10 @@ export default function LoginPage() {
           </a>
         </div>
 
-        {/* 소셜 로그인(요청대로 유지) */}
+        {/* 소셜 로그인 - callbackUrl을 post-login으로 변경 */}
         <div className="mt-6 flex w-[300px] items-center justify-center gap-4">
           <button
-            onClick={() => signIn('naver', { callbackUrl: '/home' })}
-            aria-label="네이버로 로그인"
-            className="inline-flex"
-          >
-            <Image src={NaverBtn} alt="네이버 로그인" width={44} height={44} priority />
-          </button>
-          <button
-            onClick={() => signIn('kakao', { callbackUrl: '/home' })}
+            onClick={() => signIn('kakao', { callbackUrl: '/post-login' })}
             aria-label="카카오로 로그인"
             className="inline-flex"
           >

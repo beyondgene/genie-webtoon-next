@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 
 export class Artist extends Model<InferAttributes<Artist>, InferCreationAttributes<Artist>> {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare realName: string;
   declare artistName: string;
@@ -18,7 +19,7 @@ export class Artist extends Model<InferAttributes<Artist>, InferCreationAttribut
   declare adminId: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof Artist {
     Artist.init(
       {
@@ -70,10 +71,10 @@ export class Artist extends Model<InferAttributes<Artist>, InferCreationAttribut
     );
     return Artist;
   }
-
+  // fk 설정
   static associate(models: any) {
     // 작가는 여러 웹툰을 가질 수 있다 (1:N)
-    Artist.hasMany(models.Webtoon, { foreignKey: 'artistIdx' });
+    Artist.hasMany(models.Webtoon, { foreignKey: 'artistId' });
     // 작가는 관리자에 의해 관리된다 (N:1)
     Artist.belongsTo(models.Admin, { foreignKey: 'adminId' });
     Artist.hasMany(models.Interest, { foreignKey: 'artistId', as: 'interests' });

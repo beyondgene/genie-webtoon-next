@@ -2,8 +2,9 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAdViewLog } from '@/hooks/useAdViewLog';
 import styles from './EpisodeViewer.module.css';
-
+// 웹툰 속성 데이터 타입 사전 정의
 type EpisodeRow = {
   idx?: number;
   id?: number;
@@ -14,6 +15,7 @@ type EpisodeRow = {
   uploadDate?: string | Date;
   webtoonId?: number;
 };
+// 사용될 속성 타입 사전 정의
 type Props = {
   webtoonId: number;
   episodeId: number;
@@ -21,13 +23,13 @@ type Props = {
   episodes: any[];
   ad?: { adImageUrl?: string; targetUrl?: string; id?: number } | null;
 };
-
+// 에피소드 정규화
 function normalizeEpisode(ep: any): EpisodeRow | null {
   // 응답이 { episode: {...} } 이면 안쪽을 꺼냄
   if (ep?.episode) return ep.episode as EpisodeRow;
   return ep as EpisodeRow;
 }
-
+// 에피소드 이미지 배열화
 function toImagesFromEpisode(input: any): string[] {
   const ep = normalizeEpisode(input);
   if (!ep) return [];
@@ -50,17 +52,21 @@ function toImagesFromEpisode(input: any): string[] {
 
   return [];
 }
+// 에피소드 idx 갖고오기
 function getId(ep: any): number {
   const row = normalizeEpisode(ep);
   return Number(row?.idx ?? row?.id);
 }
+// 에피소드 썸네일 갖고오기
 function getThumb(ep: any): string | null {
   const row = normalizeEpisode(ep);
   return (row?.epthumbnailUrl ?? row?.thumbnailUrl ?? null) || null;
 }
-
+// 에피소드 뷰어 컴포넌크 설정
 export default function EpisodeViewer({ webtoonId, episodeId, episode, episodes, ad }: Props) {
   const router = useRouter();
+  // ad는 /episode-bottom API가 돌려주는 객체라 idx를 id로 겸용
+  const adId = (ad as any)?.id ?? (ad as any)?.idx ?? null;
   const images = useMemo(() => toImagesFromEpisode(episode), [episode]);
 
   const list = useMemo(() => {
@@ -72,6 +78,8 @@ export default function EpisodeViewer({ webtoonId, episodeId, episode, episodes,
   const prevEp = currentIndex > 0 ? list[currentIndex - 1] : null;
   const nextEp =
     currentIndex >= 0 && currentIndex < list.length - 1 ? list[currentIndex + 1] : null;
+  // 광고가 있으면 노출/클릭 로깅 활성화
+  const { bindImpression, onClick } = useAdViewLog(adId ?? 0, { placement: 'EPISODE_BOTTOM' });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -131,6 +139,8 @@ export default function EpisodeViewer({ webtoonId, episodeId, episode, episodes,
       <div ref={bottomRef} className={styles.bottomSection}>
         {ad?.adImageUrl ? (
           <a
+            ref={bindImpression} // 화면에 50% 이상 1초 보이면 view 1회 기록
+            onClick={onClick}
             href={ad.targetUrl || '#'}
             target={ad.targetUrl ? '_blank' : undefined}
             rel="noopener noreferrer"

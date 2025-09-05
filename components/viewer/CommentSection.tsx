@@ -1,169 +1,351 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   getComments,
   createComment,
   likeComment,
   unlikeComment,
+  dislikeComment,
+  undislikeComment,
   replyToComment,
   deleteComment,
+  reportComment,
+  type CommentItem,
+  type ReactionResult,
 } from '@/services/comment.service';
-import { HandThumbUpIcon, ChatBubbleLeftRightIcon, TrashIcon } from '@heroicons/react/24/outline'; // (C)
-
-export default function CommentSection({ episodeId }: { episodeId: number | string }) {
-  const [items, setItems] = useState<any[]>([]);
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
+import {
+  HandThumbUpIcon,
+  HandThumbDownIcon,
+  ChatBubbleBottomCenterTextIcon,
+  TrashIcon,
+  FlagIcon,
+} from '@heroicons/react/24/outline';
+// 사용할 변수들 사전 타입 정의
+type Props = {
+  webtoonId: number | string;
+  episodeId: number | string;
+  pageSize?: number;
+};
+// 댓글 영역 컴포넌트 정의
+export default function CommentSection({ webtoonId, episodeId, pageSize = 20 }: Props) {
+  const { data: session } = useSession();
+  const myId = Number(session?.user?.id) || null;
+  const [items, setItems] = useState<CommentItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<'LATEST' | 'OLDEST' | 'BEST'>('LATEST');
+  const [newText, setNewText] = useState('');
+  const [rev, setRev] = useState(0);
+  const inFlight = useRef<Set<number>>(new Set());
+  const fmt = (d?: string | Date) =>
+    d ? new Date(d).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  // 댓글들 불러오는 로직(useEffect)
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    setErr(null);
-    getComments({ episodeId, page: 1, pageSize: 20, sort: 'LATEST' })
-      .then((res) => alive && setItems(res.items ?? (res as any).data ?? []))
-      .catch((e) => alive && setErr(e.message || '댓글을 불러오지 못했습니다.'))
-      .finally(() => alive && setLoading(false));
+    (async () => {
+      try {
+        setLoading(true);
+        setErr(null);
+        const wid = Number(webtoonId);
+        const eid = Number(episodeId);
+        const list = await getComments(wid, eid, { page, pageSize, sort });
+        if (alive) setItems(list ?? []);
+      } catch (e: any) {
+        if (alive) setErr(e?.message ?? '댓글을 불러오지 못했습니다.');
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
     return () => {
       alive = false;
     };
-  }, [episodeId]);
+  }, [webtoonId, episodeId, page, pageSize, sort, rev]);
 
-  const onSubmit = async () => {
-    if (!content.trim()) return; // (B) 클라이언트 검증
-    try {
-      const created = await createComment({ episodeId, content });
-      setItems((prev) => [created, ...prev]);
-      setContent('');
-    } catch (e: any) {
-      alert(e.message || '댓글 작성 실패');
+  const toId = (c: CommentItem) => Number(c.id ?? 0);
+
+  // 트리 구조(부모/자식)
+  const threaded = useMemo(() => {
+    const parents: CommentItem[] = [];
+    const children = new Map<number, CommentItem[]>();
+    for (const c of items) {
+      const id = toId(c);
+      const pid = c.parentId;
+      if (pid) {
+        const arr = children.get(pid) ?? [];
+        arr.push(c);
+        children.set(pid, arr);
+      } else {
+        parents.push(c);
+      }
     }
-  };
-
+    return { parents, children };
+  }, [items]);
+  // 좋아요 버튼
+  async function onToggleLike(c: CommentItem) {
+    const id = toId(c);
+    if (!Number.isFinite(id) || inFlight.current.has(id)) return;
+    inFlight.current.add(id);
+    try {
+      const res: ReactionResult = c.isLiked ? await unlikeComment(id) : await likeComment(id);
+      setItems((prev) => prev.map((x) => (toId(x) === id ? { ...x, ...res } : x)));
+    } catch (e: any) {
+      alert(e?.message ?? '처리 실패');
+    } finally {
+      inFlight.current.delete(id);
+    }
+  }
+  // 싫어요 버튼
+  async function onToggleDisLike(c: CommentItem) {
+    const id = toId(c);
+    if (!Number.isFinite(id) || inFlight.current.has(id)) return;
+    inFlight.current.add(id);
+    try {
+      const res: ReactionResult = c.isDisliked
+        ? await undislikeComment(id)
+        : await dislikeComment(id);
+      setItems((prev) => prev.map((x) => (toId(x) === id ? { ...x, ...res } : x)));
+    } catch (e: any) {
+      alert(e?.message ?? '처리 실패');
+    } finally {
+      inFlight.current.delete(id);
+    }
+  }
+  // 새 댓글 작성
+  async function onCreate() {
+    try {
+      const text = newText.trim();
+      if (!text) return;
+      await createComment({
+        webtoonId: Number(webtoonId),
+        episodeId: Number(episodeId),
+        content: text,
+      });
+      setNewText('');
+      setPage(1); // 새로고침
+      setRev((r) => r + 1);
+    } catch (e: any) {
+      alert(e?.message ?? '댓글 작성 실패');
+    }
+  }
+  // 대댓글 작성
+  async function onReply(parentId: number, v: string) {
+    try {
+      await replyToComment(parentId, {
+        content: v,
+        webtoonId: Number(webtoonId),
+        episodeId: Number(episodeId),
+      });
+      setPage(1);
+      setRev((r) => r + 1);
+    } catch (e: any) {
+      alert(e?.message ?? '대댓글 작성 실패');
+    }
+  }
+  // 삭제
+  async function onRemove(c: CommentItem) {
+    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+    try {
+      await deleteComment(toId(c));
+      setItems((prev) => prev.filter((x) => toId(x) !== toId(c)));
+    } catch (e: any) {
+      alert(e?.message ?? '삭제 실패');
+    }
+  }
+  // 신고
+  async function onReport(c: CommentItem) {
+    const reason = prompt(
+      '신고 사유를 입력하세요 (SPAM/ABUSE/SPOILER/ETC 중 하나, 기타 내용은 자유 입력)'
+    );
+    if (!reason) return;
+    try {
+      await reportComment(toId(c), { reason: (reason as any) || 'ETC', detail: reason });
+      alert('신고가 접수되었습니다.');
+    } catch (e: any) {
+      alert(e?.message ?? '신고 실패');
+    }
+  }
+  // 댓글 영역 전반 html
   return (
-    <section className="space-y-4">
-      <h3 className="text-lg font-semibold">댓글</h3>
+    <div className="relative">
+      {/* 기존 bg-[#929292] */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-y-2 left-1/2 -translate-x-1/2 w-screen -z-10 bg-white"
+      />
+      {/* 댓글 영역 전체도 흰색 + 기본 글자색 #4f4f4f */}
+      <section className="space-y-4 rounded-xl p-4 bg-white text-[#4f4f4f]">
+        <header className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">댓글</h2>
+        </header>
 
-      {/* (B) HTML 유효성 검증 + 반응형 */}
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <textarea
-          required
-          minLength={2}
-          maxLength={1000}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="응원과 감상을 남겨보세요"
-          className="min-h-16 w-full resize-y rounded-xl border p-3 text-sm sm:text-base"
-          aria-label="댓글 입력"
-        />
-        <button
-          onClick={onSubmit}
-          disabled={!content.trim()}
-          className="rounded-xl bg-black px-4 py-2 text-sm text-white hover:bg-neutral-800 disabled:opacity-40 sm:self-end"
-          aria-disabled={!content.trim()}
-          aria-label="댓글 등록"
-        >
-          등록
-        </button>
-      </div>
-
-      {/* (G) 쉼머 스켈레톤 */}
-      {loading ? (
-        <div className="space-y-2" aria-live="polite">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl border" />
-          ))}
+        <div className="flex gap-2">
+          <input
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onCreate()}
+            placeholder="댓글을 입력하세요"
+            className="flex-1 rounded-md border border-[#4f4f4f] bg-white px-3 py-2 text-[#4f4f4f] placeholder-[#4f4f4f]/50 caret-[#4f4f4f] focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+          />
+          <button
+            onClick={onCreate}
+            className="rounded-md border border-[#4f4f4f] px-3 py-2 font-medium text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+            aria-label="댓글 작성"
+          >
+            등록
+          </button>
         </div>
-      ) : null}
 
-      {/* (H) 오류 메시지 접근성 */}
-      {err ? (
-        <p className="text-sm text-red-600" aria-live="polite" role="status">
-          {err}
-        </p>
-      ) : null}
+        {loading && <p className="text-sm text-gray-500">불러오는 중…</p>}
+        {err && <p className="text-sm text-red-600">{err}</p>}
+        {/* 부모 댓글 리스트: 모든 아이템 사이 경계선 */}
+        <ul className="divide-y divide-[#e5e7eb] rounded-xl border border-[#e5e7eb]">
+          {threaded.parents.map((c) => {
+            const id = toId(c);
+            const replies = threaded.children.get(id) ?? [];
+            return (
+              <li key={id} className="relative rounded-md bg-white p-3 text-[#4f4f4f]">
+                <time className="absolute right-2 top-2 text-[10px] text-[#6b7280]">
+                  {fmt(c.creationDate)}
+                </time>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold">{c.memberNickname}</div>
+                    <p className="whitespace-pre-wrap text-sm">{c.content}</p>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-[#6b7280]">
+                      <button
+                        onClick={() => onToggleLike(c)}
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        aria-label="좋아요"
+                      >
+                        <HandThumbUpIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
+                        <span>{c.likeCount}</span>
+                      </button>
+                      <button
+                        onClick={() => onToggleDisLike(c)}
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        aria-label="싫어요"
+                      >
+                        <HandThumbDownIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
+                        <span>{c.dislikeCount}</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const v = prompt('답글을 입력하세요');
+                          if (v && v.trim()) onReply(id, v.trim());
+                        }}
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                      >
+                        <ChatBubbleBottomCenterTextIcon
+                          className="h-4 w-4 text-[#4f4f4f]"
+                          aria-hidden="true"
+                        />
+                        <span>답글</span>
+                      </button>
+                      <button
+                        onClick={() => onReport(c)}
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        aria-label="신고"
+                      >
+                        <FlagIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
+                        <span>신고</span>
+                      </button>
+                      {myId && Number(c.memberId) === myId && (
+                        <button
+                          onClick={() => onRemove(c)}
+                          className="ml-2 flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-red-600"
+                          aria-label="삭제"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          <span>삭제</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-      <ul className="divide-y rounded-xl border">
-        {items.map((c) => (
-          <li key={c.id ?? c.idx} className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-[1fr_auto]">
-            <div>
-              <div className="mb-1 text-sm text-neutral-500">{c.memberNickname ?? '익명'}</div>
-              <p className="whitespace-pre-wrap text-sm sm:text-base">{c.content}</p>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs text-neutral-600">
-                <button
-                  onClick={async () => {
-                    try {
-                      if (c.isLiked) {
-                        await unlikeComment(c.id ?? c.idx);
-                      } else {
-                        await likeComment(c.id ?? c.idx);
-                      }
-                      setItems((prev) =>
-                        prev.map((x) =>
-                          (x.id ?? x.idx) === (c.id ?? c.idx)
-                            ? {
-                                ...x,
-                                isLiked: !x.isLiked,
-                                likeCount: (x.likeCount ?? 0) + (x.isLiked ? -1 : 1),
-                              }
-                            : x
-                        )
-                      );
-                    } catch (e: any) {
-                      alert(e.message || '처리 실패');
-                    }
-                  }}
-                  className="flex items-center gap-1 rounded-md border px-2 py-1"
-                  aria-label="좋아요"
-                >
-                  <HandThumbUpIcon className="h-4 w-4" aria-hidden="true" />
-                  <span>{c.likeCount ?? 0}</span>
-                </button>
-                <button
-                  onClick={async () => {
-                    const v = prompt('대댓글 내용');
-                    if (!v?.trim()) return;
-                    try {
-                      await replyToComment(c.id ?? c.idx, { content: v });
-                      alert('대댓글을 등록했습니다.');
-                    } catch (e: any) {
-                      alert(e.message || '대댓글 작성 실패');
-                    }
-                  }}
-                  className="flex items-center gap-1 rounded-md border px-2 py-1"
-                  aria-label="답글"
-                >
-                  <ChatBubbleLeftRightIcon className="h-4 w-4" aria-hidden="true" />
-                  <span>답글</span>
-                </button>
-                <button
-                  onClick={async () => {
-                    if (!confirm('댓글을 삭제할까요?')) return;
-                    try {
-                      await deleteComment(c.id ?? c.idx);
-                      setItems((prev) => prev.filter((x) => (x.id ?? x.idx) !== (c.id ?? c.idx)));
-                    } catch (e: any) {
-                      alert(e.message || '삭제 실패');
-                    }
-                  }}
-                  className="flex items-center gap-1 rounded-md border px-2 py-1"
-                  aria-label="삭제"
-                >
-                  <TrashIcon className="h-4 w-4" aria-hidden="true" />
-                  <span>삭제</span>
-                </button>
-              </div>
-            </div>
-            <time
-              className="text-right text-xs text-neutral-400"
-              dateTime={new Date(c.createdAt ?? Date.now()).toISOString()}
-            >
-              {new Date(c.createdAt ?? c.creationDate ?? Date.now()).toLocaleString()}
-            </time>
-          </li>
-        ))}
-      </ul>
-    </section>
+                {replies.length > 0 && (
+                  /* 대댓글 리스트에도 경계선 적용 + 들여쓰기 표시용 왼쪽 보더 */
+                  <ul className="mt-2 pl-6 divide-y divide-[#e5e7eb] border-l border-[#e5e7eb]">
+                    {replies.map((r) => (
+                      <li key={toId(r)} className="relative bg-white p-2 text-[#4f4f4f]">
+                        {/* 작성 시간: 우상단 */}
+                        <time className="absolute right-2 top-2 text-[10px] text-[#6b7280]">
+                          {fmt(r.creationDate)}
+                        </time>
+
+                        <div className="text-xs font-semibold">{r.memberNickname}</div>
+                        <div className="text-sm whitespace-pre-wrap">{r.content}</div>
+
+                        {/* 대댓글 액션 버튼: 좋아요/싫어요/신고 */}
+                        <div className="mt-2 flex items-center gap-2 text-xs text-[#6b7280]">
+                          <button
+                            onClick={() => onToggleLike(r)}
+                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                            aria-label="좋아요"
+                          >
+                            <HandThumbUpIcon
+                              className="h-4 w-4 text-[#4f4f4f]"
+                              aria-hidden="true"
+                            />
+                            <span>{r.likeCount}</span>
+                          </button>
+                          <button
+                            onClick={() => onToggleDisLike(r)}
+                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                            aria-label="싫어요"
+                          >
+                            <HandThumbDownIcon
+                              className="h-4 w-4 text-[#4f4f4f]"
+                              aria-hidden="true"
+                            />
+                            <span>{r.dislikeCount}</span>
+                          </button>
+                          <button
+                            onClick={() => onReport(r)}
+                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                            aria-label="신고"
+                          >
+                            <FlagIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
+                            <span>신고</span>
+                          </button>
+                          {/* 대댓글 삭제 */}
+                          {myId && Number(r.memberId) === myId && (
+                            <button
+                              onClick={() => onRemove(r)}
+                              className="ml-2 flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-red-600"
+                              aria-label="삭제"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                              <span>삭제</span>
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="flex items-center justify-between">
+          <button
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="rounded-md border px-3 py-1 disabled:opacity-50"
+          >
+            이전
+          </button>
+          <span className="text-sm text-gray-600">{page} 페이지</span>
+          <button onClick={() => setPage((p) => p + 1)} className="rounded-md border px-3 py-1">
+            다음
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -32,7 +32,7 @@ const signupSchema = yup.object({
     .matches(/^(\d{2,3}-\d{3,4}-\d{4})$/, '전화번호는 000-0000-0000 형식이어야 합니다.')
     .required(),
 });
-
+// yup을 통해 타입 타당성 정의
 export async function POST(req: NextRequest) {
   const error = await validateBody(signupSchema)(req.clone());
   if (error) return error;

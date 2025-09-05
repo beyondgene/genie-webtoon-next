@@ -1,6 +1,6 @@
+// 관리자 테이블 시더
 'use strict';
 // 실제 운영에서는 비밀번호를 해싱(hashing)하여 저장해야 합니다.
-// 예: const bcrypt = require('bcrypt');
 // const hashedPassword = await bcrypt.hash('password123', 10);
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

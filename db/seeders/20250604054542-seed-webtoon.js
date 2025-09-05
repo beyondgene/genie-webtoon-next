@@ -1,3 +1,4 @@
+// 웹툰 테이블 시더
 'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

@@ -14,7 +14,7 @@ const SessionActions = dynamic(() => import('@/components/auth/SessionActions'),
   ssr: false,
   loading: () => <div className="h-8 w-28 rounded-lg bg-gray-100 animate-pulse" />,
 });
-
+// 헤더 설정
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur border-b border-gray-100">

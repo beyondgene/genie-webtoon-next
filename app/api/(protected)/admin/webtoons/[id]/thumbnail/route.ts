@@ -10,7 +10,7 @@ type Body = {
   /** S3 객체 키. 예) webtoon-thumbnail/alone_levelup.png */
   key?: string;
 };
-
+// 웹툰 썸네일 불러와서 화면에 배치하는 put 컨트롤러를 호출하는 라우터
 async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAdminAuth(req);
 

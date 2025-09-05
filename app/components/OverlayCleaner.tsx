@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-
+// 오버레이 청소 컴포넌트
 export default function OverlayCleaner() {
   const pathname = usePathname();
 

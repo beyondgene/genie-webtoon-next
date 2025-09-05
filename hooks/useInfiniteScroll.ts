@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+// 세로 길이가 긴 웹툰 그림 이미지 스크롤을 위한 프런트용 데이터타입 인터페이스
 export interface UseInfiniteScrollOptions {
   /** 교차 임계값 (기본 0.25) */
   threshold?: number;
@@ -40,18 +41,18 @@ export function useInfiniteScroll(
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const lastCallRef = useRef(0);
-
+  // 초기화 명령어
   const cleanup = useCallback(() => {
     observerRef.current?.disconnect();
     observerRef.current = null;
   }, []);
-
+  // 스크롤되면서 상태 변화에 따른 상태 지정
   const observe = useCallback(
     (node: HTMLDivElement | null) => {
       sentinelRef.current = node;
       cleanup();
       if (!node || disabled) return;
-
+      // 이미지 전체 길이와 현재 스크롤 상태를 반영하여 길이 계산
       observerRef.current = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
@@ -73,7 +74,7 @@ export function useInfiniteScroll(
     },
     [cleanup, disabled, hasMore, loading, onLoadMore, root, rootMargin, threshold, throttleMs]
   );
-
+  // 스크롤이 완료되면 cleanup을 이용한 초기화 실행
   useEffect(() => () => cleanup(), [cleanup]);
 
   return {

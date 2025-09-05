@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatK } from '@/lib/format';
 import * as React from 'react';
-
+// 웹툰 카드에 담기는 내용을 외부 코드에서 사용할 수 있도록 정의한 데이터 타입
 export type WebtoonCardData = {
   idx: number;
   webtoonName: string;
@@ -14,7 +14,7 @@ export type WebtoonCardData = {
   views?: number;
   badge?: React.ReactNode;
 };
-
+// 해당 코드에서 사용되는 속성의 타입과 정의
 type Props = {
   webtoon?: WebtoonCardData;
   href?: string;
@@ -22,7 +22,7 @@ type Props = {
   error?: string | Error;
   className?: string;
 };
-
+// 웹툰 카드 컴포넌트
 export default function WebtoonCard({ webtoon, href, loading, error, className = '' }: Props) {
   if (loading || !webtoon) {
     return (
@@ -44,7 +44,7 @@ export default function WebtoonCard({ webtoon, href, loading, error, className =
       </div>
     );
   }
-
+  // 웹툰 상세페이지로 링크
   const to = href ?? `/webtoon/${webtoon.idx}`;
 
   return (

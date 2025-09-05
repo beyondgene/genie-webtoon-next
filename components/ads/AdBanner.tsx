@@ -2,14 +2,14 @@
 
 import Image from 'next/image';
 import * as React from 'react';
-
+// ad 정보를 담는 데이터 타입, 외부로 내보내기, 확장 가능
 export type AdData = {
   idx: number;
   imageUrl: string;
   targetUrl: string;
   alt?: string;
 };
-
+// 아래 코드에서 사용될 속성들의 타입 설정
 type Props = {
   ad?: AdData;
   loading?: boolean;

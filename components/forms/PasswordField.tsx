@@ -10,7 +10,7 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   error?: FieldError;
   hintId?: string;
 };
-
+// 비밀번호 관련 필드 설정(숨기기,보기,리셋등의 기능처리 컴포넌트)
 export default function PasswordField({ label, error, hintId, ...rest }: Props) {
   const [show, setShow] = React.useState(false);
   const describedBy =

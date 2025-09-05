@@ -7,7 +7,7 @@ import {
   updateAdvertisement,
   deleteAdvertisement,
 } from '@/controllers/admin/advertisementsController';
-
+// 특정 광고를 IDX로 불러오는 컨트롤러를 호출하는 GET 라우터
 async function GETHandler(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
@@ -23,7 +23,7 @@ async function GETHandler(req: NextRequest, { params }: { params: { id: string }
     );
   }
 }
-
+// 특정 광고를 IDX로 붙여넣는 컨트롤러를 호출하는 PUT 라우터
 async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;
@@ -50,7 +50,7 @@ async function PUTHandler(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: msg }, { status });
   }
 }
-
+// 특정 광고를 IDX로 삭제하는 컨트롤러를 호출하는 DELETE 라우터
 async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdminAuth(req);
   if (auth instanceof NextResponse) return auth;

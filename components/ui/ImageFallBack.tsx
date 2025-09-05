@@ -5,7 +5,7 @@ import { useEffect, useState, ImgHTMLAttributes } from 'react';
 type Props = ImgHTMLAttributes<HTMLImageElement> & {
   fallbackSrc?: string;
 };
-
+// 이미지 로딩 실패시 대체 이미지 설정 컴포넌트
 export default function ImageFallback({
   fallbackSrc = '/images/placeholder-webtoon.png',
   src,

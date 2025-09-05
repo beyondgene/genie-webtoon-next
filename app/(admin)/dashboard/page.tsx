@@ -4,15 +4,19 @@ import { listWebtoons } from '@/services/admin/webtoons.service';
 import { listMembers } from '@/services/admin/members.service';
 import { listAdvertisements } from '@/services/admin/advertisements.service';
 import { listEpisodes } from '@/services/admin/episodes.service';
+import { listArtists } from '@/services/admin/artists.service';
+import { listSubscriptions } from '@/services/admin/subscriptions.service';
 
 export const dynamic = 'force-dynamic';
-
+// 관리자 페이지 접속시 맨처음 나오는 홈화면
 export default async function Page() {
-  const [webtoons, members, ads, episodes] = await Promise.all([
+  const [webtoons, members, ads, episodes, artists, subs] = await Promise.all([
     listWebtoons(),
     listMembers(),
     listAdvertisements(),
     listEpisodes(),
+    listArtists(),
+    listSubscriptions(),
   ]);
 
   const Card = ({ label, value, href }: { label: string; value: number; href: string }) => (
@@ -24,7 +28,7 @@ export default async function Page() {
       <div className="text-2xl font-semibold">{value.toLocaleString()}</div>
     </Link>
   );
-
+  // 카드 형식으로 해당 기능을 누르면 해당 영역의 관리자 대쉬보드 페이지가 나옴
   return (
     <div className="max-w-screen-xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">관리자 대시보드</h1>
@@ -34,6 +38,8 @@ export default async function Page() {
         <Card label="회차" value={episodes.length} href="/episodes" />
         <Card label="회원" value={members.length} href="/members" />
         <Card label="광고" value={ads.length} href="/advertisements" />
+        <Card label="작가" value={artists.length} href="/artists" />
+        <Card label="구독" value={subs.length} href="/subscriptions" />
       </section>
 
       <section className="rounded-2xl border p-5 md:p-6">

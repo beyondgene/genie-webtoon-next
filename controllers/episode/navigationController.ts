@@ -17,13 +17,13 @@ export async function getEpisodeNavigation(
   totalCount: number;
 }> {
   const totalCount = await db.Episode.count({ where: { webtoonId } });
-
+  // 에피소드 idx를 기반으로 이전 에피소드 제목과 idx를 받아옴
   const prev = await db.Episode.findOne({
     where: { webtoonId, idx: { [Op.lt]: episodeId } },
     order: [['idx', 'DESC']],
     attributes: ['idx', 'title'],
   });
-
+  // 에피소드 idx를 기반으로 다음 에피소드 제목과 idx를 받아옴
   const next = await db.Episode.findOne({
     where: { webtoonId, idx: { [Op.gt]: episodeId } },
     order: [['idx', 'ASC']],

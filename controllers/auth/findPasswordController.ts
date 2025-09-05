@@ -1,15 +1,14 @@
 // controllers/auth/findPasswordController.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { randomBytes } from 'crypto';
 import { hash } from 'bcrypt';
 import db from '@/models';
 import { isEmailConfigured, sendResetPasswordEmail } from '@/lib/emailService';
 import { randomInt } from 'crypto';
-
+//허용하는 문자,숫자,특수기호 나열
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const DIGITS = '0123456789';
 const SPECIAL = '!@#$%^&*()-_=+[]{};:,.?'; // 필요에 따라 허용 문자 조정
-
+// 위 허용하는 조합에서 랜덤으로 정해진 길이까지 조합해서 문자열 생성
 function pick(set: string) {
   return set[randomInt(0, set.length)];
 }
@@ -37,7 +36,7 @@ export function generateTempPassword(len = 12): string {
 
   return chars.join('');
 }
-
+// 비밀번호 찾기 로직
 export async function findPassword(req: NextRequest) {
   try {
     const { memberId, name, phoneNumber } = await req.json();
@@ -47,7 +46,7 @@ export async function findPassword(req: NextRequest) {
         { status: 400 }
       );
     }
-
+    // 멤버 아이디, 이름, 전화번호로 db에 검색해 일치하는 회원 검색
     const user = await db.Member.findOne({ where: { memberId, name, phoneNumber } });
     if (!user) return NextResponse.json({ error: '일치하는 회원이 없습니다.' }, { status: 404 });
 
@@ -61,7 +60,7 @@ export async function findPassword(req: NextRequest) {
     const tempPassword = generateTempPassword(12);
     const hashed = await hash(tempPassword, 12);
 
-    // ✅ 트랜잭션: 메일 성공시에만 커밋
+    // 트랜잭션: 메일 성공시에만 커밋
     const t = await db.sequelize.transaction();
     try {
       await user.update(

@@ -4,6 +4,7 @@ import { Webtoon } from '@/models/webtoon';
 import { Artist } from '@/models/artist';
 import { Subscription } from '@/models/subscription';
 
+// 백엔드에 코드 전달을 위한 웹툰 리스트 데이터 타입 인터페이스
 interface WebtoonListDTO {
   id: number;
   name: string;
@@ -18,6 +19,7 @@ interface WebtoonListDTO {
   updatedAt: string;
 }
 
+// 백엔드에 코드 전달을 위한 웹툰 상세 데이터 타입 인터페이스
 interface WebtoonDetailDTO {
   id: number;
   name: string;
@@ -33,7 +35,7 @@ interface WebtoonDetailDTO {
     alarmOn: boolean;
   };
 }
-
+// 웹툰 리스트를 불러오는 함수
 export async function getWebtoonList(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -55,7 +57,7 @@ export async function getWebtoonList(req: NextRequest) {
     raw: true,
     nest: true,
   });
-
+  // db에서 구독 테이블의 'webtoonId', 'alarm_on'속성을 기준으로 컬럼들을 검색하고 해당 값을 기준으로 값을 반환
   const ids = webtoons.map((w) => w.idx);
   const subs = await Subscription.findAll({
     where: { memberId, webtoonId: ids, status: 'ACTIVE' },
@@ -80,12 +82,12 @@ export async function getWebtoonList(req: NextRequest) {
 
   return NextResponse.json({ webtoons: result });
 }
-
+// 웹툰의 상세 속성과 정보를 불러오는 함수
 export async function getWebtoonDetail(req: NextRequest, webtoonId: number) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
-
+  // db에서 웹툰 테이블의 'artistName'속성을 기준으로 컬럼들을 검색하고 해당 값을 기준으로 값을 반환
   const w = await Webtoon.findByPk(webtoonId, {
     include: [{ model: Artist, attributes: ['artistName'] }],
     attributes: [

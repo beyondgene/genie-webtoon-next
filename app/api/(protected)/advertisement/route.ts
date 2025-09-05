@@ -3,6 +3,7 @@ import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { getActiveAds, createAd } from '@/controllers/advertisement/advertisementController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
+// 광고를 불러오는 컨트롤러에 있는 로직을 불러오는 get 핸들러 라우터
 async function GETHandler(
   req: NextRequest,
   { params }: { params: Record<string, string> } // params는 비어있지만 시그니처 맞춤
@@ -21,6 +22,7 @@ async function GETHandler(
   }
 }
 
+// 새 광고를 추가하는 컨트롤러에 있는 로직을 불러오는 post 핸들러 라우터
 async function POSTHandler(req: NextRequest, { params }: { params: Record<string, string> }) {
   try {
     const sessionOrRes = await requireAdminAuth(req);

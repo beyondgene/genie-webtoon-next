@@ -8,6 +8,9 @@ export type UserRole = 'MEMBER' | 'ADMIN';
 /** 관리자 테이블 전용 세부 롤(관리자 내부 권한) */
 export type AdminRole = 'SUPER' | 'MANAGER';
 
+/* 멤버 상태 타입 사전 정의 */
+type MemberStatus = 'PENDING' | 'ACTIVE' | 'DELETED' | 'SUSPENDED';
+
 declare module 'next-auth' {
   /**
    * 세션에 우리가 쓰는 식별자와 롤을 ‘최상위’와 ‘user’ 둘 다에 확장합니다.
@@ -23,6 +26,7 @@ declare module 'next-auth' {
     memberId: string;
     /** 닉네임 */
     nickname: string;
+    status: MemberStatus;
 
     user: {
       /** 동일 정보 클라이언트 편의상 user 안에도 복제 */
@@ -30,6 +34,7 @@ declare module 'next-auth' {
       role: UserRole;
       memberId: string;
       nickname: string;
+      status: MemberStatus;
     } & DefaultSession['user'];
   }
 
@@ -46,6 +51,7 @@ declare module 'next-auth' {
     nickname: string;
     /** (선택) 관리자라면 내부 권한 */
     adminRole?: AdminRole;
+    _memberId?: number;
   }
 }
 
@@ -56,6 +62,7 @@ declare module 'next-auth/jwt' {
     role: UserRole;
     memberId: string;
     nickname: string;
+    status: MemberStatus;
     /** (선택) 관리자 세부 롤 */
     adminRole?: AdminRole;
   }

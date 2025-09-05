@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 
 export class Episode extends Model<InferAttributes<Episode>, InferCreationAttributes<Episode>> {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare title: string; // ERD에 없지만 필수적이므로 추가
   declare epthumbnailUrl: string; // ERD에 없지만 필수적이므로 추가
@@ -16,7 +17,7 @@ export class Episode extends Model<InferAttributes<Episode>, InferCreationAttrib
   declare webtoonId: number;
   declare adId: number | null;
   declare adminId: number;
-
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof Episode {
     Episode.init(
       {
@@ -65,11 +66,11 @@ export class Episode extends Model<InferAttributes<Episode>, InferCreationAttrib
     );
     return Episode;
   }
-
+  // fk 설정
   static associate(models: any) {
     Episode.belongsTo(models.Webtoon, { foreignKey: 'webtoonId' });
     Episode.belongsTo(models.Advertisement, { foreignKey: 'adId' });
     Episode.belongsTo(models.Admin, { foreignKey: 'adminId' });
-    Episode.hasMany(models.Comment, { foreignKey: 'episodeId' });
+    Episode.hasMany(models.Comment, { foreignKey: 'episodeId', sourceKey: 'idx' });
   }
 }

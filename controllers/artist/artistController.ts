@@ -1,11 +1,10 @@
 import db from '@/models';
-// ✅ 변경: subscription 파사드 대신 북마크 컨트롤러 사용
-import { getBookmarkStatusForList } from '@/controllers/member/bookmarksController';
+import { toBookmarkMap } from '@/controllers/member/bookmarksController';
 
-// Controller functions for managing artists and their webtoons
+// 작가와 해당 작가의 웹툰을 관리하는 컨트롤러 함수들
 
 /**
- * Fetch a list of all artists
+ * 모든 작가 목록 조회
  */
 export async function getArtistList() {
   return await db.Artist.findAll({
@@ -16,9 +15,9 @@ export async function getArtistList() {
 }
 
 /**
- * Create a new artist
- * @param data Artist creation payload
- * @param adminId ID of admin performing the action
+ * 새로운 작가 생성
+ * @param data 작가 생성 데이터
+ * @param adminId 작업을 수행하는 관리자 ID
  */
 export async function createArtist(
   data: {
@@ -44,8 +43,8 @@ export async function createArtist(
 }
 
 /**
- * Fetch a single artist by ID
- * @param artistId Artist's primary key
+ * ID로 단일 작가 조회
+ * @param artistId 작가의 기본 키
  */
 export async function getArtistById(artistId: number) {
   return await db.Artist.findByPk(artistId, {
@@ -63,10 +62,10 @@ export async function getArtistById(artistId: number) {
 }
 
 /**
- * Update an existing artist
- * @param artistId Artist's primary key
- * @param data Fields to update
- * @param adminId ID of admin performing the action
+ * 기존 작가 정보 업데이트
+ * @param artistId 작가의 기본 키
+ * @param data 업데이트할 필드들
+ * @param adminId 작업을 수행하는 관리자 ID
  */
 export async function updateArtist(
   artistId: number,
@@ -93,8 +92,8 @@ export async function updateArtist(
 }
 
 /**
- * Delete an artist by ID
- * @param artistId Artist's primary key
+ * ID로 작가 삭제
+ * @param artistId 작가의 기본 키
  */
 export async function deleteArtist(artistId: number) {
   const artist = await db.Artist.findByPk(artistId);
@@ -105,14 +104,14 @@ export async function deleteArtist(artistId: number) {
 }
 
 /**
- * Fetch webtoons for a given artist, annotated with subscription status for a member
- * @param memberId ID of the member (for subscription checks)
- * @param artistId Artist's primary key
+ * 특정 작가의 웹툰 목록을 회원의 구독 상태와 함께 조회
+ * @param memberId 회원 ID (구독 확인용)
+ * @param artistId 작가의 기본 키
  */
 export async function getArtistWebtoons(memberId: number, artistId: number) {
-  // Retrieve raw list of webtoons
+  // 웹툰 목록 조회
   const webtoons = (await db.Webtoon.findAll({
-    where: { artistIdx: artistId },
+    where: { artistId: artistId },
     attributes: [
       'idx',
       'webtoonName',
@@ -134,15 +133,32 @@ export async function getArtistWebtoons(memberId: number, artistId: number) {
     recommend: number;
   }>;
 
-  // ✅ 변경: 북마크 상태 조회 후, Map(webtoonId -> alarmOn)으로 변환
-  const ids = webtoons.map((w) => w.idx);
-  const marks = await getBookmarkStatusForList(memberId, ids);
-  const subsMap = new Map<number, boolean>(marks.map((m) => [m.webtoonId, m.alarmOn]));
+  // ✅ 수정: 직접 DB에서 구독 정보 조회
+  const webtoonIds = webtoons.map((w) => w.idx);
 
-  // Annotate and return (기존 has/get 사용 패턴 유지)
+  const subs = await db.Subscription.findAll({
+    where: {
+      memberId,
+      webtoonId: webtoonIds,
+      status: 'ACTIVE',
+    },
+    attributes: ['webtoonId', 'alarm_on'],
+    raw: true,
+  });
+
+  // BookmarkStatus 타입에 맞게 변환 후 Map으로 변환
+  const bookmarkStatuses = subs.map((sub: any) => ({
+    webtoonId: sub.webtoonId,
+    isSubscribed: true,
+    alarmOn: !!sub.alarm_on,
+  }));
+
+  const subsMap = toBookmarkMap(bookmarkStatuses);
+
+  // 구독 정보를 포함하여 반환 (기존 has/get 사용 패턴 유지)
   return webtoons.map((w) => ({
     ...w,
     isSubscribed: subsMap.has(w.idx),
-    alarmOn: subsMap.get(w.idx) ?? false,
+    alarmOn: subsMap.get(w.idx)?.alarmOn ?? false,
   }));
 }

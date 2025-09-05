@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/middlewares/auth';
 import { getEpisodeNavigation } from '@/controllers/episode/navigationController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
+// 에피소드에서 컨트롤러 네비게이션 호출하는 get 라우터
 async function GETHandler(
   req: NextRequest,
   { params }: { params: { webtoonId: string; episodeId: string } }

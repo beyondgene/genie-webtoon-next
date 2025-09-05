@@ -34,6 +34,7 @@ export interface AdvertisementInput {
   startDate: Date;
   endDate: Date | null;
   totalExposureLimit: number | null;
+  currentExposureCount: number;
   adImageUrl: string;
   targetUrl: string;
   adminId: number;

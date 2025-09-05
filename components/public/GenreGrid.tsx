@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-
+// 장르 속성이 그리드 디자인에서 나열되는 설정 컴포넌트
 type Genre = { name: string; slug: string; count?: number };
 export default function GenreGrid({ genres }: { genres: Genre[] }) {
   return (

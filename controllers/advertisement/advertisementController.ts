@@ -4,6 +4,7 @@ import { Op, col, where } from 'sequelize';
 
 const { Advertisement } = db;
 
+// 광고 입력 생성 모델
 export interface CreateAdInput {
   imageUrl: string;
   linkUrl: string;
@@ -13,9 +14,35 @@ export interface CreateAdInput {
   startDate?: Date;
   endDate?: Date;
   totalExposureLimit?: number | null;
-  currentExposureCount?: number; // ✅ camelCase로 사용
+  currentExposureCount?: number;
+}
+export interface UpdateAdInput {
+  adName?: string;
+  adLocation?: 'HOME' | 'EPISODE_BOTTOM' | 'SIDE_BANNER';
+  status?: 'ACTIVE' | 'PAUSED' | 'EXPIRED';
+  startDate?: Date;
+  endDate?: Date | null;
+  totalExposureLimit?: number | null;
+  currentExposureCount?: number;
+  priority?: number;
+  targetUrl?: string;
+  adImageUrl?: string | null;
 }
 
+export async function updateAd(id: number, updates: UpdateAdInput) {
+  const ad = await Advertisement.findByPk(id);
+  if (!ad) throw new Error('NOT_FOUND');
+  await ad.update(updates as any);
+  return ad.get({ plain: true });
+}
+
+export async function deleteAd(id: number) {
+  // FK 제약이 있으면 destroy가 실패할 수 있음에 유의
+  const cnt = await Advertisement.destroy({ where: { idx: id } });
+  return cnt > 0;
+}
+
+// 광고 상세정보 dto 타입
 export type DetailAdDTO = {
   idx: number;
   adName: string | null;
@@ -23,6 +50,7 @@ export type DetailAdDTO = {
   adImageUrl?: string | null;
 };
 
+// 광고 idx를 통한 광고 불러오기
 export async function getAdById(id: number): Promise<DetailAdDTO | null> {
   const ad = await Advertisement.findByPk(id, {
     attributes: ['idx', 'adName', 'targetUrl', 'adImageUrl'],
@@ -37,7 +65,7 @@ export async function getAdById(id: number): Promise<DetailAdDTO | null> {
   };
 }
 
-/** 현재 노출 가능한 광고 목록 */
+// 현재 노출 가능한 광고 목록
 export async function getActiveAds() {
   const now = new Date();
   return Advertisement.findAll({
@@ -55,7 +83,7 @@ export async function getActiveAds() {
   });
 }
 
-/** 신규 광고 생성 */
+// 신규 광고 생성
 export async function createAd(input: CreateAdInput) {
   const {
     imageUrl,

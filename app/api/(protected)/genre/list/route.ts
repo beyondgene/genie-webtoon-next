@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/middlewares/auth';
 import { getGenreList } from '@/controllers/genre/listGenreController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
+// 장르 리스트 표현
 async function GETHandler(req: NextRequest) {
   // 로그인 검사
   const authResult = await requireAuth(req);

@@ -6,7 +6,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 // 프로젝트의 인증 전용 스키마를 사용합니다.
 import { findIdSchema, type FindIdInput } from '@/lib/validators/auth';
+import BackNavigator from '@/components/ui/BackNavigator';
 
+// 핸드폰 번호 로직
 function formatPhone(v: string) {
   // 010-1234-5678 형태로 하이픈 자동 삽입
   const digits = v.replace(/\D/g, '').slice(0, 11);
@@ -29,7 +31,7 @@ export default function FindIdPage() {
   const onSubmit = async (data: FindIdInput) => {
     setFoundId(null);
     setServerError(null);
-
+    //api 라우터에 저장된 아이디 찾기 라우터 호출
     try {
       const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
       const res = await fetch(`${base}/api/auth/find-id`, {
@@ -59,38 +61,39 @@ export default function FindIdPage() {
   return (
     <div
       className="min-h-screen w-full flex items-start sm:items-center justify-center"
-      style={{ background: '#929292' }}
+      style={{ background: '#4f4f4f' /* #929292 */ }}
     >
+      <BackNavigator />
       <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
-        {/* 상단 로고 박스 (로그인/회원가입과 동일 톤) */}
-        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[rgba(0,0,0,0.07)]">
+        {/* 상단 로고 박스 (로그인/회원가입과 동일 톤) 기존 bg-[rgba(0,0,0,0.07)] */}
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[#696969]">
           <span className="text-[22px] font-semibold tracking-wide text-white/90">
             GENIE WEBTOON
           </span>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-[14px]">
-          {/* 이름 */}
+          {/* 이름 기존 bg-[#D9D9D9] */}
           <div>
             <label className="mb-[6px] block text-[16px] font-medium text-white">Name</label>
             <input
               type="text"
               placeholder="홍길동"
-              className="h-[46px] w-[300px] rounded-[4px] bg-[#D9D9D9] px-3 text-[16px] text-black outline-none"
+              className="h-[46px] w-[300px] rounded-[4px] bg-[#4f4f4f] px-3 text-[16px] text-white placeholder-white/90 caret-white outline-none"
               style={{ border: '1px solid white', lineHeight: '20px' }}
               {...register('name')}
             />
             {errors.name && <p className="mt-1 text-xs text-white/90">{errors.name.message}</p>}
           </div>
 
-          {/* 전화번호 */}
+          {/* 전화번호 bg-[#D9D9D9] */}
           <div>
             <label className="mb-[6px] block text-[16px] font-medium text-white">Phone</label>
             <input
               type="tel"
               inputMode="numeric"
               placeholder="010-1234-5678"
-              className="h-[46px] w-[300px] rounded-[4px] bg-[#D9D9D9] px-3 text-[16px] text-black outline-none"
+              className="h-[46px] w-[300px] rounded-[4px] bg-[#4f4f4f] px-3 text-[16px] text-white placeholder-white/90 caret-white outline-none"
               style={{ border: '1px solid white', lineHeight: '20px' }}
               {...register('phoneNumber')}
               onChange={(e) =>

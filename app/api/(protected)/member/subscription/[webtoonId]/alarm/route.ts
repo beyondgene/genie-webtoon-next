@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import db from '@/models';
 
+//유효한 idx값인지 검증
 function toValidId(v: unknown): number | null {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+// 알람 설정 여부를 확인하고 이를 구독 여부에 반영하는 라우터
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ webtoonId: string }> }) {
   const authed = await requireAuth(req);
   if (authed instanceof NextResponse) return authed;

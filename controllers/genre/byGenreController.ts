@@ -1,6 +1,5 @@
 // controllers/genre/byGenreController.ts
 import db from '@/models';
-import { Op } from 'sequelize';
 
 /** Webtoon.genre ENUM 값을 안전하게 추출 */
 function getGenreEnumValues(): string[] {
@@ -17,7 +16,6 @@ function getGenreEnumValues(): string[] {
  * - 응답 형태는 기존(res.json) 또는 데이터 반환 두 가지 모두 지원.
  */
 export async function getWebtoonsByGenre(req?: any, res?: any) {
-  // param / query 모두 대응
   const raw =
     req?.params?.genre ??
     req?.query?.genre ??

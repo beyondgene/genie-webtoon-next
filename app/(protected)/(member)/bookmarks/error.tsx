@@ -1,4 +1,5 @@
 // app/(member)/my/bookmarks/error.tsx
+//에러 발생시 에러 메세지와 함께 다시 시도 버튼을 출력
 'use client';
 import EmptyState from '@/components/feedback/EmptyState';
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {

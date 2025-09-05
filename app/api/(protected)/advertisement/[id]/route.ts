@@ -1,3 +1,4 @@
+// 코드를 만들긴 했지만 현지 광고를 관리자가 db에서 직접하기 때문에 의미 없는 코드
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { updateAd, deleteAd } from '@/controllers/advertisement/advertisementController';

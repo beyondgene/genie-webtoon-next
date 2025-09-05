@@ -1,4 +1,5 @@
 'use strict';
+// 웹툰 섬네일 속성 추가 마이그레이션
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {

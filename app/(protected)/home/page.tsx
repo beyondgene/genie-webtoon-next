@@ -6,6 +6,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 type TileId = 'genre' | 'ranking' | 'genielife' | 'mypage';
 
+// 타일 id별 제목 색
+const TITLE_COLOR: Record<TileId, string> = {
+  genre: 'text-[#00FF80]',
+  ranking: 'text-[#FF00FF]',
+  genielife: 'text-[#00FFFF]',
+  mypage: 'text-[#FFFF00]',
+};
+
+// 회원으로 로그인하면 제일 먼저 나오는 메인 화면
 export default function HomePage() {
   const [active, setActive] = useState<TileId | null>(null);
   const [cooldown, setCooldown] = useState(false);
@@ -27,15 +36,15 @@ export default function HomePage() {
   const handleEnter = (id: TileId) => {
     if (!cooldown) setActive(id);
   };
-
+  // 종료시 재호버 방지
   const close = () => {
     setActive(null);
     setCooldown(true);
-    setTimeout(() => setCooldown(false), COOLDOWN_MS); // 재호버 방지
+    setTimeout(() => setCooldown(false), COOLDOWN_MS);
   };
-
+  // 기존 전체 배경 bg-919191, tile titleClass 추가
   return (
-    <div className="w-screen h-[100svh] bg-[#919191] overflow-hidden">
+    <div className="w-screen h-[100svh] bg-[#4f4f4f] overflow-hidden">
       {/* 바깥 테두리(1px white) */}
       <div className="w-full h-full border border-white">
         {/* Figma 비율: 좌 735 / 우 705 */}
@@ -47,9 +56,9 @@ export default function HomePage() {
               layoutId="tile-genre"
               onMouseEnter={() => handleEnter('genre')}
               onClick={() => handleEnter('genre')}
-              className="relative border-r border-b border-white"
+              className="relative border-r border-b border-white "
             >
-              <Tile title="장르별" subtitle="원하는 장르로 빠르게" />
+              <Tile title="장르별" subtitle="원하는 장르로 빠르게" titleClass="text-[#00FF80]" />
             </motion.div>
 
             {/* 좌하: 마이페이지(오른쪽 선) */}
@@ -59,7 +68,7 @@ export default function HomePage() {
               onClick={() => handleEnter('mypage')}
               className="relative border-r border-white"
             >
-              <Tile title="마이페이지" subtitle="나의 취향과 기록" />
+              <Tile title="마이페이지" subtitle="나의 취향과 기록" titleClass="text-[#FFFF00]" />
             </motion.div>
           </div>
 
@@ -72,7 +81,7 @@ export default function HomePage() {
               onClick={() => handleEnter('ranking')}
               className="relative border-b border-white"
             >
-              <Tile title="랭킹" subtitle="이번 주 인기 TOP" />
+              <Tile title="랭킹" subtitle="이번 주 인기 TOP" titleClass="text-[#FF00FF]" />
             </motion.div>
 
             {/* 우하: 지니와 함께하는 웹툰생활 */}
@@ -82,7 +91,11 @@ export default function HomePage() {
               onClick={() => handleEnter('genielife')}
               className="relative"
             >
-              <Tile title="지니와 함께하는 웹툰생활" subtitle="추천 & 도전골든벨" />
+              <Tile
+                title="지니와 함께하는 웹툰생활"
+                subtitle="추천 & 도전골든벨"
+                titleClass="text-[#00FFFF]"
+              />
             </motion.div>
           </div>
         </div>
@@ -114,20 +127,38 @@ export default function HomePage() {
     </div>
   );
 }
-
-function Tile({ title, subtitle }: { title: string; subtitle: string }) {
+// 부제목 설정 기존 bg-919191 tex
+function Tile({
+  title,
+  subtitle,
+  titleClass = 'text-white',
+  subtitleClass = 'text-white/90',
+  className = '',
+}: {
+  title: string;
+  subtitle: string;
+  titleClass?: string;
+  subtitleClass?: string;
+  className?: string;
+}) {
   return (
-    <div className="w-full h-full bg-[#919191] text-white flex items-center justify-center select-none">
+    <div
+      className={`w-full h-full bg-[#4f4f4f] flex items-center justify-center select-none ${className}`}
+    >
       <div className="text-center">
-        <h3 className="font-mont uppercase leading-tight text-[44px] md:text-[56px] font-extrabold tracking-tight">
+        <h3
+          className={`font-mont uppercase leading-tight text-[44px] md:text-[56px] font-extrabold tracking-tight ${titleClass}`}
+        >
           {title}
         </h3>
-        <span className="block mt-2 text-base md:text-lg opacity-95">{subtitle}</span>
+        <span className={`block mt-2 text-base md:text-lg opacity-95 ${subtitleClass}`}>
+          {subtitle}
+        </span>
       </div>
     </div>
   );
 }
-
+// 마우스 호버로 화면 확대시 로직 기존 bg-919191
 function Expanded({ id, onClose }: { id: TileId; onClose: () => void }) {
   const { title, items } = getVerticalMenu(id);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -135,7 +166,7 @@ function Expanded({ id, onClose }: { id: TileId; onClose: () => void }) {
     closeBtnRef.current?.focus();
   }, []);
   return (
-    <div className="w-full h-full bg-[#919191] text-white relative border border-white">
+    <div className="w-full h-full bg-[#4f4f4f] text-white relative border border-white">
       {/* 닫기 */}
       <button
         aria-label="닫기"
@@ -148,19 +179,30 @@ function Expanded({ id, onClose }: { id: TileId; onClose: () => void }) {
 
       {/* 레이아웃: 좌측 제목 / 중앙 세로 목록 */}
       <div className="w-full h-full flex">
-        {/* 좌측: 제목(왼쪽 상단 정렬) */}
+        {/* 좌측: 제목(왼쪽 상단 정렬) 메인화면 영역들 글씨색 갖고오는 명령어 */}
         <div className="basis-[32%] shrink-0 grow-0 flex items-start justify-start pl-16 pt-24">
-          <h2 className="font-mont uppercase text-[40px] md:text-[52px] font-extrabold leading-none">
-            {title}
+          <h2
+            className={`font-mont uppercase text-[40px] md:text-[52px] font-extrabold leading-none ${TITLE_COLOR[id] ?? ''}`}
+          >
+            {' '}
+            {id === 'genielife' ? (
+              <>
+                <span>지니와 함께하는</span>
+                <br />
+                <span className="whitespace-nowrap">웹툰생활</span>
+              </>
+            ) : (
+              title
+            )}
           </h2>
         </div>
 
-        {/* 중앙: 세로 목록(큰 행간) */}
+        {/* 중앙: 세로 목록(큰 행간) 볼드체 적용*/}
         <div className="flex-1 flex items-center justify-center">
           <ul className="list-none m-0 p-0 text-white font-light leading-[1.6] space-y-4 md:space-y-6">
             {items.map((i) => (
               <li key={i.href} className="text-[24px] md:text-[32px]">
-                <Link href={i.href} className="hover:opacity-80 transition-opacity">
+                <Link href={i.href} className="font-bold hover:opacity-80 transition-opacity">
                   {i.label}
                 </Link>
               </li>
@@ -213,7 +255,6 @@ function getVerticalMenu(id: TileId): { title: string; items: { href: string; la
         title: '마이페이지',
         items: [
           { label: '북마크', href: '/bookmarks' },
-          { label: '관심 작가', href: '/interests' },
           { label: '프로필', href: '/profile' },
           { label: '로그아웃', href: '/logout' },
         ],

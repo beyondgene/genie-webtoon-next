@@ -11,6 +11,7 @@ export class Subscription extends Model<
   InferAttributes<Subscription>,
   InferCreationAttributes<Subscription>
 > {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare status: 'ACTIVE' | 'INACTIVE';
   declare alarm_on: boolean;
@@ -18,7 +19,7 @@ export class Subscription extends Model<
   declare webtoonId: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof Subscription {
     Subscription.init(
       {
@@ -57,7 +58,7 @@ export class Subscription extends Model<
     );
     return Subscription;
   }
-
+  // fk 설정
   static associate(models: any) {
     Subscription.belongsTo(models.Member, { foreignKey: 'memberId' });
     Subscription.belongsTo(models.Webtoon, { foreignKey: 'webtoonId' });

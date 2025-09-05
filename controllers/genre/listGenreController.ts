@@ -17,7 +17,6 @@ function getGenreEnumValues(): string[] {
 export async function getGenreList(req?: any, res?: any) {
   const genres = getGenreEnumValues();
 
-  // Express/Next API Route 스타일(res 사용)
   if (res?.json) {
     return res.status(200).json({ items: genres, genres });
   }
@@ -25,6 +24,4 @@ export async function getGenreList(req?: any, res?: any) {
   // App Router 스타일(데이터만 반환)
   return { items: genres, genres };
 }
-
-// 기존에 default export를 쓰고 있었다면 유지
 export default { getGenreList };

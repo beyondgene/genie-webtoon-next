@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import db from '@/models';
 
+//유효한 idx 값인지 인증
 function toValidId(v: unknown): number | null {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-// 구독 상태 조회
+// 웹툰 구독 상태 조회
 export async function GET(req: NextRequest, ctx: { params: Promise<{ webtoonId: string }> }) {
   const authed = await requireAuth(req);
   if (authed instanceof NextResponse) return authed;
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ webtoonId: 
   });
 }
 
-// 구독 해제
+// 웹툰 구독 해제
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ webtoonId: string }> }) {
   const authed = await requireAuth(req);
   if (authed instanceof NextResponse) return authed;

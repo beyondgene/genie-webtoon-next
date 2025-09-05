@@ -1,4 +1,5 @@
 // app/(public)/artist/[id]/page.tsx
+// 현재 관심작가 페이지를 삭제해서 필요없음
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -8,7 +9,7 @@ type ArtistDTO = {
   profileImageUrl?: string | null;
   bio?: string | null;
 };
-
+// 웹툰과 작가의 정보를 둘다 담는 dto 정의
 type ArtistWebtoonDTO = {
   idx: number;
   webtoonName: string;
@@ -16,15 +17,15 @@ type ArtistWebtoonDTO = {
   genre?: string;
   views?: number;
 };
-
+//Json 정보를 fetchApi를 통해 반환
 async function fetchJSON<T>(url: string): Promise<T | null> {
   const res = await fetch(url, { next: { revalidate: 60 } });
   if (!res.ok) return null;
   return (await res.json()) as T;
 }
 
-export default async function ArtistPage({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   // 1) 퍼블릭 GET 우선 시도 (권장 라우트: /api/(public)/artist/[id])
   let artist = await fetchJSON<ArtistDTO>(
@@ -39,7 +40,7 @@ export default async function ArtistPage({ params }: { params: { id: string } })
   );
   const list: ArtistWebtoonDTO[] =
     webtoons?.webtoons ?? (Array.isArray(webtoons) ? (webtoons as any) : []);
-
+  // 작가정보 불어오는중 에러 발생시
   if (!artist) {
     return (
       <main className="mx-auto max-w-5xl p-6">

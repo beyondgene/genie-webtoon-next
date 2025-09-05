@@ -174,6 +174,7 @@ export interface AdvertisementDTO extends Timestamps {
   updatedAt?: string;
 }
 
+// 관리자 역할 사전정의
 export type AdminRole = 'SUPER' | 'MANAGER';
 
 /** 관리자 DTO */

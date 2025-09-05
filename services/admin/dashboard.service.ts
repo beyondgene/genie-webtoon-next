@@ -7,6 +7,7 @@ import type { AdminAdvertisement } from './advertisements.service';
 import type { AdminMember } from './members.service';
 import type { ReportedComment } from './reported-comments.service';
 
+// 프런트에서 관리자 대쉬보드에 있는 데이터들을 확장해서 쓰기 위해 정의된 인터페이스
 export interface AdminDashboardData {
   counts: {
     webtoons: number;

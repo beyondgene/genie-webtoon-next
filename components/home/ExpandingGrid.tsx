@@ -6,7 +6,7 @@ import Link from 'next/link';
 import '@/styles/expanding-grid.css';
 
 type TileKey = 'genre' | 'ranking' | 'genie' | 'mypage';
-
+// 아래에서 사용될 각 메뉴별 키값과 속성값 사전 지정
 const tiles: Array<{
   key: TileKey;
   title: string;
@@ -38,7 +38,7 @@ const tiles: Array<{
     bg: 'bg-gradient-to-br from-amber-500 to-amber-700',
   },
 ];
-
+// 메인 홈 화면에서 그리드 디자인이 각 메뉴에 호버 또는 클릭이되면 해당 메뉴가 화면 전체로 확장되는 기능을 담당하는 컴포넌트
 export default function ExpandingGrid() {
   const [active, setActive] = useState<TileKey | null>(null);
 

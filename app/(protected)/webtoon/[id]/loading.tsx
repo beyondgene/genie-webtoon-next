@@ -1,3 +1,4 @@
+// 로딩중 스켈레톤 디자인
 export default function LoadingWebtoon() {
   return (
     <main className="min-h-screen bg-[#929292] text-white">

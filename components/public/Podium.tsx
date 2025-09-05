@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatK } from '@/lib/format';
-
+// 단상 설정
 type Item = { idx: number; webtoonName: string; wbthumbnailUrl: string; views?: number };
 export default function Podium({ items }: { items: Item[] }) {
   const top3 = items.slice(0, 3);

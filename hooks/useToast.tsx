@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
-
+  // 옵션 타입을 변경 시키고 item(ToastItem타입)을 보내 toast 전송
   const push = useCallback(
     (message: string, opts?: ToastOptions) => {
       // ✅ 옵션 타입 교체
@@ -57,7 +57,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     },
     [dismiss]
   );
-
+  // 현 상태에 callback을 통해 현 상태 타입을 담아 push로 반영
   const info = useCallback(
     (m: string, d?: number) => push(m, { type: 'info', duration: d }),
     [push]

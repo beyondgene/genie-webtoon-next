@@ -25,8 +25,8 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
   declare views: number;
   declare recommend: number;
   declare Artist?: Artist;
-  declare adminIdx: number;
-  declare artistIdx: number;
+  declare adminId: number;
+  declare artistId: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare wbthumbnailUrl: CreationOptional<string>;
@@ -73,11 +73,11 @@ export class Webtoon extends Model<InferAttributes<Webtoon>, InferCreationAttrib
           allowNull: false,
           defaultValue: 0,
         },
-        adminIdx: {
+        adminId: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
         },
-        artistIdx: {
+        artistId: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
         },

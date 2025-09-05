@@ -16,6 +16,7 @@ const ADMIN_GROUP_BASES = [
   '/episodes',
   '/comments',
   '/members',
+  '/subscriptions',
 ];
 
 // 경로 매칭 헬퍼
@@ -93,5 +94,6 @@ export const config = {
     '/episodes/:path*',
     '/comments/:path*',
     '/members/:path*',
+    '/subscriptions/:path*',
   ],
 };

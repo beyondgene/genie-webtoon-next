@@ -1,5 +1,5 @@
 'use strict';
-
+// 멤버 토큰 인증 마이그레이션
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn('member', 'verificationToken', {

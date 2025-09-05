@@ -1,5 +1,6 @@
 import { api } from '@/lib/fetcher';
 
+/* 관리자,멤버 타입 사전 정의/ 로그인 세션 dto 사전 정의 */
 export type UserRole = 'MEMBER' | 'ADMIN';
 export interface AuthSessionDTO {
   id: number;

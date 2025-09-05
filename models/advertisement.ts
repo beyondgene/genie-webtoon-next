@@ -11,6 +11,7 @@ export class Advertisement extends Model<
   InferAttributes<Advertisement>,
   InferCreationAttributes<Advertisement>
 > {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare adName: string;
   declare adLocation: 'HOME' | 'EPISODE_BOTTOM' | 'SIDE_BANNER';
@@ -24,7 +25,7 @@ export class Advertisement extends Model<
   declare adminId: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof Advertisement {
     Advertisement.init(
       {
@@ -88,7 +89,7 @@ export class Advertisement extends Model<
     );
     return Advertisement;
   }
-
+  // fk 설정
   static associate(models: any) {
     Advertisement.belongsTo(models.Admin, { foreignKey: 'adminId' });
     Advertisement.hasMany(models.AdViewLog, { foreignKey: 'adId' });

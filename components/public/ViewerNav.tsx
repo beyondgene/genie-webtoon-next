@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ChevronLeftIcon, ChevronRightIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 
 export default function ReaderControls({
+  //사용될 선언변수들 타입 사전 설정
   webtoonId,
   prevEpId,
   nextEpId,
@@ -18,6 +19,7 @@ export default function ReaderControls({
       ${props.disabled ? 'bg-zinc-100/50 text-zinc-400' : 'bg-zinc-100 hover:bg-zinc-200'}`}
     />
   );
+  // 뷰어 기준 에피소드 네비게이션 설정
   return (
     <nav
       aria-label="에피소드 내비게이션"

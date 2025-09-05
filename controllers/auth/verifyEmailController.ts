@@ -21,7 +21,7 @@ async function pickAdminId(t?: Transaction): Promise<number | undefined> {
 
   return rows?.[0]?.adminId ?? undefined;
 }
-
+// 인증 이메일 전송 로직
 export async function verifyEmail(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token');
 

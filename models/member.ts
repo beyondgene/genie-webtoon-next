@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 
 export class Member extends Model<InferAttributes<Member>, InferCreationAttributes<Member>> {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare memberId: string;
   declare memberPassword: string;
@@ -23,7 +24,8 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
   declare verificationToken: string | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-
+  declare socialProvider: string;
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof Member {
     Member.init(
       {
@@ -85,6 +87,11 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
         },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,
+        socialProvider: {
+          type: DataTypes.STRING(45),
+          allowNull: true, // 이 부분이 중요!
+          defaultValue: null,
+        },
       },
       {
         sequelize,
@@ -95,7 +102,7 @@ export class Member extends Model<InferAttributes<Member>, InferCreationAttribut
     );
     return Member;
   }
-
+  // fk 설정
   static associate(models: any) {
     // Member는 여러 Comment를 작성할 수 있다 (1:N)
     Member.hasMany(models.Comment, { foreignKey: 'memberId' });

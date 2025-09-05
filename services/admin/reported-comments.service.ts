@@ -2,6 +2,7 @@
 // services/admin/reported-comments.service.ts
 import { API_BASE } from './_http';
 
+//프런트에서 신고된 댓글에 대한 관리자의 타입 확장 인터페이스
 export interface ReportedComment {
   idx: number;
   createdAt: string;

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { useClientSession } from '@/lib/auth-client';
-
+// 세션 유지,변화 관련된 컴포넌트
 export default function SessionActions() {
   const { status, session, role, isAuthenticated } = useClientSession();
   const [open, setOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function SessionActions() {
   if (status === 'loading') {
     return <div className="w-28 h-8 rounded-lg bg-gray-100 animate-pulse" aria-hidden />;
   }
-
+  // 로그인된 세션이 아닐때는 로그인 유도
   if (!isAuthenticated) {
     return (
       <Link
@@ -47,7 +47,7 @@ export default function SessionActions() {
 
   const nickname = session?.nickname ?? session?.user?.name ?? 'User';
   const initial = (nickname || '?').charAt(0).toUpperCase();
-
+  // 로그인된 유저의 status에 따라 로딩 페이지 설정
   return (
     <div ref={rootRef} className="relative">
       <button

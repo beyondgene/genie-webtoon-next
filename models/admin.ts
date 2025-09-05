@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 
 export class Admin extends Model<InferAttributes<Admin>, InferCreationAttributes<Admin>> {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare adminId: string;
   declare adminPassword: string;
@@ -16,7 +17,7 @@ export class Admin extends Model<InferAttributes<Admin>, InferCreationAttributes
   declare role: 'SUPER' | 'MANAGER';
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof Admin {
     Admin.init(
       {
@@ -60,12 +61,12 @@ export class Admin extends Model<InferAttributes<Admin>, InferCreationAttributes
     );
     return Admin;
   }
-
+  // fk 설정
   static associate(models: any) {
     Admin.hasMany(models.Artist, { foreignKey: 'adminId' });
     Admin.hasMany(models.Member, { foreignKey: 'adminId' });
     Admin.hasMany(models.Advertisement, { foreignKey: 'adminId' });
-    Admin.hasMany(models.Webtoon, { foreignKey: 'adminIdx' });
+    Admin.hasMany(models.Webtoon, { foreignKey: 'adminId' });
     Admin.hasMany(models.Episode, { foreignKey: 'adminId' });
     Admin.hasMany(models.Comment, { foreignKey: 'adminId' });
   }

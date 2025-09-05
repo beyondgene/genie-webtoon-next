@@ -7,10 +7,10 @@ import ViewTracker from './ViewTracker';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/middlewares/authOptions';
 import SubscribeControls from '@/components/webtoon/SubscribeControls';
-import { cookies } from 'next/headers';
 import { toNumericId } from '@/lib/toNumericId';
+import BackNavigator from '@/components/ui/BackNavigator';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300; // 5분 ISR
 
 type PageProps = { params: { id: string } };
 
@@ -25,9 +25,10 @@ const SLUG_TO_KOR: Record<string, string> = {
   THRILLER: '스릴러',
   HISTORICAL: '사극',
 };
+// db에 영어로 저장된 장를 한국어 라벨로 변환하는 작업
 const toGenreLabel = (v: unknown) =>
   SLUG_TO_KOR[String(v ?? '').toUpperCase()] ?? (String(v ?? '') || '장르');
-
+// 썸네일 불러오고 처리하는 로직
 function resolveThumb(u?: string | null, fallback = '/images/placeholder-webtoon.png') {
   const base = process.env.S3_PUBLIC_BASE || process.env.NEXT_PUBLIC_S3_PUBLIC_BASE || '';
   const v = (u || '').trim();
@@ -41,11 +42,11 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
   // Next.js 15: params는 Promise이므로 await 필요
   const { id } = await params;
 
-  // 숫자 id로 강제 변환 (객체/NaN 유입 차단)
+  // 숫자 id로 강제 변환 (객체/NaN 유입 차단) 기존 bg-[#929292]
   const wid = toNumericId(id);
   if (!wid) {
     return (
-      <main className="min-h-screen bg-[#929292] text-white">
+      <main className="min-h-screen bg-[#4f4f4f] text-white">
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h1 className="text-2xl font-semibold">잘못된 작품 ID입니다.</h1>
           <Link
@@ -71,10 +72,10 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
     where: { idx: numId },
     attributes: ['idx', 'webtoonName', 'description', 'wbthumbnailUrl', 'genre', 'artistId'],
   });
-
+  // 기존 main bg-[#929292]
   if (!webtoon) {
     return (
-      <main className="min-h-screen bg-[#929292] text-white">
+      <main className="min-h-screen bg-[#4f4f4f] text-white">
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h1 className="text-2xl font-semibold">작품을 찾을 수 없습니다.</h1>
           <Link
@@ -134,9 +135,12 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
   const description = webtoon.description || '작품 소개가 준비중입니다.';
   const posterSrc = resolveThumb(webtoon.wbthumbnailUrl);
   const genreLabel = toGenreLabel(webtoon.genre);
-
+  const genreHref =
+    genreLabel && genreLabel !== '장르' ? `/genre/${encodeURIComponent(genreLabel)}` : '/genre';
+  // 위에서 불러온 썸네일, 작가, 장르,설명, 에피소드 리스트 화면 html 메인 화면 bg-[#929292]
   return (
-    <main className="min-h-screen bg-[#929292] text-white">
+    <main className="min-h-screen bg-[#4f4f4f] text-white">
+      <BackNavigator href={genreHref} />
       <ViewTracker webtoonId={numId} />
       <div className="mx-auto max-w-[1200px] px-6 py-12">
         <div className="grid grid-cols-12 gap-8">
@@ -159,7 +163,7 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
             <div className="mt-8 text-center">
               <div className="flex items-center justify-center gap-3">
                 <h1 className="text-2xl font-bold">{title}</h1>
-                {session ? <SubscribeControls webtoon={numId} /> : null}
+                <SubscribeControls webtoon={numId} />
               </div>
 
               <p className="mt-4 text-sm text-white/80">
@@ -171,9 +175,9 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
             </div>
           </section>
 
-          {/* 오른쪽: 에피소드 */}
+          {/* 오른쪽: 에피소드 기존*/}
           <aside className="col-span-12 lg:col-span-6">
-            <div className="rounded-xl border border-white/15 bg-white/10 backdrop-blur-[1px] overflow-hidden h-[420px] md:h-[678px] w-full md:max-w-[722px] mt-6 md:mt-[154px]">
+            <div className="rounded-xl border border-white/15 bg-white/10 backdrop-blur-[1px] overflow-hidden h-[420px] md:h-[678px] w-full md:max-w-[722px] mt-0">
               <div className="max-h-full overflow-y-auto">
                 {episodes.length === 0 ? (
                   <div className="p-6 text-sm text-white/80">등록된 에피소드가 없습니다.</div>

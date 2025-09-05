@@ -12,6 +12,7 @@ export type Role = 'MEMBER' | 'ADMIN' | string;
 // next-auth는 UpdateSession 타입을 export하지 않음 → 로컬 별칭 정의
 type UpdateSessionFn = (data?: any) => Promise<Session | null>;
 
+// 클라이언트 세션을 백엔드에 이해시키는 타입선언
 type ClientSessionLike =
   | {
       data: Session | null;
@@ -36,13 +37,13 @@ export function useAuth() {
   const session: Session | null = (res as any).data ?? (res as any).session ?? null;
   const status = res.status;
   const update = (res as any).update as UpdateSessionFn;
-
+  // 스켈레톤 로딩 멘트
   const loading = status === 'loading' || !hydrated;
   const isAuthenticated: boolean = (res as any).isAuthenticated ?? status === 'authenticated';
-
+  // 역할 데이터 타입정의
   const rawRole = (res as any).role ?? (session?.user as any)?.role ?? (session as any)?.role;
   const role = rawRole as Role | undefined;
-
+  // 관리자,멤버 역할 변수 선언
   const isAdmin = role === 'ADMIN';
   const isMember = role === 'MEMBER';
 

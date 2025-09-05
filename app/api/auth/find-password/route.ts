@@ -11,9 +11,9 @@ const findPasswordSchema = yup.object({
     .matches(/^(\d{2,3}-\d{3,4}-\d{4})$/, '전화번호는 000-0000-0000 형식이어야 합니다.')
     .required(),
 });
-
+// 컨트롤러에 있는 주요 로직을 호출하는 라우터
 export async function POST(req: NextRequest) {
   const error = await validateBody(findPasswordSchema)(req.clone());
   if (error) return error;
-  return findPassword(req); // ← 컨트롤러 호출
+  return findPassword(req);
 }

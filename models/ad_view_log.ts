@@ -11,11 +11,12 @@ export class AdViewLog extends Model<
   InferAttributes<AdViewLog>,
   InferCreationAttributes<AdViewLog>
 > {
+  // 속성 선언
   declare idx: CreationOptional<number>;
   declare viewedAt: CreationOptional<Date>;
   declare memberId: number | null;
   declare adId: number;
-
+  // 속성의 타입, 초기값, 테이블이름
   static initModel(sequelize: Sequelize): typeof AdViewLog {
     AdViewLog.init(
       {
@@ -47,7 +48,7 @@ export class AdViewLog extends Model<
     );
     return AdViewLog;
   }
-
+  // fk 설정
   static associate(models: any) {
     AdViewLog.belongsTo(models.Advertisement, { foreignKey: 'adId' });
     AdViewLog.belongsTo(models.Member, { foreignKey: 'memberId' });

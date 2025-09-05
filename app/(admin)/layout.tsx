@@ -16,21 +16,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {label}
     </Link>
   );
-
+  // 위 div는 왼쪽 nav형태로 뜨는 애들 링크, 아래 div는 메인 관리자 페이지에서 버튼 형식으로 화면에 존재하는 애들 링크
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[240px_1fr]">
-      {/* Sidebar (desktop) / Topbar (mobile) */}
+    <div className="min-h-dvh grid md:grid-cols-[240px_1fr]">
       <aside className="hidden md:block border-r">
-        <div className="p-4 font-semibold">Admin</div>
-        <nav className="flex flex-col gap-1 p-4 text-sm">
-          <NavLink href="/dashboard" label="대시보드" />
-          <NavLink href="/advertisements" label="광고" />
-          <NavLink href="/artists" label="작가" />
-          <NavLink href="/webtoons" label="웹툰" />
-          <NavLink href="/episodes" label="회차" />
-          <NavLink href="/comments" label="댓글" />
-          <NavLink href="/members" label="회원" />
-        </nav>
+        <div className="p-4">
+          <div className="font-semibold mb-3">Admin</div>
+          <nav className="space-y-1 text-sm">
+            <NavLink href="/dashboard" label="대시보드" />
+            <NavLink href="/advertisements" label="광고" />
+            <NavLink href="/artists" label="작가" />
+            <NavLink href="/webtoons" label="웹툰" />
+            <NavLink href="/episodes" label="회차" />
+            <NavLink href="/comments" label="댓글" />
+            <NavLink href="/members" label="회원" />
+            <NavLink href="/subscriptions" label="구독" /> {/* ✅ 추가 */}
+          </nav>
+        </div>
       </aside>
 
       <header className="md:hidden sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
@@ -44,6 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <NavLink href="/episodes" label="회차" />
             <NavLink href="/comments" label="댓글" />
             <NavLink href="/members" label="회원" />
+            <NavLink href="/subscriptions" label="구독" /> {/* ✅ 추가 */}
           </nav>
         </div>
       </header>

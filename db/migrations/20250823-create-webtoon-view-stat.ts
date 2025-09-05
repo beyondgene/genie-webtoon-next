@@ -1,3 +1,4 @@
+// 웹툰 시청 상태 조인 테이블 마이그레이션
 import { QueryInterface, DataTypes } from 'sequelize';
 
 export default {

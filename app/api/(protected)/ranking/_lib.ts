@@ -1,7 +1,8 @@
 // app/api/(protected)/ranking/_lib.ts
 import db from '@/models';
 import { Op, fn, col, literal } from 'sequelize';
-
+import { unstable_cache as cache } from 'next/cache';
+// 라우터에서 사용하기 위해 장르, 시점에 관한 타입 선언
 export type Period = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export type GenreEnum =
   | 'DRAMA'
@@ -24,7 +25,7 @@ export type GenreSlug =
   | 'sports'
   | 'thriller'
   | 'historical';
-
+// 소문자 대문자 호환 slug 선언
 export const SLUG_TO_GENRE: Record<GenreSlug, GenreEnum | undefined> = {
   all: undefined,
   drama: 'DRAMA',
@@ -37,7 +38,7 @@ export const SLUG_TO_GENRE: Record<GenreSlug, GenreEnum | undefined> = {
   thriller: 'THRILLER',
   historical: 'HISTORICAL',
 };
-
+// 현재 서울 시각으로 db랑 정보 시간 변환
 function seoulNow() {
   const now = new Date();
   return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
@@ -76,7 +77,7 @@ export function periodRangeYMD(period: Period): { startYmd: string; endYmd: stri
 
   return { startYmd: toYmd(start), endYmd: toYmd(end) };
 }
-
+// 누적과 기간합계용 데이터 타입 추가
 export type RankingRow = {
   rank: number;
   webtoon: {
@@ -88,18 +89,18 @@ export type RankingRow = {
   };
   periodViews: number; // 기간 합계
 };
-
+// 랭킹 갖고오는 라우터 로직
 export async function getRanking(period: Period, genreSlug: GenreSlug): Promise<RankingRow[]> {
   const { startYmd, endYmd } = periodRangeYMD(period);
   const g = SLUG_TO_GENRE[genreSlug];
 
-  // ✅ 정확 집계: WebtoonViewStat가 있으면 반드시 SUM(date 범위)로 계산
+  // 정확 집계: WebtoonViewStat가 있으면 반드시 SUM(date 범위)로 계산
   const hasStat = !!(db as any).WebtoonViewStat;
   if (hasStat) {
     const rows = await (db as any).WebtoonViewStat.findAll({
       attributes: [
         [col('WebtoonViewStat.webtoonId'), 'webtoonId'],
-        [fn('SUM', col('WebtoonViewStat.views')), 'periodViews'], // ← 모호성 제거
+        [fn('SUM', col('WebtoonViewStat.views')), 'periodViews'],
       ],
       where: {
         // DATEONLY 기준, inclusive 범위
@@ -114,7 +115,7 @@ export async function getRanking(period: Period, genreSlug: GenreSlug): Promise<
         },
       ],
       group: [col('WebtoonViewStat.webtoonId'), col('webtoon.idx')],
-      order: [[col('periodViews'), 'DESC']], // 순위는 오직 기간 합계로!
+      order: [[col('periodViews'), 'DESC']], // 순위는 오직 기간 합계로
       limit: 10,
     });
 
@@ -125,7 +126,15 @@ export async function getRanking(period: Period, genreSlug: GenreSlug): Promise<
     }));
   }
 
-  // ⛔️ 통계 테이블이 없으면 '기간 랭킹'을 만들 근거가 없음 → 빈 배열 반환
-  // (개발 중엔 seed로 webtoon_view_stat 넣거나, 뷰어 진입으로 데이터 쌓으세요)
+  //  통계 테이블이 없으면 '기간 랭킹'을 만들 근거가 없음 → 빈 배열 반환
+  // (개발 중엔 seed로 webtoon_view_stat 넣거나, 뷰어 진입으로 데이터 쌓음)
   return [];
+}
+
+export async function getRankingCached(period: Period, genre: GenreSlug) {
+  const fn = cache(() => getRanking(period, genre), ['ranking', period, genre], {
+    revalidate: 600,
+    tags: ['ranking', `ranking:${period}`, `ranking:${genre}`],
+  });
+  return await fn();
 }

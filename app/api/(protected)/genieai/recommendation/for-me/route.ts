@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/middlewares/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
+// 정보 타입 row 설정
 type Row = {
   idx: number;
   webtoonName: string;
@@ -14,7 +14,7 @@ type Row = {
   wbthumbnailUrl?: string | null;
   description?: string | null; // 모델 필드(= DB discription 매핑)
 };
-
+// 웹툰 속성으로 사용하는 속성들 정의
 const WEBTOON_ATTRS = [
   'idx',
   'webtoonName',
@@ -23,7 +23,7 @@ const WEBTOON_ATTRS = [
   'wbthumbnailUrl',
   'description', // 모델에서 discription 컬럼에 매핑되어 있어야 함
 ] as const;
-
+// item으로 변환하는 함수
 function toItem(r: Row) {
   const desc = r.description ?? '';
   return {
@@ -37,6 +37,7 @@ function toItem(r: Row) {
   };
 }
 
+// 나의 구독 여부를 통해 추천하는 get 핸들러
 export async function GET(req: NextRequest) {
   const authed = await requireAuth(req);
   if (authed instanceof NextResponse) return authed;

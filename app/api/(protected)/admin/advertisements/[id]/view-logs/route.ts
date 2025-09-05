@@ -1,11 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
-import * as ctrl from '@/controllers/admin/advertisementViewLogsController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+import {
+  getViewStatsByAd,
+  getViewStatsByMember,
+} from '@/controllers/admin/advertisementViewLogsController';
 
-async function GETHandler(req: NextRequest, { params }: { params: { adId: string } }) {
+// 광고 시청로그 불러오는 컨트롤러를 호출하는 GET 라우터
+async function GETHandler(req: NextRequest) {
   await requireAdminAuth(req);
-  const logs = await ctrl.getAdvertisementViewLogsByAdId(+params.adId);
-  return NextResponse.json(logs);
+  const [byAd, byMember] = await Promise.all([getViewStatsByAd(), getViewStatsByMember()]);
+  return NextResponse.json({ byAd, byMember });
 }
+
 export const GET = withErrorHandler(GETHandler);

@@ -1,12 +1,10 @@
-// 반응형 그리드 강화
-// 옵션 가상 스크롤 지원(요구사항의 react-virtualized 최적화 반영, 필요 시만 로드)
-// 스켈레톤/빈/에러 유지
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
 
+// 프런트에서 에피소드를 객체로서 확장시키는 타입
 export type EpisodeItem = {
   idx: number;
   title: string;
@@ -14,6 +12,7 @@ export type EpisodeItem = {
   uploadDate: string | Date;
 };
 
+// 에피소드 추가 속성타입 정의
 type Props = {
   webtoonId: number | string;
   episodes?: EpisodeItem[];
@@ -29,6 +28,7 @@ type Props = {
   className?: string;
 };
 
+// 한국기준 시간 형태 정의
 const formatDate = (d: string | Date) => {
   try {
     const dt = typeof d === 'string' ? new Date(d) : d;
@@ -38,18 +38,53 @@ const formatDate = (d: string | Date) => {
   }
 };
 
-export default function EpisodeList({
-  webtoonId,
-  episodes,
-  loading,
-  error,
-  emptyText = '등록된 회차가 없습니다.',
-  virtualized,
-  height = '70vh',
-  itemHeight = 160,
-  className = '',
-}: Props) {
-  // 1) 로딩/에러/빈 상태
+// react-virtualized 타입 추론용
+type RVModule = typeof import('react-virtualized');
+type RowRendererParams = {
+  index: number;
+  key: string;
+  style: React.CSSProperties;
+};
+
+// 에피소드 리스트
+export default function EpisodeList(props: Props) {
+  const {
+    webtoonId,
+    episodes,
+    loading,
+    error,
+    emptyText = '등록된 회차가 없습니다.',
+    virtualized,
+    height: containerHeight = '70vh',
+    itemHeight = 160,
+    className = '',
+  } = props;
+
+  // ✅ Hook은 항상 최상단에서 호출
+  const shouldVirt = Boolean(virtualized ?? (episodes?.length ?? 0) > 60);
+  const [RV, setRV] = React.useState<RVModule | null>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    if (shouldVirt) {
+      import('react-virtualized')
+        .then((m) => {
+          if (mounted) setRV(m);
+        })
+        .catch(() => {
+          if (mounted) setRV(null);
+        });
+    } else {
+      setRV(null);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [shouldVirt]);
+
+  // ⬇️ 여기부터 조건부 렌더링 (Hook 호출 이후로 배치)
+
+  // 1) 로딩/프리뷰 스켈레톤
   if (loading || !episodes) {
     return (
       <ul
@@ -67,6 +102,8 @@ export default function EpisodeList({
       </ul>
     );
   }
+
+  // 2) 에러 표시
   if (error) {
     return (
       <div
@@ -76,6 +113,8 @@ export default function EpisodeList({
       </div>
     );
   }
+
+  // 3) 빈 상태
   if (episodes.length === 0) {
     return (
       <div
@@ -86,30 +125,23 @@ export default function EpisodeList({
     );
   }
 
-  // 2) 긴 리스트 최적화(선택)
-  const shouldVirt = virtualized ?? episodes.length > 60;
-  const [RV, setRV] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    if (shouldVirt) {
-      // 클라이언트에서만 로드
-      import('react-virtualized').then((m) => setRV(m)).catch(() => setRV(null));
-    }
-  }, [shouldVirt]);
-
+  // 4) 긴 리스트 최적화 (react-virtualized)
   if (shouldVirt && RV?.AutoSizer && RV?.List) {
     const { AutoSizer, List } = RV;
     return (
-      <div className={`overflow-hidden rounded-2xl border ${className}`} style={{ height }}>
+      <div
+        className={`overflow-hidden rounded-2xl border ${className}`}
+        style={{ height: containerHeight }}
+      >
         <AutoSizer>
-          {({ width, height: h }: any) => (
+          {({ width, height }: { width: number; height: number }) => (
             <List
               width={width}
-              height={h}
+              height={height}
               rowCount={episodes.length}
               rowHeight={itemHeight}
               overscanRowCount={8}
-              rowRenderer={({ index, key, style }: any) => {
+              rowRenderer={({ index, key, style }: RowRendererParams) => {
                 const ep = episodes[index];
                 return (
                   <div key={key} style={style} className="border-b last:border-none">
@@ -124,12 +156,12 @@ export default function EpisodeList({
                           alt={ep.title}
                           fill
                           sizes="(max-width:640px) 40vw, (max-width:768px) 33vw, 25vw"
-                          className="object-cover rounded-xl"
+                          className="rounded-xl object-cover"
                         />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-sm sm:text-base font-medium">{ep.title}</div>
-                        <div className="mt-1 text-xs sm:text-sm text-zinc-500">
+                        <div className="truncate text-sm font-medium sm:text-base">{ep.title}</div>
+                        <div className="mt-1 text-xs text-zinc-500 sm:text-sm">
                           {formatDate(ep.uploadDate)}
                         </div>
                       </div>
@@ -144,7 +176,7 @@ export default function EpisodeList({
     );
   }
 
-  // 3) 일반 그리드(반응형)
+  // 5) 일반 그리드(반응형)
   return (
     <ul
       className={`grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 ${className}`}
@@ -166,8 +198,8 @@ export default function EpisodeList({
               />
             </div>
             <div className="p-3">
-              <div className="truncate text-sm sm:text-base font-medium">{ep.title}</div>
-              <div className="mt-1 text-xs sm:text-sm text-zinc-500">
+              <div className="truncate text-sm font-medium sm:text-base">{ep.title}</div>
+              <div className="mt-1 text-xs text-zinc-500 sm:text-sm">
                 {formatDate(ep.uploadDate)}
               </div>
             </div>

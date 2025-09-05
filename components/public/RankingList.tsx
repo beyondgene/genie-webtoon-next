@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatK } from '@/lib/format';
-
+// 아이템 속성으로 외부에 확장해 랭킹 아이템 전달
 export type Item = {
   idx: number;
   webtoonName: string;
@@ -10,6 +10,7 @@ export type Item = {
   views?: number;
   rank?: number;
 };
+// 랭킹 리스트 컴포넌트
 export default function RankingList({ items }: { items: Item[] }) {
   const rest = items.slice(3);
   return (

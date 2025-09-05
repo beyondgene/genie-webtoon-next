@@ -1,6 +1,7 @@
 // db/sequelize.ts
 import { Sequelize } from 'sequelize';
 
+//orm sequelize를 사용하기 위한 기본설정 ts파일
 function createSequelize(): Sequelize {
   const url = process.env.DATABASE_URL;
   const logging = process.env.DB_LOGGING === 'true' ? console.log : false;

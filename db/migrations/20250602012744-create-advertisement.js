@@ -1,3 +1,4 @@
+// 광고 테이블 마이그레이션
 'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

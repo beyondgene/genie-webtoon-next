@@ -1,20 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/models';
 import { requireAuth } from '@/lib/middlewares/auth';
-import { Op } from 'sequelize';
 
-type MaybePromise<T> = T | Promise<T>;
+export async function getBookmarkStatusForList(
+  memberId: number,
+  webtoonIds: number[]
+): Promise<Record<number, { isSubscribed: boolean; alarmOn: boolean }>> {
+  const result: Record<number, { isSubscribed: boolean; alarmOn: boolean }> = {};
+  for (const id of webtoonIds ?? []) result[id] = { isSubscribed: false, alarmOn: false };
+  if (!webtoonIds?.length) return result;
 
-interface SubscriptionDTO {
-  webtoonId: number;
-  webtoonName: string;
-  alarmOn: boolean;
-  status: 'ACTIVE' | 'INACTIVE';
-  wbthumbnailUrl: string;
-  subscribedAt: string;
-  updatedAt: string;
+  // 컬럼명(camel/snake) 혼용 대응: raw로 받아서 안전하게 매핑
+  const subs = await db.Subscription.findAll({
+    where: { memberId, webtoonId: webtoonIds },
+    raw: true,
+  });
+
+  for (const s of subs as any[]) {
+    const wid = s.webtoonId ?? s.webtoon_id;
+    if (!wid) continue;
+    result[wid] = {
+      isSubscribed: (s.status ?? 'INACTIVE') === 'ACTIVE',
+      alarmOn: !!(s.alarm_on ?? s.alarmOn),
+    };
+  }
+  return result;
 }
 
+type MaybePromise<T> = T | Promise<T>;
 type BookmarkStatus = {
   webtoonId: number;
   isSubscribed: boolean;
@@ -41,7 +54,7 @@ export async function getBookmarks(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
   const memberId = sessionOrRes.id as number;
-
+  //db의 구독 테이블에서 'webtoonId', 'alarm_on', 'status', 'createdAt', 'updatedAt'속성을 기준으로 검색하여 웹툰 테이블에 속한 속성까지 포함해서 데이터셋 설정
   const subs = await db.Subscription.findAll({
     where: { memberId, status: 'ACTIVE' },
     attributes: ['webtoonId', 'alarm_on', 'status', 'createdAt', 'updatedAt'],
@@ -90,7 +103,7 @@ export async function subscribeBookmark(
 
   const { webtoonId: webtoonIdStr } = await params; // Promise | object 모두 허용
   const webtoonId = Number.parseInt(webtoonIdStr, 10);
-
+  // 멤버와 웹툰 idx를 기반으로 구독 여부를 확인하고 이에 해당하는 응답과 액션 반응
   try {
     const existing = await findSub(memberId, webtoonId);
     if (existing) {
@@ -138,7 +151,7 @@ export async function toggleBookmarkAlarm(
   const { webtoonId: webtoonIdStr } = await params;
   const webtoonId = Number.parseInt(webtoonIdStr, 10);
   const { alarmOn } = (await req.json()) as { alarmOn: boolean };
-
+  // 멤버와 웹툰 idx를 기반으로 구독 여부를 확인후 구독중이라면 알림 on/off 여부 설정
   try {
     const sub = await findSub(memberId, webtoonId);
     if (!sub || sub.status !== 'ACTIVE') {
@@ -171,7 +184,7 @@ export async function unsubscribeBookmark(
 
   const { webtoonId: webtoonIdStr } = await params;
   const webtoonId = Number.parseInt(webtoonIdStr, 10);
-
+  // 멤버와 웹툰 idx를 기반으로 구독 취소와 관련된 로직 수행
   try {
     const sub = await findSub(memberId, webtoonId);
     if (!sub || sub.status === 'INACTIVE') {

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
-
+// 카카오와 네이버 로그인 설정
 export default function SocialLoginButtons() {
   return (
     <div className="space-y-3">

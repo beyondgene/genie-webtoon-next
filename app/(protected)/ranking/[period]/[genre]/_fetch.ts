@@ -1,6 +1,6 @@
 // shared fetcher
 import 'server-only';
-
+// 랭킹 페이지에서 fetchApi 설정 파일
 export type RankingPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export async function fetchRanking(period: RankingPeriod, genre: string) {
   const res = await fetch(

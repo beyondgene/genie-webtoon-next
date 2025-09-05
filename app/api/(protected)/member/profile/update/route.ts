@@ -8,6 +8,7 @@ import {
 } from '@/controllers/member/profileController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
+// 컨트롤러에 정의된 멤버 프로필을 인증하고 변경하는 로직을 불러오는 라우터
 async function PATCHHandler(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
@@ -48,6 +49,7 @@ async function PATCHHandler(req: NextRequest) {
   return NextResponse.json(updated);
 }
 
+// 멤버 정보를 db에서 삭제하고 회원탈퇴되도록 하는 라우터
 async function DELETEHandler(req: NextRequest) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;

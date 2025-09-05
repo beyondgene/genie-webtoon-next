@@ -6,9 +6,10 @@ import {
 } from '@/controllers/member/bookmarksController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
+// 멤버의 idx의 타당성 확인
 function toValidId(v: unknown): number | null {
   const n = Number(v);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return Number.isFinite(n) && n > 0 ? n : null; //유한 값인지를 확인
 }
 
 // 구독 생성/복구

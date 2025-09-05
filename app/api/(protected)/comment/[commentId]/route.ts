@@ -1,42 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
-import {
-  updateComment,
-  deleteComment as removeComment,
-} from '@/controllers/comment/commentController';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
+import { deleteComment, updateComment } from '@/controllers/comment/commentController';
 
-async function PATCHHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
+// 컨트롤러에 있는 댓글 업데이트 및 작성에 대한 컨트롤러를 호출하는 patch 핸들러 라우터
+async function PATCHHandler(
+  req: NextRequest,
+  { params }: { params: Promise<{ commentId: string }> }
+) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  const commentId = parseInt(params.commentId, 10);
-  const { content } = await req.json();
+  const userId = sessionOrRes.id as number;
+  const { commentId } = await params;
 
-  try {
-    const updated = await updateComment(commentId, content);
-    return NextResponse.json(updated);
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || '댓글 수정 중 오류' },
-      { status: err.message === '댓글을 찾을 수 없습니다.' ? 404 : 400 }
-    );
+  const { content } = (await req.json().catch(() => ({}))) as { content?: string };
+  if (!content?.trim()) {
+    return NextResponse.json({ message: '내용을 입력해주세요.' }, { status: 400 });
   }
+
+  const result = await updateComment(Number(commentId), content.trim());
+  return NextResponse.json(result);
 }
 
-async function DELETEHandler(req: NextRequest, { params }: { params: { commentId: string } }) {
+// 컨트롤러에 있는 댓글 삭제에 대한 컨트롤러를 호출하는 delete 핸들러 라우터
+async function DELETEHandler(
+  req: NextRequest,
+  { params }: { params: Promise<{ commentId: string }> }
+) {
   const sessionOrRes = await requireAuth(req);
   if (sessionOrRes instanceof NextResponse) return sessionOrRes;
-  const commentId = parseInt(params.commentId, 10);
+  const userId = sessionOrRes.id as number;
+  const { commentId } = await params;
 
-  try {
-    await removeComment(commentId);
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
+  const ok = await deleteComment(Number(commentId), userId);
+  if (!ok) {
     return NextResponse.json(
-      { error: err.message || '댓글 삭제 중 오류' },
-      { status: err.message === '삭제할 댓글이 없습니다.' ? 404 : 403 }
+      { error: '댓글은 본인이 작성한 것만 삭제할 수 있습니다' },
+      { status: 403 }
     );
   }
+  return NextResponse.json({ success: true });
 }
+
 export const PATCH = withErrorHandler(PATCHHandler);
 export const DELETE = withErrorHandler(DELETEHandler);

@@ -11,6 +11,7 @@ type Body = {
   key?: string;
 };
 
+// 에피소드 썸네일을 불러오는 컨트롤러를 호출하는 put 핸들러 라우터
 async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
   await requireAdminAuth(req);
 
@@ -28,7 +29,7 @@ async function PUTHandler(req: NextRequest, { params }: { params: { id: string }
       : (() => {
           throw new Error('S3_PUBLIC_BASE 환경변수가 설정되지 않았습니다.');
         })());
-
+  // 에러 처리
   if (!finalUrl.startsWith(base)) {
     return NextResponse.json({ error: '허용되지 않은 이미지 URL입니다.' }, { status: 400 });
   }

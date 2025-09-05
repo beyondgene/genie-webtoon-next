@@ -1,3 +1,4 @@
+// index.ts에 다른 모델.ts 호출하여 단일화
 import { Sequelize } from 'sequelize';
 import { sequelize as sequelizeInstance } from '@/db/sequelize';
 
@@ -12,7 +13,8 @@ import { Subscription } from './subscription';
 import { AdViewLog } from './ad_view_log';
 import { Interest } from './interest';
 import { WebtoonViewStat } from './webtoonViewStat';
-
+import { CommentReaction } from './commentReaction';
+import { CommentReport } from './commentReport';
 // 공용 인스턴스
 export const sequelize: Sequelize = sequelizeInstance;
 
@@ -29,6 +31,8 @@ const db = {
   AdViewLog: AdViewLog.initModel(sequelize),
   Interest: Interest.initModel(sequelize),
   WebtoonViewStat: WebtoonViewStat.initModel(sequelize),
+  CommentReaction: CommentReaction.initModel(sequelize),
+  CommentReport: CommentReport.initModel(sequelize),
 } as const;
 
 // 연관관계 설정 (associate가 있는 항목에만 호출)

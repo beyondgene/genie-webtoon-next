@@ -14,11 +14,11 @@ const noto = Noto_Sans_KR({
   display: 'swap',
   variable: '--font-noto-sans-kr',
 });
-
+// 메타데이터 기본 정보
 export const metadata: Metadata = {
   title: 'Genie Webtoon',
   description: '웹툰 감상 · 장르 탐색 · 랭킹 · 마이페이지',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL('http://localhost:3000'),
   openGraph: {
     title: 'Genie Webtoon',
     description: '웹툰 감상 · 장르 탐색 · 랭킹 · 마이페이지',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     description: '웹툰 감상 · 장르 탐색 · 랭킹 · 마이페이지',
   },
 };
-
+// 기본 루트 레이아웃설정
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" className={noto.variable}>
@@ -49,7 +49,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <OverlayCleaner />
             {children}
           </main>
-          <Footer />
         </Providers>
       </body>
     </html>

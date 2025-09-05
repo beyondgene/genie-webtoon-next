@@ -4,8 +4,10 @@
 import { create } from 'zustand';
 const persistKey = 'ui.store.v1';
 
+// 테마 타입 사전 정의
 type Theme = 'light' | 'dark' | 'system';
 
+// ui 상태 인터페이스 사전 정의
 interface UIState {
   mobileNavOpen: boolean;
   theme: Theme;
@@ -15,6 +17,7 @@ interface UIState {
   setTheme: (t: Theme) => void;
 }
 
+// ui store 호출 변수,함수
 export const useUIStore = create<UIState>((set) => ({
   mobileNavOpen: false,
   theme: 'system',

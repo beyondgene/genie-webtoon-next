@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import db from '@/models';
 import ImageFallback from '@/components/ui/ImageFallBack';
+import BackNavigator from '@/components/ui/BackNavigator';
+
+export const revalidate = 300; // 5분 단위 ISR
 
 function resolveThumb(u?: string | null) {
   const base = process.env.S3_PUBLIC_BASE || process.env.NEXT_PUBLIC_S3_PUBLIC_BASE || '';
@@ -10,8 +13,6 @@ function resolveThumb(u?: string | null) {
   if (!base) return '/images/placeholder-webtoon.png';
   return `${base.replace(/\/$/, '')}/${v.replace(/^\/+/, '')}`;
 }
-
-export const dynamic = 'force-dynamic';
 
 type GenreSlug =
   | 'DRAMA'
@@ -23,7 +24,7 @@ type GenreSlug =
   | 'SPORTS'
   | 'THRILLER'
   | 'HISTORICAL';
-
+// 장르 한->영 번역 레이블
 const KOR_TO_SLUG: Record<string, GenreSlug> = {
   드라마: 'DRAMA',
   로맨스: 'ROMANCE',
@@ -40,7 +41,7 @@ const KOR_TO_SLUG: Record<string, GenreSlug> = {
   '무협-사극': 'HISTORICAL',
   '무협/사극': 'HISTORICAL',
 };
-
+// 장르 영->한 번역 레이블
 const SLUG_TO_KOR: Record<GenreSlug, string> = {
   DRAMA: '드라마',
   ROMANCE: '로맨스',
@@ -52,7 +53,7 @@ const SLUG_TO_KOR: Record<GenreSlug, string> = {
   THRILLER: '스릴러',
   HISTORICAL: '사극',
 };
-
+// 허용된 장르 리스트업
 const ALLOWED = new Set<GenreSlug>([
   'DRAMA',
   'ROMANCE',
@@ -64,7 +65,7 @@ const ALLOWED = new Set<GenreSlug>([
   'THRILLER',
   'HISTORICAL',
 ]);
-
+// URI 오류시 에러 잡는 함수
 function safeDecode(s: string) {
   try {
     return decodeURIComponent(s);
@@ -72,7 +73,7 @@ function safeDecode(s: string) {
     return s;
   }
 }
-
+// 장르별에 호버후 해당하는 장르의 DB에 있는 웹툰 카드들을 불러오는 과정
 export default async function GenrePage({
   params,
   searchParams,
@@ -134,7 +135,9 @@ export default async function GenrePage({
   const hrefGenre = encodeURIComponent(raw); // 디코딩된 값만 한 번 인코딩
 
   return (
-    <main className="min-h-screen bg-[#9f9f9f] text-white">
+    <main className="min-h-screen bg-[#4f4f4f] text-white">
+      {/* 기존 main bg-[9f9f9f] */}
+      <BackNavigator href="/home" />
       <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="grid grid-cols-12 gap-6 items-start">
           {/* 왼쪽: 선택된 장르 멘트 */}
@@ -142,7 +145,8 @@ export default async function GenrePage({
             <p className="text-sm uppercase tracking-widest text-white/80">Selected Genre</p>
             <h1 className="mt-1 text-3xl font-bold">{label}</h1>
             <p className="mt-4 text-white/80">
-              {label} 장르의 작품들을 3×3 썸네일로 모아봤어요. 더 많은 작품은 페이지 넘김으로 확인!
+              {label} 장르의 작품들을 3×3 썸네일로 모아봤어요. 더 많은 작품은 페이지 넘김으로
+              확인해보세요!
             </p>
           </aside>
 

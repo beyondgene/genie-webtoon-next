@@ -1,6 +1,6 @@
 // components/layout/Footer.tsx
 import Link from 'next/link';
-
+// 푸터 설정
 export default function Footer() {
   return (
     <footer className="mt-10 border-t border-gray-100">

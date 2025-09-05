@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-
+// webtoonview 조인 테이블에서 정보 불러오는 함수
 export default function ViewTracker({ webtoonId }: { webtoonId: number }) {
   const firedRef = useRef(false);
 

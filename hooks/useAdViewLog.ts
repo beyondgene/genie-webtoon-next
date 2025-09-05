@@ -14,7 +14,7 @@ export function useAdViewLog(adId: number, opts?: { placement?: string }) {
   const viewedRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const timerRef = useRef<number | null>(null);
-
+  // 광고 뷰로그 보내는 라우터 호출try-catch
   const sendView = useCallback(
     async (extra?: Record<string, any>) => {
       try {
@@ -25,7 +25,7 @@ export function useAdViewLog(adId: number, opts?: { placement?: string }) {
     },
     [adId]
   );
-
+  // 광고 뷰 로그 회수 기록해서 내보내는 함수
   const bindImpression = useCallback(
     (el: HTMLElement | null) => {
       // 정리
@@ -56,7 +56,7 @@ export function useAdViewLog(adId: number, opts?: { placement?: string }) {
     },
     [sendView]
   );
-
+  // 버튼 클릭될때 엔드 포인트 설정
   const onClick = useCallback(async () => {
     // 클릭도 동일 엔드포인트로 보내되, 중복 방지를 위해 최초 1회만
     if (!viewedRef.current) {

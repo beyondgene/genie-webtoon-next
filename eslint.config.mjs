@@ -1,6 +1,8 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
+import tseslintParser from '@typescript-eslint/parser';
+import tseslintPlugin from '@typescript-eslint/eslint-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +18,7 @@ export default [
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      parser: require.resolve('@typescript-eslint/parser'),
+      parser: tseslintParser,
       parserOptions: {
         sourceType: 'module',
         ecmaVersion: 'latest',
@@ -25,7 +27,7 @@ export default [
       },
     },
     plugins: {
-      '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
+      '@typescript-eslint': tseslintPlugin,
     },
     rules: {
       // FIX: no-implicit-any -> no-explicit-any
@@ -40,6 +42,7 @@ export default [
       '.next/',
       'migrations/',
       'seeders/',
+      // 필요한 경우 여기서 ignore 조정
       'app/',
       'controllers/',
       'lib/',

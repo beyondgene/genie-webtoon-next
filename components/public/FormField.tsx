@@ -6,6 +6,7 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   error?: FieldError;
 };
+// 라벨, 에러등 여러 형식적인 문구들 출력하는 폼 지정한 컴포넌트
 export default function FormField({ label, error, ...rest }: Props) {
   return (
     <label className="block space-y-1">

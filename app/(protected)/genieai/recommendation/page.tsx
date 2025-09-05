@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import Link from 'next/link';
+import BackNavigator from '@/components/ui/BackNavigator';
 
 type Mode = 'idle' | 'choose' | 'genre' | 'taste';
+// 슬러그 모음
 type GenreSlug =
   | 'DRAMA'
   | 'ROMANCE'
@@ -16,7 +18,7 @@ type GenreSlug =
   | 'SPORTS'
   | 'THRILLER'
   | 'HISTORICAL';
-
+// 슬러그 배열을 기반으로 장르 선언
 const GENRES: GenreSlug[] = [
   'DRAMA',
   'ROMANCE',
@@ -28,7 +30,7 @@ const GENRES: GenreSlug[] = [
   'THRILLER',
   'HISTORICAL',
 ];
-
+// 코드내에서 쓸 WEBTOON DB에 있는 속성들 타입 재정의
 type WebtoonItem = {
   id: number | string;
   title: string;
@@ -37,7 +39,7 @@ type WebtoonItem = {
   thumbnail?: string;
   description?: string;
 };
-
+// 영어로 된 장르를 한국어로도 인식하도록 타입 미리 지정
 const genreKo: Record<string, string> = {
   FANTASY: '판타지',
   ROMANCE: '로맨스',
@@ -51,7 +53,7 @@ const genreKo: Record<string, string> = {
 };
 
 const detailUrlFor = (it: WebtoonItem) => `/webtoon/${it.id}`;
-
+// AI로 메세지 생성, 응답, 사용자 정보 가져오기 로직
 const makeAssistant = (text: string): UIMessage => ({
   id: crypto.randomUUID(),
   role: 'assistant',
@@ -71,12 +73,12 @@ function getMessageText(m: UIMessage): string {
     .trim();
 }
 const truncate = (s = '', n = 120) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
-
+// 버튼 디자인
 const btnStyle: React.CSSProperties = {
   background: 'white',
   color: '#2148C0',
   boxShadow: '0px 4px 4px rgba(0,0,0,0.30)',
-  borderRadius: 4,
+  borderRadius: 16,
 };
 
 export default function RecommendationChatPage() {
@@ -92,7 +94,7 @@ export default function RecommendationChatPage() {
 
   const sendUserText = (text: string) =>
     sendMessage({ role: 'user', parts: [{ type: 'text', text }] });
-
+  // 처음 추천 웹툰 받기를 클릭시 나오는 로직
   useEffect(() => {
     setMode('choose');
     setMessages((prev) => [
@@ -106,7 +108,7 @@ export default function RecommendationChatPage() {
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  // 클릭된 응답 기반으로 장르 리스트 나열
   const onClickChoose = (choice: 'genre' | 'taste') => {
     setMode(choice);
     setLinkItems([]);
@@ -123,7 +125,7 @@ ${GENRES.join(', ')}`),
       void loadTasteRecommendations();
     }
   };
-
+  // 저장된 웹툰 IDX불러오는 로직
   async function fetchDescriptionById(id: number | string) {
     try {
       const r1 = await fetch(`/api/webtoon/${id}`, {
@@ -153,7 +155,7 @@ ${GENRES.join(', ')}`),
 
     return '';
   }
-
+  // 가져온 IDX 기반으로 추천 목록 나열 로직
   async function loadTasteRecommendations() {
     setLoading(true);
     setApiError(null);
@@ -199,7 +201,7 @@ ${GENRES.join(', ')}`),
         makeAssistant('아래 작품들을 추천드려요 (구독 내역/장르/조회수 기반):'),
         makeAssistant(bullets),
       ]);
-
+      //에러 TRY-CATCH로 처리
       setLinkItems(withDesc);
     } catch (e) {
       console.error('[client] for-me fetch error:', e);
@@ -208,7 +210,7 @@ ${GENRES.join(', ')}`),
       setLoading(false);
     }
   }
-
+  // 추천 웹툰의 정보를 가져오고 바로가기 버튼을 클릭시 해당 웹툰으로 넘어가도록 작업
   const onClickGenre = async (g: GenreSlug) => {
     setMode('genre');
     setApiError(null);
@@ -256,7 +258,7 @@ ${GENRES.join(', ')}`),
       setMessages((prev) => [
         ...prev,
         makeAssistant(
-          `${genreKo[g] ?? g} 장르의 추천 웹툰을 소개합니다:\n\n${bullets}\n\n아래 ‘바로가기’에서 상세페이지로 이동해 보세요!`
+          `${genreKo[g] ?? g} 장르의 추천 웹툰을 소개합니다:\n\n${bullets}\n\n아래 '바로가기'에서 상세페이지로 이동해 보세요!`
         ),
       ]);
 
@@ -273,12 +275,12 @@ ${GENRES.join(', ')}`),
 
   const GenreButtons = useMemo(
     () => (
-      <div className="my-2 flex flex-wrap gap-2">
+      <div className="my-2 grid grid-cols-[max-content_max-content_max-content] gap-x-1 gap-y-1 md:gap-x-2 md:gap-y-2 max-w-[720px] justify-start overflow-visible">
         {GENRES.map((g) => (
           <button
             key={g}
             onClick={() => onClickGenre(g)}
-            className="px-4 py-2 uppercase font-semibold text-[16px] shadow-md"
+            className="bubble-btn bubble-btn--xs bubble-btn--tail-left w-auto whitespace-nowrap px-2.5 py-1 uppercase font-semibold text-[12px] md:text-[13px]"
             style={btnStyle}
           >
             {g}
@@ -291,32 +293,26 @@ ${GENRES.join(', ')}`),
 
   return (
     <>
-      {/* 전체 화면 배경(양옆 포함) */}
-      <div className="fixed inset-0 bg-[#929292]" aria-hidden />
+      {/* 전체 화면 배경(양옆 포함) 기존 bg 4f4f4f */}
+      <div className="fixed inset-0 bg-[#4f4f4f]" aria-hidden />
       <main className="relative z-10 mx-auto min-h-screen max-w-3xl p-4 text-white">
-        <header className="mb-4 flex items-center justify-between">
+        <header className="mb-4 mt-10 md:mt-12 flex items-center justify-between">
           <h1 className="text-2xl font-bold">지니AI · 작품 추천</h1>
-          <Link
-            href="/home"
-            className="px-3 py-1.5 uppercase font-semibold text-[16px] shadow-md"
-            style={btnStyle}
-          >
-            홈으로
-          </Link>
+          <BackNavigator />
         </header>
 
         {mode === 'choose' && (
           <div className="mb-6 flex gap-3">
             <button
               onClick={() => onClickChoose('genre')}
-              className="px-4 py-2 uppercase font-semibold text-[16px] shadow-md"
+              className="bubble-btn px-4 py-2 uppercase font-semibold text-[16px]"
               style={btnStyle}
             >
               1) 장르로 추천받기
             </button>
             <button
               onClick={() => onClickChoose('taste')}
-              className="px-4 py-2 uppercase font-semibold text-[16px] shadow-md"
+              className="bubble-btn px-4 py-2 uppercase font-semibold text-[16px]"
               style={btnStyle}
             >
               2) 내 취향에 맞는 추천
@@ -338,7 +334,7 @@ ${GENRES.join(', ')}`),
             if (!text) return null;
             return (
               <li key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
-                <div className="inline-block max-w-[90%] whitespace-pre-wrap rounded-2xl border border-white bg-transparent px-3 py-2 text-white shadow">
+                <div className="inline-block max-w-[90%] whitespace-pre-wrap rounded-2xl border border-white bg-white px-3 py-2 text-[#4f4f4f] shadow">
                   {text}
                 </div>
               </li>
@@ -358,7 +354,7 @@ ${GENRES.join(', ')}`),
                 {linkItems.map((it) => (
                   <li
                     key={it.id}
-                    className="flex items-start justify-between gap-4 rounded-xl border border-white/70 bg-transparent p-3"
+                    className="flex items-start justify-between gap-4 rounded-xl border border-white/70 bg-transparent p-3 overflow-visible"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-base font-medium">{it.title}</div>
@@ -369,7 +365,7 @@ ${GENRES.join(', ')}`),
                     <Link
                       href={detailUrlFor(it)}
                       prefetch={false}
-                      className="shrink-0 px-3 py-1.5 uppercase font-semibold text-[16px] shadow-md"
+                      className="bubble-btn bubble-btn--tail-left shrink-0 px-3 py-1.5 uppercase font-semibold text-[16px]"
                       style={btnStyle}
                     >
                       바로가기
@@ -385,12 +381,88 @@ ${GENRES.join(', ')}`),
           <button
             type="button"
             onClick={stop}
-            className="px-3 py-2 uppercase font-semibold text-[16px] shadow-md"
+            className="bubble-btn px-3 py-2 uppercase font-semibold text-[16px]"
             style={btnStyle}
           >
             정지
           </button>
         </div>
+
+        {/* 정리된 CSS 스타일 */}
+        <style jsx>{`
+          .bubble-btn {
+            position: relative;
+            display: inline-block;
+            background: #fff;
+            color: #2148c0;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 4px 4px rgba(0, 0, 0, 0.3);
+            transition:
+              transform 0.06s ease,
+              box-shadow 0.2s ease;
+            z-index: 1;
+          }
+
+          .bubble-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+          }
+
+          .bubble-btn:active {
+            transform: translateY(0);
+          }
+
+          /* 기본 말풍선 꼬리 (하단 중앙) */
+          .bubble-btn::after {
+            content: '';
+            position: absolute;
+            left: 18px;
+            bottom: -10px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 0 10px;
+            border-color: #fff transparent transparent transparent;
+            filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.12));
+            z-index: 2;
+            pointer-events: none;
+          }
+
+          /* 왼쪽 끝 꼬리 버전 */
+          .bubble-btn--tail-left::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent #fff transparent transparent;
+            filter: drop-shadow(-1px 0 0 rgba(0, 0, 0, 0.12));
+            /* 하단 꼬리 스타일 초기화 */
+            left: -10px !important;
+            bottom: auto !important;
+          }
+
+          /* 초소형 버튼 스타일 */
+          .bubble-btn--xs {
+            border-radius: 12px;
+          }
+
+          .bubble-btn--xs::after {
+            bottom: -6px;
+            border-width: 6px 6px 0 6px;
+          }
+
+          .bubble-btn--xs.bubble-btn--tail-left::after {
+            left: -6px !important;
+            border-width: 6px 6px 6px 0;
+            bottom: auto !important;
+          }
+        `}</style>
       </main>
     </>
   );

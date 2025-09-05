@@ -5,10 +5,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signupSchema, type SignupInput } from '@/lib/validators/auth';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import BackNavigator from '@/components/ui/BackNavigator';
+import { Suspense } from 'react';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const emailFromSession = (session?.user as any)?.email ?? '';
+  const isSocialOnboarding =
+    (session?.user as any)?.onboarding === true && !!(session?.user as any)?.oauthProvider;
+
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<null | boolean>(null);
 
@@ -16,11 +24,20 @@ export default function SignupPage() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { gender: 'OTHER' },
+    defaultValues: { gender: 'MALE' },
   });
+
+  useEffect(() => {
+    if (!isSocialOnboarding) return; // ← 온보딩일 때만 채움
+    const u = (session as any)?.user ?? {};
+    if (typeof u?.name === 'string' && !watch('name')) setValue('name', u.name);
+    // 이메일은 기본값으로만 설정하고 수정 가능하게 유지
+    if (typeof u?.email === 'string' && !watch('email')) setValue('email', u.email);
+  }, [session, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const memberId = watch('memberId');
 
@@ -30,7 +47,7 @@ export default function SignupPage() {
   const inputStyle = useMemo(() => ({ border: '1px solid white' }), []);
   const labelClass = 'mt-1 text-xs text-white/90';
 
-  // ✅ ID 중복 확인
+  // ID 중복 확인
   const onDoubleCheck = async () => {
     if (!memberId || !/^[A-Za-z0-9_]+$/.test(memberId)) {
       setAvailable(null);
@@ -53,28 +70,33 @@ export default function SignupPage() {
     }
   };
 
-  // ✅ 회원가입 (기존 흐름 유지 + 서버 키에 맞춰 매핑)
-  const onSubmit = async (raw: SignupInput) => {
-    // 생일: 'YYYY/MM/DD'로 들어오면 '-'로 치환 (replaceAll 호환 이슈 방지: 정규식 사용)
-    const rawBirth = (raw.birth ?? '').trim();
-    const birthDate = rawBirth ? rawBirth.replace(/\//g, '-') : undefined;
+  const s = (v?: string | null) => (v ?? '').trim();
 
+  // 회원가입
+  const onSubmit = async (raw: SignupInput) => {
+    // 소셜 로그인 온보딩인 경우 추가 처리
     const payload = {
       memberId: raw.memberId.trim(),
-      memberPassword: raw.password, // ← 서버 키
+      memberPassword: raw.password,
       nickname: (raw.nickname ?? raw.name).trim(),
-      name: raw.name.trim(),
-      birthDate: (raw.birth ?? '').trim().replace(/\//g, '-'), // ← 서버 키
+      name: s(raw.name),
+      birthDate: (raw.birthday ?? '').trim().replace(/\//g, '-'),
       gender: raw.gender ?? 'OTHER',
-      email: raw.email.trim(),
-      phoneNumber: raw.phoneNumber.trim(),
-      address: raw.address.trim(),
+      email: s(raw.email),
+      phoneNumber: s(raw.phoneNumber),
+      address: s(raw.address),
+      // 소셜 로그인 정보가 있으면 함께 전송
+      ...(isSocialOnboarding && {
+        socialProvider: (session?.user as any)?.socialProvider,
+        oauthUserId: (session?.user as any)?.oauthUserId,
+        originalSocialEmail: emailFromSession, // 원래 소셜 이메일도 전송
+      }),
     };
 
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload), // ← {...raw}로 보내지 말 것!
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) {
@@ -86,12 +108,25 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen w-full" style={{ background: '#929292' }}>
+    <div className="min-h-screen w-full" style={{ background: '#4f4f4f' /* #929292 */ }}>
       <main className="mx-auto max-w-[1040px] px-4 py-12">
-        {/* 로고 영역 (임시) */}
-        <div className="mx-auto mb-10 grid h-[186px] w-[309px] place-content-center rounded bg-black/10 text-white">
+        <BackNavigator />
+        {/* 로고 영역 (임시) 기존 색상 bg-black/10 */}
+        <div className="mx-auto mb-10 grid h-[186px] w-[309px] place-content-center rounded bg-[#696969] text-white">
           <span className="text-xl font-semibold tracking-wide">GENIE WEBTOON</span>
         </div>
+
+        {/* 소셜 로그인 온보딩 안내 */}
+        {isSocialOnboarding && (
+          <div className="mx-auto mb-6 max-w-[1040px] rounded bg-blue-500/20 p-4 text-white">
+            <p className="text-sm">
+              🔗 {(session?.user as any)?.socialProvider?.toUpperCase()} 계정으로 연동 중입니다.
+            </p>
+            <p className="mt-1 text-xs text-white/80">
+              추가 정보를 입력하여 회원가입을 완료하세요. 이메일은 자유롭게 변경 가능합니다.
+            </p>
+          </div>
+        )}
 
         {/* 폼: 피그마 레이아웃(ID + DOUBLE CHECK 나란히) */}
         <form
@@ -185,7 +220,7 @@ export default function SignupPage() {
             {errors.gender && <p className={labelClass}>{errors.gender.message}</p>}
           </div>
 
-          {/* NICKNAME (스키마에 존재) */}
+          {/* NICKNAME */}
           <div className="sm:col-span-12">
             <input
               placeholder="NICKNAME"
@@ -196,7 +231,7 @@ export default function SignupPage() {
             {errors.nickname && <p className={labelClass}>{errors.nickname.message}</p>}
           </div>
 
-          {/* EMAIL */}
+          {/* EMAIL - 완전히 빈 상태로 시작 */}
           <div className="sm:col-span-12">
             <input
               type="email"
@@ -204,8 +239,14 @@ export default function SignupPage() {
               className={inputClass}
               style={inputStyle}
               {...register('email')}
+              key="email-input" // 강제 리렌더링을 위한 key
             />
             {errors.email && <p className={labelClass}>{errors.email.message}</p>}
+            {isSocialOnboarding && (
+              <p className={labelClass}>
+                💡 소셜 로그인 연동 중입니다. 사용하실 이메일을 입력해주세요.
+              </p>
+            )}
           </div>
 
           {/* PHONE */}
@@ -219,17 +260,18 @@ export default function SignupPage() {
             {errors.phoneNumber && <p className={labelClass}>{errors.phoneNumber.message}</p>}
           </div>
 
-          {/* BIRTH (YYYY/MM/DD 허용 → 전송 시 하이픈으로 변환) */}
+          {/* BIRTH */}
           <div className="sm:col-span-12">
             <input
               placeholder="BIRTH(YYYY-MM-DD)"
               className={inputClass}
               style={inputStyle}
-              {...register('birth')}
+              {...register('birthday')}
             />
-            {errors.birth && <p className={labelClass}>{errors.birth.message}</p>}
+            {errors.birthday && <p className={labelClass}>{errors.birthday.message}</p>}
           </div>
 
+          {/* ADDRESS */}
           <div className="sm:col-span-12">
             <input
               placeholder="ADDRESS"
@@ -240,7 +282,7 @@ export default function SignupPage() {
             {errors.address && <p className={labelClass}>{errors.address.message}</p>}
           </div>
 
-          {/* REGISTER 버튼 (가운데 300×46 느낌) */}
+          {/* REGISTER 버튼 */}
           <div className="sm:col-span-12 flex justify-center pt-2">
             <button
               type="submit"

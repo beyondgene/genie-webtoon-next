@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import type { Period, GenreSlug, RankingRow } from '@/app/api/(protected)/ranking/_lib';
+import BackNavigator from '@/components/ui/BackNavigator';
 
 type Props = {
   period: Period;
@@ -13,15 +14,16 @@ type Props = {
 export default function Client({ period, genre, items }: Props) {
   const top3 = items.slice(0, 3);
   const rest = items.slice(3);
-
+  // 랭킹 데이터가 있다면 포디움으로 순위 표시후 아래 10등까지는 일반 나열, 반대로 없으면 에러 문구
   return (
     <Wrap>
+      <BackNavigator />
       <HeaderBar>
         <h1>{labelOf(period)} 랭킹</h1>
         <small>{genreLabel(genre)}</small>
       </HeaderBar>
 
-      {/* ✅ 데이터가 없으면 포디움 감추고 안내 문구 */}
+      {/* 데이터가 없으면 포디움 감추고 안내 문구 */}
       {top3.length > 0 ? (
         <Podium>
           {top3[1] && <Card $pos="left" item={top3[1]} />}
@@ -51,10 +53,11 @@ export default function Client({ period, genre, items }: Props) {
   );
 }
 
-// ----- helpers -----
+// 영어 한국어 변환 레이블
 function labelOf(p: Period) {
   return p === 'daily' ? '일간' : p === 'weekly' ? '주간' : p === 'monthly' ? '월간' : '연간';
 }
+// 장르 한영 변환 레이블
 function genreLabel(g: GenreSlug) {
   const m: Record<GenreSlug, string> = {
     all: '전체',
@@ -70,54 +73,12 @@ function genreLabel(g: GenreSlug) {
   };
   return m[g];
 }
+// 숫자 포멧
 function formatNumber(n: number) {
   return new Intl.NumberFormat('ko-KR').format(n);
 }
 
-// ----- styled-components -----
-const Wrap = styled.main`
-  background: #929292;
-  color: #fff;
-  min-height: 100svh;
-  padding: clamp(12px, 2vw, 24px);
-`;
-const HeaderBar = styled.header`
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  h1 {
-    font-size: clamp(20px, 3vw, 32px);
-    font-weight: 800;
-    margin: 0;
-  }
-  small {
-    opacity: 0.9;
-    font-size: clamp(12px, 2vw, 16px);
-  }
-  margin-bottom: clamp(12px, 2vw, 24px);
-`;
-const Podium = styled.section`
-  position: relative;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto clamp(24px, 4vw, 40px);
-  aspect-ratio: 16 / 7;
-  img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
-    opacity: 0.95;
-  }
-`;
-const Empty = styled.p`
-  max-width: 1100px;
-  margin: 24px auto 0;
-  opacity: 0.95;
-`;
-
+// 랭킹에 호둘되는 웹툰 카드 참조위치랑 링크
 function Card({ item, $pos }: { item: RankingRow; $pos: 'left' | 'center' | 'right' }) {
   return (
     <CardWrap href={`/webtoon/${item.webtoon.idx}`} $pos={$pos}>
@@ -133,61 +94,100 @@ function Card({ item, $pos }: { item: RankingRow; $pos: 'left' | 'center' | 'rig
     </CardWrap>
   );
 }
-// Client.tsx 내 CardWrap 스타일만 교체
+
+// ----- styled-components -----
+/* background: #929292;
+  color: #fff;*/
+const Wrap = styled.main`
+  background: #4f4f4f; /* 랭킹 페이지 배경 */
+  color: #fff; /* 헤더 등 기본 텍스트는 흰색 유지 */
+  min-height: 100svh;
+  padding: clamp(12px, 2vw, 24px);
+`;
+
+const HeaderBar = styled.header`
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  h1 {
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 800;
+    margin: 0;
+  }
+  small {
+    opacity: 0.9;
+    font-size: clamp(12px, 2vw, 16px);
+  }
+  margin-bottom: clamp(12px, 2vw, 24px);
+`;
+
+const Podium = styled.section`
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto clamp(24px, 4vw, 40px);
+  height: clamp(320px, 40vw, 420px); /* 전체 높이 증가 */
+  display: flex;
+  align-items: flex-end; /* 하단 정렬로 시상대 효과 */
+  justify-content: center;
+  gap: clamp(8px, 2vw, 20px);
+`;
+
+const Empty = styled.p`
+  max-width: 1100px;
+  margin: 24px auto 0;
+  opacity: 0.95;
+`;
+
+// 웹툰 카드 디자인 - 순위별 높이 차별화
+/*  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);*/
 const CardWrap = styled(Link)<{ $pos: 'left' | 'center' | 'right' }>`
-  position: absolute;
+  position: relative;
   display: grid;
   grid-template:
     'badge' auto
     'thumb' 1fr
     'meta' auto / 1fr;
-  width: clamp(120px, 22vw, 220px);
-  height: clamp(160px, 28vw, 300px);
+
+  /* 순위별 크기와 높이 설정 */
+  width: ${
+    ({ $pos }) =>
+      $pos === 'center'
+        ? 'clamp(140px, 24vw, 240px)' // 1등 - 가장 큼
+        : 'clamp(120px, 20vw, 200px)' // 2,3등
+  };
+
+  height: ${
+    ({ $pos }) =>
+      $pos === 'center'
+        ? 'clamp(200px, 32vw, 320px)' // 1등 - 가장 높음
+        : $pos === 'left'
+          ? 'clamp(170px, 28vw, 280px)' // 2등 - 중간 높이
+          : 'clamp(150px, 24vw, 250px)' // 3등 - 가장 낮음
+  };
+
   border-radius: 18px;
   text-decoration: none;
-  color: inherit;
+  color: #4f4f4f; /* 기존 inherit */
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff; /* 카드 배경 흰색 */
+  border: 1px solid #e5e7eb; /* 연한 회색 테두리 */
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     background 0.18s ease;
 
-  /* ✅ 기본 transform을 변수로 보존 */
-  --base-t: none;
-  transform: var(--base-t);
-  z-index: 1;
+  /* 순위별 z-index */
+  z-index: ${({ $pos }) => ($pos === 'center' ? 3 : 2)};
 
   &:hover {
-    /* ✅ hover 시에도 기본 transform 유지 + 살짝 떠오르기 */
-    transform: var(--base-t) translateY(-4px) scale(1.02);
-    background: rgba(255, 255, 255, 0.12);
-    z-index: 10; /* ✅ 호버한 카드 최상단 */
+    transform: translateY(-4px) scale(1.02);
+    background: #f9fafb; /* 흰색 계열로 살짝 변화 기존 : rgba(255, 255, 255, 0.12)*/
+    z-index: 10;
   }
-
-  /* 단상 위 배치 + 기본 z-index */
-  ${({ $pos }) =>
-    $pos === 'center' &&
-    `
-    left: 50%; top: 8%;
-    --base-t: translateX(-50%); /* ✅ 중앙 정렬 유지 */
-    z-index: 3;
-  `}
-  ${({ $pos }) =>
-    $pos === 'left' &&
-    `
-    left: 18%; bottom: 6%;
-    z-index: 2;
-  `}
-  ${({ $pos }) =>
-    $pos === 'right' &&
-    `
-    right: 18%; bottom: 6%;
-    z-index: 2;
-  `}
 
   .badge {
     grid-area: badge;
@@ -197,18 +197,31 @@ const CardWrap = styled(Link)<{ $pos: 'left' | 'center' | 'right' }>`
     font-weight: 900;
     font-size: clamp(14px, 2vw, 18px);
     padding: 6px 10px;
-    background: rgba(0, 0, 0, 0.45);
+
+    /* 순위별 배지 색상 */
+    background: ${
+      ({ $pos }) =>
+        $pos === 'center'
+          ? 'linear-gradient(135deg, #FFD700, #FFA500)' // 1등 - 금색
+          : $pos === 'left'
+            ? 'rgba(160, 160, 160, 0.8)' // 2등 - 진한 은색 (기존 192,192,192 → 160,160,160)
+            : 'rgba(164, 102, 40, 0.8)' // 3등 - 진한 동색 (기존 205,127,50 → 164,102,40)
+    };
+
     border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
+
   .thumb {
     grid-area: thumb;
     margin: 6px 10px;
     border-radius: 12px;
     background-size: cover;
     background-position: center;
-    outline: 1px solid rgba(255, 255, 255, 0.25);
+    outline: 1px solid #e5e7eb; /* 썸네일 외곽선도 회색 기존: rgba(255, 255, 255, 0.25);*/
     min-height: 0;
   }
+
   .meta {
     grid-area: meta;
     padding: 10px 12px 12px;
@@ -223,13 +236,9 @@ const CardWrap = styled(Link)<{ $pos: 'left' | 'center' | 'right' }>`
       margin-top: 4px;
     }
   }
-
-  @media (max-width: 640px) {
-    ${({ $pos }) => $pos === 'left' && `left: 8%; bottom: 4%;`}
-    ${({ $pos }) => $pos === 'right' && `right: 8%; bottom: 4%;`}
-  }
 `;
 
+// 랭킹 리스트 디자인
 const List = styled.ol`
   max-width: 1100px;
   margin: 0 auto;
@@ -243,11 +252,11 @@ const List = styled.ol`
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: inherit;
+    color: #4f4f4f; /* 기존 inherit */
     padding: 10px 12px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #ffffff; /* 4~10등 배경 흰색 rgba(255, 255, 255, 0.06)*/
+    border: 1px solid #e5e7eb; /* 연한 회색 테두리 rgba(255, 255, 255, 0.15)*/
   }
   .rank {
     font-weight: 900;
@@ -273,11 +282,15 @@ const List = styled.ol`
     }
   }
 `;
+
+// 썸네일 스타일
+/*  background: ${({ $src }) => ($src ? `url(${$src}) center/cover` : 'rgba(255,255,255,.15)')};
+  outline: 1px solid rgba(255, 255, 255, 0.25);*/
 const Thumb = styled.i<{ $src: string }>`
   display: block;
   width: 64px;
   height: 64px;
   border-radius: 8px;
-  background: ${({ $src }) => ($src ? `url(${$src}) center/cover` : 'rgba(255,255,255,.15)')};
-  outline: 1px solid rgba(255, 255, 255, 0.25);
+  background: ${({ $src }) => ($src ? `url(${$src}) center/cover` : '#f3f4f6')};
+  outline: 1px solid #e5e7eb; /* 썸네일 외곽선 */
 `;
