@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signupSchema, type SignupInput } from '@/lib/validators/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import BackNavigator from '@/components/ui/BackNavigator';
@@ -12,6 +12,7 @@ import { Suspense } from 'react';
 
 export default function SignupPage() {
   const router = useRouter();
+  const pathname = usePathname(); // 하드 리로드용(새로고침후 재로딩)
   const { data: session } = useSession();
   const emailFromSession = (session?.user as any)?.email ?? '';
   const isSocialOnboarding =
@@ -25,6 +26,7 @@ export default function SignupPage() {
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
@@ -72,6 +74,70 @@ export default function SignupPage() {
 
   const s = (v?: string | null) => (v ?? '').trim();
 
+  const onSubmitGate: React.FormEventHandler<HTMLFormElement> = (e) => {
+    const raw = getValues(); // RHF 입력값
+    const parsed = signupSchema.safeParse(raw); // ✅ 프로젝트 정책 그대로 적용
+
+    if (parsed.success) return; // 통과 시 RHF/zod/서버 제출 진행
+
+    // 우선순위에 맞춰 에러 메시지 1건만 노출 (요청사항대로 '각 상황 발생 시 팝업 + 새로고침')
+    const { fieldErrors, formErrors } = parsed.error.flatten();
+
+    // 1) 비밀번호 규칙 불일치
+    if (fieldErrors.password?.length) {
+      e.preventDefault();
+      alert(fieldErrors.password[0] || '비밀번호가 입력 규칙에 맞지 않습니다.');
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+
+    // 2) 비밀번호 재입력 불일치(스키마에서 passwordConfirm/refine, 혹은 formErrors)
+    if (fieldErrors.passwordConfirm?.length || formErrors?.length) {
+      e.preventDefault();
+      // formErrors에 불일치 메시지를 넣는 스키마라면 우선 사용
+      const msg =
+        fieldErrors.passwordConfirm?.[0] || formErrors[0] || '재입력 비밀번호가 일치하지 않습니다.';
+      alert(msg);
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+
+    // 3) 이름(최대 글자수 이슈로 비워지거나 규칙 불일치 포함)
+    if (fieldErrors.name?.length) {
+      e.preventDefault();
+      alert(fieldErrors.name[0] || '이름을 입력해주세요.');
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+
+    // 4) 이메일 형식 오류
+    if (fieldErrors.email?.length) {
+      e.preventDefault();
+      alert(fieldErrors.email[0] || '이메일 형식이 올바르지 않습니다.');
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+
+    // 5) 전화번호 형식 오류
+    if (fieldErrors.phoneNumber?.length) {
+      e.preventDefault();
+      alert(
+        fieldErrors.phoneNumber[0] || '전화번호 입력 형식이 올바르지 않습니다. 예) 010-1234-5678'
+      );
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+
+    // 6) 생년월일 형식 오류
+    if (fieldErrors.birthday?.length) {
+      e.preventDefault();
+      alert(fieldErrors.birthday[0] || '생년월일 입력 형식이 올바르지 않습니다. 예) 1990-01-01');
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+
+    // 7) 주소 미입력
+    if (fieldErrors.address?.length) {
+      e.preventDefault();
+      alert(fieldErrors.address[0] || '주소를 입력해주세요.');
+      return void setTimeout(() => window.location.replace(pathname), 0);
+    }
+  };
+
   // 회원가입
   const onSubmit = async (raw: SignupInput) => {
     // 소셜 로그인 온보딩인 경우 추가 처리
@@ -100,6 +166,9 @@ export default function SignupPage() {
     });
 
     if (res.ok) {
+      alert(
+        '회원가입이 완료되었습니다! 가입시 입력하신 이메일로 이동하여 인증절차를 마무리해주세요!'
+      );
       router.push('/login?joined=1');
     } else {
       const { error } = await res.json().catch(() => ({ error: '회원가입 실패' }));
@@ -130,6 +199,8 @@ export default function SignupPage() {
 
         {/* 폼: 피그마 레이아웃(ID + DOUBLE CHECK 나란히) */}
         <form
+          noValidate
+          onSubmitCapture={onSubmitGate} // find-id와 동일한 '캡처 단계' 가드 연결
           onSubmit={handleSubmit(onSubmit)}
           className="mx-auto grid max-w-[1040px] grid-cols-1 gap-y-6 sm:grid-cols-12 sm:gap-x-6"
         >

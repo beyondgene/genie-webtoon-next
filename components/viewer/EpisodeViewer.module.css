@@ -44,6 +44,7 @@
   transform: translateY(-50%);
   display: grid;
   gap: 8px;
+  z-index: 60;
 }
 /* 조작 버튼 */
 .remoteBtn {

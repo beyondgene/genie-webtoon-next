@@ -1,19 +1,26 @@
 // app/find-password/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-// 프로젝트의 인증 전용 스키마를 사용합니다.
+// 프로젝트의 인증 전용 스키마
 import { findPasswordSchema, type FindPasswordInput } from '@/lib/validators/auth';
 import BackNavigator from '@/components/ui/BackNavigator';
+import { usePathname } from 'next/navigation';
 
-// 휴대폰 번호 로직
+// 휴대폰 번호 하이픈 자동 삽입
 function formatPhone(v: string) {
-  const digits = v.replace(/\D/g, '').slice(0, 11);
-  if (digits.length < 4) return digits;
-  if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  const d = v.replace(/\D/g, '').slice(0, 11);
+
+  if (d.length < 4) return d; // 3
+  if (d.length < 7) return `${d.slice(0, 3)}-${d.slice(3)}`; // 3-?
+
+  // 총 10자리(예: 011,016 등 구형): 3-3-4
+  if (d.length <= 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+
+  // 총 11자리(예: 010): 3-4-4
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
 export default function FindPasswordPage() {
@@ -22,16 +29,64 @@ export default function FindPasswordPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    getValues,
     reset,
   } = useForm<FindPasswordInput>({ resolver: zodResolver(findPasswordSchema) });
 
   const [serverMsg, setServerMsg] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  // ✅ RHF/zod보다 먼저 실행되는 '캡처 단계' 가드
+  const onSubmitGate: React.FormEventHandler<HTMLFormElement> = useCallback(
+    (e) => {
+      const { memberId, name, phoneNumber } = getValues();
+      const idOk = !!memberId?.trim();
+      const nameOk = !!name?.trim();
+      const phoneOk = !!phoneNumber?.trim();
+
+      // 전화번호 형식이 말이 안 되면 미입력처럼 취급(가벼운 체크: 10~11자리)
+      const digits = (phoneNumber || '').replace(/\D/g, '');
+      const phoneLooksInvalid = phoneOk && (digits.length < 10 || digits.length > 11);
+
+      if (!idOk || !nameOk || !phoneOk || phoneLooksInvalid) {
+        e.preventDefault(); // ➜ RHF/zod/서버 요청 자체 차단
+        alert('아이디, 이름, 전화번호를 모두 입력해주세요!');
+        setTimeout(() => window.location.replace(pathname), 0); // 히스토리 오염 없이 하드 리로드
+      }
+    },
+    [getValues, pathname]
+  );
+
+  // 세 필드 중 하나라도 비어 있으면 공통 팝업(백업용)
+  const onInvalid = useCallback(() => {
+    const { memberId, name, phoneNumber } = getValues();
+    const idOk = !!memberId?.trim();
+    const nameOk = !!name?.trim();
+    const phoneOk = !!phoneNumber?.trim();
+    if (!idOk || !nameOk || !phoneOk) {
+      alert('아이디, 이름, 전화번호를 모두 입력해주세요!');
+      setTimeout(() => window.location.replace(pathname), 0);
+    }
+  }, [getValues, pathname]);
 
   const onSubmit = async (data: FindPasswordInput) => {
+    // ✅ 정상 케이스 외 방어적 체크(백업)
+    const idOk = !!data.memberId?.trim();
+    const nameOk = !!data.name?.trim();
+    const phoneOk = !!data.phoneNumber?.trim();
+    const digits = (data.phoneNumber || '').replace(/\D/g, '');
+    const phoneLooksInvalid = phoneOk && (digits.length < 10 || digits.length > 11);
+
+    if (!idOk || !nameOk || !phoneOk || phoneLooksInvalid) {
+      alert('아이디, 이름, 전화번호를 모두 입력해주세요!');
+      setTimeout(() => window.location.replace(pathname), 0);
+      return;
+    }
+
     setServerMsg(null);
     setServerError(null);
-    //api에 작성된 비밀번호 찾기 라우터 호출
+
     try {
       const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
       const res = await fetch(`${base}/api/auth/find-password`, {
@@ -59,7 +114,7 @@ export default function FindPasswordPage() {
       );
       // 개인정보 입력값은 비워주기
       reset({ memberId: '', name: '', phoneNumber: '' });
-    } catch (e) {
+    } catch {
       setServerError('비밀번호 찾기 처리 중 오류가 발생했습니다.');
     }
   };
@@ -71,15 +126,20 @@ export default function FindPasswordPage() {
     >
       <BackNavigator />
       <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
-        {/* 상단 로고 박스 기존 bg-[rgba(0,0,0,0.07)] */}
+        {/* 상단 로고 박스 */}
         <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[#696969]">
           <span className="text-[22px] font-semibold tracking-wide text-white/90">
             GENIE WEBTOON
           </span>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-[14px]">
-          {/* 아이디 bg-[#D9D9D9] */}
+        <form
+          noValidate
+          onSubmitCapture={onSubmitGate} // ✅ 추가: 캡처 단계 가드
+          onSubmit={handleSubmit(onSubmit, onInvalid)} // 기존 핸들러 유지
+          className="space-y-[14px]"
+        >
+          {/* 아이디 */}
           <div>
             <label className="mb-[6px] block text-[16px] font-medium text-white">ID</label>
             <input
@@ -94,7 +154,7 @@ export default function FindPasswordPage() {
             )}
           </div>
 
-          {/* 이름 bg-[#D9D9D9] */}
+          {/* 이름 */}
           <div>
             <label className="mb-[6px] block text-[16px] font-medium text-white">Name</label>
             <input
@@ -107,7 +167,7 @@ export default function FindPasswordPage() {
             {errors.name && <p className="mt-1 text-xs text-white/90">{errors.name.message}</p>}
           </div>
 
-          {/* 전화번호 bg-[#D9D9D9] */}
+          {/* 전화번호 */}
           <div>
             <label className="mb-[6px] block text-[16px] font-medium text-white">Phone</label>
             <input

@@ -42,16 +42,16 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
   // Next.js 15: params는 Promise이므로 await 필요
   const { id } = await params;
 
-  // 숫자 id로 강제 변환 (객체/NaN 유입 차단) 기존 bg-[#929292]
+  // 숫자 id로 강제 변환 (객체/NaN 유입 차단)
   const wid = toNumericId(id);
   if (!wid) {
     return (
       <main className="min-h-screen bg-[#4f4f4f] text-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <h1 className="text-2xl font-semibold">잘못된 작품 ID입니다.</h1>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-16">
+          <h1 className="text-xl sm:text-2xl font-semibold">잘못된 작품 ID입니다.</h1>
           <Link
             href="/"
-            className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+            className="mt-4 sm:mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
           >
             홈으로
           </Link>
@@ -72,15 +72,15 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
     where: { idx: numId },
     attributes: ['idx', 'webtoonName', 'description', 'wbthumbnailUrl', 'genre', 'artistId'],
   });
-  // 기존 main bg-[#929292]
+
   if (!webtoon) {
     return (
       <main className="min-h-screen bg-[#4f4f4f] text-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <h1 className="text-2xl font-semibold">작품을 찾을 수 없습니다.</h1>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-16">
+          <h1 className="text-xl sm:text-2xl font-semibold">작품을 찾을 수 없습니다.</h1>
           <Link
             href="/"
-            className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+            className="mt-4 sm:mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
           >
             홈으로
           </Link>
@@ -137,50 +137,67 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
   const genreLabel = toGenreLabel(webtoon.genre);
   const genreHref =
     genreLabel && genreLabel !== '장르' ? `/genre/${encodeURIComponent(genreLabel)}` : '/genre';
-  // 위에서 불러온 썸네일, 작가, 장르,설명, 에피소드 리스트 화면 html 메인 화면 bg-[#929292]
+
   return (
     <main className="min-h-screen bg-[#4f4f4f] text-white">
       <BackNavigator href={genreHref} />
       <ViewTracker webtoonId={numId} />
-      <div className="mx-auto max-w-[1200px] px-6 py-12">
-        <div className="grid grid-cols-12 gap-8">
-          {/* 왼쪽 */}
-          <section className="col-span-12 lg:col-span-6">
-            <div
-              className="w-full md:max-w-[533px] rounded-2xl overflow-hidden shadow-md"
-              style={{ aspectRatio: '533 / 678' }}
-            >
-              <ImageFallBack
-                src={posterSrc}
-                alt={title}
-                className="block h-full w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
+
+      {/* 모바일 우선 레이아웃 */}
+      <div className="mx-auto max-w-[1200px] px-3 sm:px-6 py-6 sm:py-12">
+        {/* 모바일: 세로 스택, 데스크톱: 그리드 */}
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8">
+          {/* 포스터 섹션 */}
+          <section className="w-full lg:col-span-6">
+            {/* 모바일에서 더 작은 포스터 */}
+            <div className="w-full max-w-[280px] sm:max-w-[400px] lg:max-w-[533px] mx-auto">
+              <div
+                className="w-full rounded-2xl overflow-hidden shadow-md"
+                style={{ aspectRatio: '533 / 678' }}
+              >
+                <ImageFallBack
+                  src={posterSrc}
+                  alt={title}
+                  className="block h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </div>
 
-            {/* 제목 행 + 구독 컨트롤 */}
-            <div className="mt-8 text-center">
-              <div className="flex items-center justify-center gap-3">
-                <h1 className="text-2xl font-bold">{title}</h1>
-                <SubscribeControls webtoon={numId} />
+            {/* 제목 및 정보 섹션 */}
+            <div className="mt-6 sm:mt-8 text-center px-2">
+              {/* 모바일에서 제목과 버튼을 세로로 배치 */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold leading-tight">{title}</h1>
+                <div className="flex-shrink-0">
+                  <SubscribeControls webtoon={numId} />
+                </div>
               </div>
 
-              <p className="mt-4 text-sm text-white/80">
+              <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-white/80">
                 글 {artist?.artistName || artist?.realName || '작가 미상'} / 장르 {genreLabel}
               </p>
-              <p className="mt-6 whitespace-pre-line text-sm leading-6 text-white/90">
-                {description}
-              </p>
+
+              {/* 설명 텍스트 모바일에서 더 컴팩트하게 */}
+              <div className="mt-4 sm:mt-6">
+                <p className="whitespace-pre-line text-xs sm:text-sm leading-5 sm:leading-6 text-white/90 max-w-prose mx-auto">
+                  {description}
+                </p>
+              </div>
             </div>
           </section>
 
-          {/* 오른쪽: 에피소드 기존*/}
-          <aside className="col-span-12 lg:col-span-6">
-            <div className="rounded-xl border border-white/15 bg-white/10 backdrop-blur-[1px] overflow-hidden h-[420px] md:h-[678px] w-full md:max-w-[722px] mt-0">
-              <div className="max-h-full overflow-y-auto">
+          {/* 에피소드 섹션 */}
+          <aside className="w-full lg:col-span-6">
+            {/* 모바일에서 높이 조절 및 전체 너비 사용 */}
+            <div className="rounded-xl border border-white/15 bg-white/10 backdrop-blur-[1px] overflow-hidden">
+              {/* 모바일에서 더 작은 높이, 태블릿에서 중간, 데스크톱에서 큰 높이 */}
+              <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[678px] overflow-y-auto">
                 {episodes.length === 0 ? (
-                  <div className="p-6 text-sm text-white/80">등록된 에피소드가 없습니다.</div>
+                  <div className="p-4 sm:p-6 text-xs sm:text-sm text-white/80 text-center">
+                    등록된 에피소드가 없습니다.
+                  </div>
                 ) : (
                   <ul className="divide-y divide-white/10">
                     {episodes.map((ep: any, i: number) => {
@@ -191,15 +208,17 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
                       const webtoonId = numId;
                       const epTitle = ep.title || `Ep. ${episodes.length - i}`;
                       const href = `/webtoon/${webtoonId}/episodes/${ep.idx}`;
+
                       return (
                         <li key={ep.idx}>
                           <Link
                             href={href}
-                            className="flex items-center gap-3 px-3 py-3 hover:bg-white/10 transition"
+                            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-white/10 transition-colors duration-200 active:bg-white/20"
                           >
+                            {/* 모바일에서 더 작은 썸네일 */}
                             <div
-                              className="flex-shrink-0 overflow-hidden rounded-md"
-                              style={{ width: 96, height: 54, aspectRatio: '16 / 9' }}
+                              className="flex-shrink-0 overflow-hidden rounded-md w-[72px] h-[40px] sm:w-[96px] sm:h-[54px]"
+                              style={{ aspectRatio: '16 / 9' }}
                             >
                               <ImageFallBack
                                 src={thumb}
@@ -209,8 +228,9 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
                                 decoding="async"
                               />
                             </div>
-                            <div className="min-w-0">
-                              <div className="truncate text-sm font-medium text-white">
+
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-xs sm:text-sm font-medium text-white">
                                 {epTitle}
                               </div>
                               <div className="mt-1 text-xs text-white/70">

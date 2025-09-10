@@ -214,10 +214,10 @@ export default function CommentSection({ webtoonId, episodeId, pageSize = 20 }: 
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold">{c.memberNickname}</div>
                     <p className="whitespace-pre-wrap text-sm">{c.content}</p>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-[#6b7280]">
+                    <div className="mt-2 flex items-center gap-x-2 text-xs text-[#6b7280] max-[400px]:flex-nowrap max-[400px]:overflow-x-auto max-[400px]:gap-x-1">
                       <button
                         onClick={() => onToggleLike(c)}
-                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30 max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                         aria-label="좋아요"
                       >
                         <HandThumbUpIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
@@ -225,7 +225,7 @@ export default function CommentSection({ webtoonId, episodeId, pageSize = 20 }: 
                       </button>
                       <button
                         onClick={() => onToggleDisLike(c)}
-                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30 max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                         aria-label="싫어요"
                       >
                         <HandThumbDownIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
@@ -236,29 +236,32 @@ export default function CommentSection({ webtoonId, episodeId, pageSize = 20 }: 
                           const v = prompt('답글을 입력하세요');
                           if (v && v.trim()) onReply(id, v.trim());
                         }}
-                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 break-keep whitespace-nowrap text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30 max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                       >
                         <ChatBubbleBottomCenterTextIcon
-                          className="h-4 w-4 text-[#4f4f4f]"
+                          className="h-4 w-4 text-[#4f4f4f] max-[400px]:h-4 max-[400px]:w-4"
                           aria-hidden="true"
                         />
                         <span>답글</span>
                       </button>
                       <button
                         onClick={() => onReport(c)}
-                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                        className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 break-keep whitespace-nowrap text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30 max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                         aria-label="신고"
                       >
-                        <FlagIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
+                        <FlagIcon
+                          className="h-4 w-4 text-[#4f4f4f] max-[400px]:h-4 max-[400px]:w-4"
+                          aria-hidden="true"
+                        />
                         <span>신고</span>
                       </button>
                       {myId && Number(c.memberId) === myId && (
                         <button
                           onClick={() => onRemove(c)}
-                          className="ml-2 flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-red-600"
+                          className="ml-2 flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 break-keep whitespace-nowrap text-red-600 max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                           aria-label="삭제"
                         >
-                          <TrashIcon className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4 max-[400px]:h-4 max-[400px]:w-4" />
                           <span>삭제</span>
                         </button>
                       )}
@@ -280,45 +283,58 @@ export default function CommentSection({ webtoonId, episodeId, pageSize = 20 }: 
                         <div className="text-sm whitespace-pre-wrap">{r.content}</div>
 
                         {/* 대댓글 액션 버튼: 좋아요/싫어요/신고 */}
-                        <div className="mt-2 flex items-center gap-2 text-xs text-[#6b7280]">
+                        <div
+                          className="mt-2 flex items-center gap-x-2 text-xs text-[#6b7280]
+                                     max-[400px]:flex-nowrap max-[400px]:overflow-x-auto max-[400px]:gap-x-1"
+                        >
                           <button
                             onClick={() => onToggleLike(r)}
-                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f]
+                                       hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30
+                                       break-keep whitespace-nowrap max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                             aria-label="좋아요"
                           >
                             <HandThumbUpIcon
-                              className="h-4 w-4 text-[#4f4f4f]"
+                              className="h-4 w-4 text-[#4f4f4f] max-[400px]:h-4 max-[400px]:w-4"
                               aria-hidden="true"
                             />
                             <span>{r.likeCount}</span>
                           </button>
                           <button
                             onClick={() => onToggleDisLike(r)}
-                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f]
+                                       hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30
+                                       break-keep whitespace-nowrap max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                             aria-label="싫어요"
                           >
                             <HandThumbDownIcon
-                              className="h-4 w-4 text-[#4f4f4f]"
+                              className="h-4 w-4 text-[#4f4f4f] max-[400px]:h-4 max-[400px]:w-4"
                               aria-hidden="true"
                             />
                             <span>{r.dislikeCount}</span>
                           </button>
                           <button
                             onClick={() => onReport(r)}
-                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f] hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30"
+                            className="flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-[#4f4f4f]
+                                       hover:bg-[#4f4f4f]/5 focus:outline-none focus:ring-2 focus:ring-[#4f4f4f]/30
+                                       break-keep whitespace-nowrap max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                             aria-label="신고"
                           >
-                            <FlagIcon className="h-4 w-4 text-[#4f4f4f]" aria-hidden="true" />
+                            <FlagIcon
+                              className="h-4 w-4 text-[#4f4f4f] max-[400px]:h-4 max-[400px]:w-4"
+                              aria-hidden="true"
+                            />
                             <span>신고</span>
                           </button>
                           {/* 대댓글 삭제 */}
                           {myId && Number(r.memberId) === myId && (
                             <button
                               onClick={() => onRemove(r)}
-                              className="ml-2 flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-red-600"
+                              className="ml-2 flex items-center gap-1 rounded-md border border-[#4f4f4f] px-2 py-1 text-red-600
+                                         break-keep whitespace-nowrap max-[400px]:px-1 max-[400px]:gap-0.5 max-[400px]:shrink-0"
                               aria-label="삭제"
                             >
-                              <TrashIcon className="h-4 w-4" />
+                              <TrashIcon className="h-4 w-4 max-[400px]:h-4 max-[400px]:w-4" />
                               <span>삭제</span>
                             </button>
                           )}

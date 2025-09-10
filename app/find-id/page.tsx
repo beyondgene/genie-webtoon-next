@@ -1,20 +1,27 @@
 // app/find-id/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-// 프로젝트의 인증 전용 스키마를 사용합니다.
+import type { FieldErrors } from 'react-hook-form';
+// 프로젝트의 인증 전용 스키마를 사용
 import { findIdSchema, type FindIdInput } from '@/lib/validators/auth';
 import BackNavigator from '@/components/ui/BackNavigator';
+import { usePathname } from 'next/navigation'; // 추가
 
 // 핸드폰 번호 로직
 function formatPhone(v: string) {
-  // 010-1234-5678 형태로 하이픈 자동 삽입
-  const digits = v.replace(/\D/g, '').slice(0, 11);
-  if (digits.length < 4) return digits;
-  if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  const d = v.replace(/\D/g, '').slice(0, 11);
+
+  if (d.length < 4) return d; // 3
+  if (d.length < 7) return `${d.slice(0, 3)}-${d.slice(3)}`; // 3-?
+
+  // 총 10자리(예: 011,016 등 구형): 3-3-4
+  if (d.length <= 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+
+  // 총 11자리(예: 010): 3-4-4
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
 export default function FindIdPage() {
@@ -23,15 +30,70 @@ export default function FindIdPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    getValues,
   } = useForm<FindIdInput>({ resolver: zodResolver(findIdSchema) });
 
   const [foundId, setFoundId] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
+  const pathname = usePathname(); // ✅ 추가
+
+  // ✅ RHF/zod보다 먼저 실행되는 '캡처 단계' 가드
+  const onSubmitGate: React.FormEventHandler<HTMLFormElement> = useCallback(
+    (e) => {
+      const { name, phoneNumber } = getValues();
+      const hasName = !!name?.trim();
+      const hasPhone = !!phoneNumber?.trim();
+
+      // 전화번호가 형식적으로 말이 안 되면 미입력처럼 간주
+      const digits = (phoneNumber || '').replace(/\D/g, '');
+      const phoneLooksInvalid = hasPhone && (digits.length < 10 || digits.length > 11);
+
+      const onlyOneFilled = (hasName && !hasPhone) || (!hasName && hasPhone);
+
+      // ⬇️ 둘 중 하나라도 미입력/형식 오류면: 무조건 팝업 → 즉시 재로딩
+      if (!hasName || !hasPhone || phoneLooksInvalid || onlyOneFilled) {
+        e.preventDefault(); // RHF/zod/서버 요청 자체 차단
+        alert('이름과 전화번호 모두 입력해주세요!');
+        setTimeout(() => window.location.replace(pathname), 0); // 히스토리 오염 없이 하드 리로드
+      }
+    },
+    [getValues, pathname]
+  );
+
+  // 하나만 입력된 경우 공통 팝업 (백업용, 기존 유지)
+  const onInvalid = useCallback(
+    (errors: FieldErrors<FindIdInput>) => {
+      const { name, phoneNumber } = getValues();
+      const hasName = !!name?.trim();
+      const hasPhone = !!phoneNumber?.trim();
+      const phoneInvalid = !!errors.phoneNumber; // 형식 오류도 '미입력'처럼 취급
+
+      const onlyOneFilled = (hasName && (!hasPhone || phoneInvalid)) || (!hasName && hasPhone);
+      if (onlyOneFilled) {
+        alert('이름과 전화번호 모두 입력해주세요!');
+        setTimeout(() => window.location.replace(pathname), 0); // ✅ 재로딩 추가
+        return;
+      }
+      // 그 외에는 필드별 에러 메시지를 그대로 노출
+    },
+    [getValues, pathname]
+  );
 
   const onSubmit = async (data: FindIdInput) => {
+    // ✅ 선행 입력 체크(백업). 캡처 가드가 있으므로 정상 케이스엔 통과
+    const name = data.name?.trim() ?? '';
+    const phone = data.phoneNumber?.trim() ?? '';
+    const phoneInvalid = phone.length > 0 && !/^\d{3}-\d{3,4}-\d{4}$/.test(phone);
+
+    if (!name || !phone || phoneInvalid) {
+      alert('이름과 전화번호 모두 입력해주세요!');
+      setTimeout(() => window.location.replace(pathname), 0); // ✅ 재로딩 추가
+      return;
+    }
+
     setFoundId(null);
     setServerError(null);
-    //api 라우터에 저장된 아이디 찾기 라우터 호출
+
     try {
       const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
       const res = await fetch(`${base}/api/auth/find-id`, {
@@ -42,7 +104,6 @@ export default function FindIdPage() {
 
       const json = await res.json();
       if (!res.ok) {
-        // 404: 회원 없음, 400: 유효성 오류 등
         setServerError(
           typeof json?.error === 'string'
             ? json.error
@@ -72,7 +133,12 @@ export default function FindIdPage() {
           </span>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-[14px]">
+        <form
+          noValidate
+          onSubmitCapture={onSubmitGate} // ✅ 추가: 캡처 단계 가드
+          onSubmit={handleSubmit(onSubmit, onInvalid)} // 기존 핸들러 유지
+          className="space-y-[14px]"
+        >
           {/* 이름 기존 bg-[#D9D9D9] */}
           <div>
             <label className="mb-[6px] block text-[16px] font-medium text-white">Name</label>

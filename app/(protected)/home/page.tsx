@@ -61,14 +61,14 @@ export default function HomePage() {
               <Tile title="장르별" subtitle="원하는 장르로 빠르게" titleClass="text-[#00FF80]" />
             </motion.div>
 
-            {/* 좌하: 마이페이지(오른쪽 선) */}
+            {/* 좌하: 마이페이지(오른쪽 선) - 반응형 제목 적용 */}
             <motion.div
               layoutId="tile-mypage"
               onMouseEnter={() => handleEnter('mypage')}
               onClick={() => handleEnter('mypage')}
               className="relative border-r border-white"
             >
-              <Tile title="마이페이지" subtitle="나의 취향과 기록" titleClass="text-[#FFFF00]" />
+              <ResponsiveMyPageTile />
             </motion.div>
           </div>
 
@@ -127,6 +127,29 @@ export default function HomePage() {
     </div>
   );
 }
+
+// 마이페이지 전용 반응형 타일 컴포넌트
+function ResponsiveMyPageTile() {
+  return (
+    <div className="w-full h-full bg-[#4f4f4f] flex items-center justify-center select-none">
+      <div className="text-center">
+        <h3 className="font-mont uppercase leading-tight text-[44px] md:text-[56px] font-extrabold tracking-tight text-[#FFFF00]">
+          {/* 모바일에서는 줄바꿈, 데스크톱에서는 한 줄 */}
+          <span className="block sm:hidden">
+            마이
+            <br />
+            페이지
+          </span>
+          <span className="hidden sm:block">마이페이지</span>
+        </h3>
+        <span className="block mt-2 text-base md:text-lg opacity-95 text-white/90">
+          나의 취향과 기록
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // 부제목 설정 기존 bg-919191 tex
 function Tile({
   title,
@@ -184,12 +207,21 @@ function Expanded({ id, onClose }: { id: TileId; onClose: () => void }) {
           <h2
             className={`font-mont uppercase text-[40px] md:text-[52px] font-extrabold leading-none ${TITLE_COLOR[id] ?? ''}`}
           >
-            {' '}
             {id === 'genielife' ? (
               <>
                 <span>지니와 함께하는</span>
                 <br />
                 <span className="whitespace-nowrap">웹툰생활</span>
+              </>
+            ) : id === 'mypage' ? (
+              // 마이페이지 확장 시에도 반응형 적용
+              <>
+                <span className="block sm:hidden">
+                  마이
+                  <br />
+                  페이지
+                </span>
+                <span className="hidden sm:block">마이페이지</span>
               </>
             ) : (
               title
