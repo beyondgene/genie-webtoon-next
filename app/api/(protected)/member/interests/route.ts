@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';
 import { listAuthorInterests } from '@/controllers/member/interestsController';

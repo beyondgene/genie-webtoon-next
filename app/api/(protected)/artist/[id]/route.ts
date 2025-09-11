@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { getArtistById, updateArtist, deleteArtist } from '@/controllers/artist/artistController';

@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // app/api/auth/checkduplicate/route.ts
 import { NextRequest } from 'next/server';
 import * as yup from 'yup';

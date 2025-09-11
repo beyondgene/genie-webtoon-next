@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 // app/api/(protected)/admin/artists/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';

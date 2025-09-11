@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // app/api/ranking/weekly/[genre]/route.ts
 import { NextResponse } from 'next/server';
 import { getRanking } from '../../_lib';

@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest } from 'next/server';
 import * as yup from 'yup';
 import { signup } from '@/controllers/auth/signupController';

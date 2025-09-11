@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextResponse, NextRequest } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';

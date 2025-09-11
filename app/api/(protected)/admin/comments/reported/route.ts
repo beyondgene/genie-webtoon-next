@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/middlewares/auth';
 import * as ctrl from '@/controllers/admin/reportedCommentsController';

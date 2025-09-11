@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // app/api/health/db/route.ts
 import { NextResponse } from 'next/server';
 import { sequelize } from '@/db/sequelize';

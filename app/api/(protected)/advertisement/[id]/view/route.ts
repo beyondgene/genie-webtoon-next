@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // app/api/(protected)/advertisement/[id]/view/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireAdminAuth } from '@/lib/middlewares/auth';

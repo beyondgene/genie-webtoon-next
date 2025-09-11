@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // 좋아요/좋아요 취소
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middlewares/auth';

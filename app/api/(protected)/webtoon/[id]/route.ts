@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // app/api/(protected)/webtoon/[id]/route.ts
 import { NextRequest } from 'next/server';
 import db from '@/models';

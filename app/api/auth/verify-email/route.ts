@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 import { NextRequest } from 'next/server';
 import { verifyEmail } from '@/controllers/auth/verifyEmailController';
