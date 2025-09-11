@@ -88,8 +88,8 @@ export default function FindPasswordPage() {
     setServerError(null);
 
     try {
-      const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-      const res = await fetch(`${base}/api/auth/find-password`, {
+      // const base = process.env.NEXT_PUBLIC_BASE_URL ?? ''; ${base}
+      const res = await fetch(`/api/auth/find-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

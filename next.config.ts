@@ -17,9 +17,16 @@ const remotePatterns = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  serverExternalPackages: ['sequelize', 'mysql2', 'sequelize-typescript', 'pg', 'pg-hstore'],
+  serverExternalPackages: [
+    'sequelize',
+    'mysql2',
+    'sequelize-typescript',
+    'pg',
+    'pg-hstore',
+    'nodemailer',
+  ],
   experimental: {
-    serverComponentsExternalPackages: ['mysql2', 'sequelize'],
+    serverComponentsExternalPackages: ['mysql2', 'sequelize', 'nodemailer'],
     //typedRoutes: true,
     // ⬇️ Sequelize와 mysql2는 서버 컴포넌트 외부 패키지로 처리(번들 축소/충돌 방지)
   },

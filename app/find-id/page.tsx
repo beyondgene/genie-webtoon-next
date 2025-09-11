@@ -95,8 +95,8 @@ export default function FindIdPage() {
     setServerError(null);
 
     try {
-      const base = process.env.NEXT_PUBLIC_BASE_URL ?? '';
-      const res = await fetch(`${base}/api/auth/find-id`, {
+      // const base = process.env.NEXT_PUBLIC_BASE_URL ?? ''; ${base}
+      const res = await fetch(`/api/auth/find-id`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
