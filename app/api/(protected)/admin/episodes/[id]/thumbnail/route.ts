@@ -14,7 +14,8 @@ type Body = {
 
 // 에피소드 썸네일을 불러오는 컨트롤러를 호출하는 put 핸들러 라우터
 async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
-  await requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
 
   const { url, key }: Body = await req.json();
   if (!url && !key) {

@@ -9,7 +9,8 @@ import {
 } from '@/controllers/admin/advertisementsController';
 // 광고 리스트를 불러오는 컨트롤러를 호출하는 GET 라우터
 async function GETHandler(req: NextRequest) {
-  await requireAdminAuth(req); // 반환값 체크 제거
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth; // 반환값 체크 제거
 
   try {
     const ads = await listAdvertisements();
@@ -23,7 +24,8 @@ async function GETHandler(req: NextRequest) {
 }
 // 광고 리스트를 생성하는 컨트롤러를 호출하는 POST 라우터
 async function POSTHandler(req: NextRequest) {
-  await requireAdminAuth(req); // 반환값 체크 제거
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth; // 반환값 체크 제거
 
   let data;
   try {

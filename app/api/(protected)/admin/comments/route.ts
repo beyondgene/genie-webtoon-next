@@ -6,13 +6,15 @@ import { withErrorHandler } from '@/lib/middlewares/errorHandler';
 
 // 댓글 정보를 불러오는 컨트롤러를 호출하는 get 라우터
 async function GETHandler(req: NextRequest) {
-  await requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
   const list = await ctrl.listComments();
   return NextResponse.json(list);
 }
 // 댓글을 삭제하는 컨트롤러를 호출하는 delete 라우터
 async function DELETEHandler(req: NextRequest, { params }: { params: { id: string } }) {
-  await requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
   await ctrl.deleteComment(+params.id);
   return NextResponse.json(null, { status: 204 });
 }

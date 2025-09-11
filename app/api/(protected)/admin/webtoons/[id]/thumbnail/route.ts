@@ -13,7 +13,8 @@ type Body = {
 };
 // 웹툰 썸네일 불러와서 화면에 배치하는 put 컨트롤러를 호출하는 라우터
 async function PUTHandler(req: NextRequest, { params }: { params: { id: string } }) {
-  await requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
 
   const { url, key }: Body = await req.json();
   if (!url && !key) {

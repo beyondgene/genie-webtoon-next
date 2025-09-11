@@ -9,7 +9,8 @@ import {
 
 // 광고 시청로그 불러오는 컨트롤러를 호출하는 GET 라우터
 async function GETHandler(req: NextRequest) {
-  await requireAdminAuth(req);
+  const auth = await requireAdminAuth(req);
+  if (auth instanceof NextResponse) return auth;
   const [byAd, byMember] = await Promise.all([getViewStatsByAd(), getViewStatsByMember()]);
   return NextResponse.json({ byAd, byMember });
 }

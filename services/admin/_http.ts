@@ -14,6 +14,7 @@ export async function httpGet<T>(url: string, init: RequestInit = {}): Promise<T
   }
   const res = await fetch(`${API_BASE}${url}`, {
     cache: 'no-store',
+    ...(typeof window !== 'undefined' ? { credentials: 'include' as const } : {}),
     ...init,
     headers,
   });
