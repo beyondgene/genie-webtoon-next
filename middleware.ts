@@ -70,7 +70,6 @@ export async function middleware(req: NextRequest) {
     }
     // 토큰 스키마가 프로젝트마다 다를 수 있어 느슨하게 검사
     // (기존 /admin/* 블록이 쓰는 기준과 동일해야 합니다)
-    // @ts-ignore
     if (!token.role || token.role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/403', req.url));
     }

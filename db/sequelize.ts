@@ -1,4 +1,5 @@
 // db/sequelize.ts
+import 'mysql2';
 import { Sequelize } from 'sequelize';
 
 //orm sequelize를 사용하기 위한 기본설정 ts파일
