@@ -1,13 +1,7 @@
 // app/(protected)/webtoon/[id]/episodes/[epId]/page.tsx
 import EpisodeViewer from '@/components/viewer/EpisodeViewer';
-import dynamic from 'next/dynamic';
 // 댓글은 무거워서 클라에서 늦게 붙임(SSR 비용/하이드레이션 지연 완화)
-const CommentSection = dynamic(() => import('@/components/viewer/CommentSection'), {
-  ssr: false,
-  loading: () => (
-    <div className="mx-auto max-w-3xl px-4 py-10 text-center text-black/60">댓글 불러오는 중…</div>
-  ),
-});
+import CommentSectionClient from './CommentSectionClient';
 import { headers, cookies } from 'next/headers';
 
 export const revalidate = 60; // 페이지 자체도 1분 기준 ISR
@@ -76,7 +70,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; e
 
       {/* 댓글 섹션: CSR 지연 마운트 */}
       <section className="mx-auto w-full max-w-3xl px-4 py-10 bg-white">
-        <CommentSection webtoonId={webtoonId} episodeId={episodeId} />
+        <CommentSectionClient webtoonId={webtoonId} episodeId={episodeId} />
       </section>
     </div>
   );
