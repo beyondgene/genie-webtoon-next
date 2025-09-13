@@ -1,9 +1,17 @@
 // app/(protected)/webtoon/[id]/episodes/[epId]/page.tsx
 import EpisodeViewer from '@/components/viewer/EpisodeViewer';
-import CommentSection from '@/components/viewer/CommentSection'; // 추가
+import dynamic from 'next/dynamic';
+// 댓글은 무거워서 클라에서 늦게 붙임(SSR 비용/하이드레이션 지연 완화)
+const CommentSection = dynamic(() => import('@/components/viewer/CommentSection'), {
+  ssr: false,
+  loading: () => (
+    <div className="mx-auto max-w-3xl px-4 py-10 text-center text-black/60">댓글 불러오는 중…</div>
+  ),
+});
 import { headers, cookies } from 'next/headers';
 
 export const revalidate = 60; // 페이지 자체도 1분 기준 ISR
+export const runtime = 'nodejs';
 export const preferredRegion = ['icn1', 'hnd1'];
 
 // env파일에 있는 baseUrl 호출해오는 로직
@@ -32,7 +40,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; e
       cache: 'no-store',
       headers: { cookie },
     }),
-    fetch(`${base}/api/episode/${webtoonId}?limit=500`, { cache: 'no-store', headers: { cookie } }),
+    fetch(`${base}/api/episode/${webtoonId}?limit=60`, { cache: 'no-store', headers: { cookie } }),
     fetch(
       `${base}/api/advertisement/episode-bottom?webtoonId=${webtoonId}&episodeId=${episodeId}`,
       { next: { revalidate: 30, tags: ['ad:episode-bottom'] } }
@@ -66,7 +74,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; e
       {/* 본문과 댓글 사이 여백도 흰색으로 고정(검은 띠 예방) */}
       <div className="h-4 sm:h-6 bg-white" />
 
-      {/* 댓글 섹션 (래퍼도 화이트 보강) */}
+      {/* 댓글 섹션: CSR 지연 마운트 */}
       <section className="mx-auto w-full max-w-3xl px-4 py-10 bg-white">
         <CommentSection webtoonId={webtoonId} episodeId={episodeId} />
       </section>

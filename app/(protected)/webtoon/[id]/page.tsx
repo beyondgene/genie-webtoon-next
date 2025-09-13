@@ -212,6 +212,7 @@ export default async function WebtoonDetailPage({ params }: { params: Promise<{ 
                       return (
                         <li key={ep.idx}>
                           <Link
+                            prefetch // 우선순위 낮추기
                             href={href}
                             className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-white/10 transition-colors duration-200 active:bg-white/20"
                           >
