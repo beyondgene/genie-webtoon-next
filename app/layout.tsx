@@ -7,6 +7,12 @@ import '@/styles/global.css';
 import Footer from '@/components/layout/Footer';
 import Providers from './providers';
 import OverlayCleaner from '@/app/components/OverlayCleaner';
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#ffffff',
+};
 
 const noto = Noto_Sans_KR({
   subsets: ['latin'],

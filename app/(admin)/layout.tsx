@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   );
   // 위 div는 왼쪽 nav형태로 뜨는 애들 링크, 아래 div는 메인 관리자 페이지에서 버튼 형식으로 화면에 존재하는 애들 링크
   return (
-    <div className="admin-light min-h-dvh bg-white text-gray-900 grid md:grid-cols-[240px_1fr]">
+    <div className="admin-light min-h-dvh bg-white text-gray-900 grid md:grid-cols-[240px_1fr] w-full">
       <aside className="hidden md:block border-r bg-white">
         <div className="p-4">
           <div className="font-semibold mb-3">Admin</div>
@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <main className="p-4 sm:p-5 md:p-6">{children}</main>
+      <main className="p-4 sm:p-5 md:p-6 overflow-x-auto">{children}</main>
     </div>
   );
 }
