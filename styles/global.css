@@ -180,6 +180,9 @@ body {
 
   background: #fff;
   color: #111827;
+  background-color: #fff !important;
+  background-image: none !important; /* split/gradient 배경 제거 */
+  position: relative;
 }
 
 /* 다크모드 기기라 해도 Admin은 항상 라이트로 */
@@ -199,15 +202,25 @@ body {
   }
 }
 
-/* 테이블/카드 배경이 검게 나오는 컴포넌트들 보정 */
-.admin-light .bg-background,
-.admin-light .bg-card,
-.admin-light .bg-popover,
-.admin-light .bg-muted {
+/* 혹시 레이아웃에 배경 장식을 ::before/::after로 올려뒀다면 무조건 제거 */
+.admin-light::before,
+.admin-light::after {
+  content: none !important;
+}
+
+/* shadcn/tailwind 변수 기반 컴포넌트가 어둡게 칠하는 문제 방지 */
+.admin-light :is(.bg-background, .bg-card, .bg-popover, .bg-muted) {
   background-color: #fff !important;
 }
-.admin-light .text-foreground,
-.admin-light .text-popover-foreground,
-.admin-light .text-card-foreground {
+.admin-light :is(.text-foreground, .text-card-foreground, .text-popover-foreground) {
   color: #111827 !important;
+}
+
+/* 실무에서 자주 쓰는 다크 배경 하드코딩 색도 안전장치로 흰색으로 덮음 */
+.admin-light :is(.dark\:bg-slate-900, .dark\:bg-neutral-900, .dark\:bg-gray-900) {
+  background-color: #fff !important;
+}
+/* 자주 보이는 커스텀 컬러(예: #0b1220)까지 커버 */
+.admin-light [class*='bg-[#0b1220'] {
+  background-color: #fff !important;
 }

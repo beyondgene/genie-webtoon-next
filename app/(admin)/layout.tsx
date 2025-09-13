@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <main className="p-4 sm:p-5 md:p-6 overflow-x-auto">{children}</main>
+      <main className="p-4 sm:p-5 md:p-6 bg-white min-h-dvh overflow-x-auto">{children}</main>
     </div>
   );
 }
