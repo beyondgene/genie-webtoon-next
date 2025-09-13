@@ -147,3 +147,25 @@ body {
   min-height: 46px;
   padding-top: 12px;
 }
+/* ──────────────────────────────────────────
+   ADMIN: 라이트 테마 강제 (모바일 다크모드 무시)
+   - color-scheme: light 로 브라우저 자동 다크 변환 차단
+   - 다크모드 미디어쿼리보다 우선 적용되도록 !important 사용
+────────────────────────────────────────── */
+.admin-light {
+  color-scheme: light; /* iOS/Chrome 'auto darkening' 방지 */
+  --background: #ffffff;
+  --foreground: #111827;
+  --muted: #6b7280;
+  background: var(--background);
+  color: var(--foreground);
+}
+@media (prefers-color-scheme: dark) {
+  .admin-light {
+    --background: #ffffff !important;
+    --foreground: #111827 !important;
+    --muted: #6b7280 !important;
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+  }
+}
