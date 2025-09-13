@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation';
 import { listAdViewLogs, AdViewLogItem } from '@/services/admin/advertisements-view-logs.service';
 import SimpleBarChart from '@/components/admin/SimpleBarChart';
 
-export const dynamic = 'force-dynamic';
+// 짧은 ISR + 리전 고정으로 TTFB 절감
+export const revalidate = 60; // 1분 캐시
+export const runtime = 'nodejs';
+export const preferredRegion = ['icn1', 'hnd1']; // Vercel 한국/일본
 
 // 혼재된 타임스탬프 키를 안전하게 꺼내기
 function pickViewedAt(l: AdViewLogItem | any): string | null {

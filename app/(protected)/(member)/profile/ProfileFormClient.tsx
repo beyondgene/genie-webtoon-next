@@ -4,7 +4,22 @@ import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 
 // 프로필 형태 정의
-export default function ProfileForm({ initial }: { initial: any }) {
+// initial을 선택적으로 받도록 변경
+type ProfileFormInput = Partial<{
+  nickname: string;
+  name: string;
+  age: string | number;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER';
+}>;
+
+type ProfileFormProps = {
+  initial?: ProfileFormInput; // optional
+};
+
+export default function ProfileForm({ initial }: ProfileFormProps) {
   const [nickname, setNickname] = useState('');
   const [name, setName] = useState('');
   const [age, setAge] = useState<number | ''>('');
@@ -14,6 +29,13 @@ export default function ProfileForm({ initial }: { initial: any }) {
   const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('OTHER');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  // any/string/number 등을 number | '' 로 정규화
+  const toAgeState = (v: unknown): number | '' => {
+    if (v === null || v === undefined || v === '') return '';
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : '';
+  };
 
   // 회원탈퇴 관련 상태
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -22,9 +44,26 @@ export default function ProfileForm({ initial }: { initial: any }) {
 
   // 회원가입시 db에 저장된 정보 불러오기
   useEffect(() => {
+    // 서버가 initial을 안 주면(=CSR 모드) 직접 프로필 GET
+    if (!initial) {
+      (async () => {
+        const r = await fetch('/api/member/profile', { cache: 'no-store' });
+        const d = await r.json().catch(() => ({}));
+        const me = d?.data ?? d ?? {};
+        setNickname(me.nickname ?? '');
+        setName(me.name ?? '');
+        setAge(toAgeState(me.age));
+        setEmail(me.email ?? '');
+        setPhoneNumber(me.phoneNumber ?? '');
+        setAddress(me.address ?? '');
+        setGender(me.gender ?? 'OTHER');
+      })();
+      return;
+    }
+    // 서버가 initial 제공 시(SSR 경로) 그대로 세팅
     setNickname(initial?.nickname ?? '');
     setName(initial?.name ?? '');
-    setAge(initial?.age ?? '');
+    setAge(toAgeState(initial?.age));
     setEmail(initial?.email ?? '');
     setPhoneNumber(initial?.phoneNumber ?? '');
     setAddress(initial?.address ?? '');
@@ -128,7 +167,7 @@ export default function ProfileForm({ initial }: { initial: any }) {
               type="number"
               className="field__input text-white placeholder-white/70 caret-white bg-[#4f4f4f] border border-white"
               value={age}
-              onChange={(e) => setAge(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => setAge(toAgeState(e.target.value))}
             />
           </div>
 

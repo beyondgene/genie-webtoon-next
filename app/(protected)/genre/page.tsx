@@ -1,4 +1,8 @@
 import GenreGrid from '@/components/public/GenreGrid';
+
+export const runtime = 'edge';
+export const preferredRegion = ['icn1', 'hnd1'];
+
 // api에서 장르 갖고오는 라우터 로직 호출
 async function getGenres() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/genre/list`, {

@@ -7,7 +7,11 @@ import { listEpisodes } from '@/services/admin/episodes.service';
 import { listArtists } from '@/services/admin/artists.service';
 import { listSubscriptions } from '@/services/admin/subscriptions.service';
 
-export const dynamic = 'force-dynamic';
+// 짧은 ISR + 리전 고정으로 TTFB 절감
+export const revalidate = 60; // 1분 캐시
+export const runtime = 'nodejs';
+export const preferredRegion = ['icn1', 'hnd1']; // Vercel 한국/일본
+
 // 관리자 페이지 접속시 맨처음 나오는 홈화면
 export default async function Page() {
   const [webtoons, members, ads, episodes, artists, subs] = await Promise.all([

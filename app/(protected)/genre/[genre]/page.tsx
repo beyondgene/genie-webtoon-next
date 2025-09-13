@@ -4,6 +4,8 @@ import ImageFallback from '@/components/ui/ImageFallBack';
 import BackNavigator from '@/components/ui/BackNavigator';
 
 export const revalidate = 300; // 5분 단위 ISR
+export const runtime = 'edge';
+export const preferredRegion = ['icn1', 'hnd1'];
 
 function resolveThumb(u?: string | null) {
   const base = process.env.S3_PUBLIC_BASE || process.env.NEXT_PUBLIC_S3_PUBLIC_BASE || '';

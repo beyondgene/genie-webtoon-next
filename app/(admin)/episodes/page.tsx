@@ -1,6 +1,11 @@
 import { listEpisodes } from '@/services/admin/episodes.service';
 import SimpleBarChart from '@/components/admin/SimpleBarChart';
-export const dynamic = 'force-dynamic';
+
+// 짧은 ISR + 리전 고정으로 TTFB 절감
+export const revalidate = 60; // 1분 캐시
+export const runtime = 'nodejs';
+export const preferredRegion = ['icn1', 'hnd1']; // Vercel 한국/일본
+
 // 관리자 페이지 에피소드 대쉬보드
 export default async function Page() {
   const items = await listEpisodes();

@@ -27,8 +27,9 @@ const nextConfig: NextConfig = {
   ],
   experimental: {
     serverComponentsExternalPackages: ['mysql2', 'sequelize', 'nodemailer'],
+    ppr: 'incremental', // 부분 프리렌더링: 느린 DB 블록이 있어도 셸 먼저 송출
     //typedRoutes: true,
-    // ⬇️ Sequelize와 mysql2는 서버 컴포넌트 외부 패키지로 처리(번들 축소/충돌 방지)
+    // Sequelize와 mysql2는 서버 컴포넌트 외부 패키지로 처리(번들 축소/충돌 방지)
   },
   images: {
     remotePatterns,
