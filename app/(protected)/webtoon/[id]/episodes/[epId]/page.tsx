@@ -50,19 +50,25 @@ export default async function Page({ params }: { params: Promise<{ id: string; e
   const ad = adJson?.data ?? adJson ?? null;
   //웹툰 뷰어 컴포넌트 호출해서 웹툰 뷰어 페이지 작성
   return (
-    <>
-      <EpisodeViewer
-        webtoonId={webtoonId}
-        episodeId={episodeId}
-        episode={episode}
-        episodes={episodes}
-        ad={ad}
-      />
+    /* 뷰어 화면 전체: 어떤 모드/브라우저에서도 화이트 고정 */
+    <div className="viewer-light min-h-dvh w-full bg-white text-gray-900">
+      {/* 에피소드 본문 */}
+      <section className="bg-white">
+        <EpisodeViewer
+          webtoonId={webtoonId}
+          episodeId={episodeId}
+          episode={episode}
+          episodes={episodes}
+          ad={ad}
+        />
+      </section>
+      {/* 본문과 댓글 사이 여백도 흰색으로 고정(검은 띠 예방) */}
+      <div className="h-4 sm:h-6 bg-white" />
 
-      {/* 댓글 섹션 */}
-      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+      {/* 댓글 섹션 (래퍼도 화이트 보강) */}
+      <section className="mx-auto w-full max-w-3xl px-4 py-10 bg-white">
         <CommentSection webtoonId={webtoonId} episodeId={episodeId} />
-      </div>
-    </>
+      </section>
+    </div>
   );
 }

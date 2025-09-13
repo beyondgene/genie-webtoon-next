@@ -224,3 +224,62 @@ body {
 .admin-light [class*='bg-[#0b1220'] {
   background-color: #fff !important;
 }
+
+/* ───────── Webtoon Viewer: 항상 화이트 스킨 강제 ───────── */
+.viewer-light {
+  color-scheme: light; /* OS 다크모드/자동역상 무시 */
+  background-color: #fff !important; /* 페이지 배경 화이트 고정 */
+  background-image: none !important; /* 분할/그라데이션 제거 */
+  position: relative;
+}
+
+/* ::before/::after 로 그라데이션/장식을 깔아놨을 가능성 차단 */
+.viewer-light::before,
+.viewer-light::after {
+  content: none !important;
+}
+
+/* 흔한 다크 배경/그라데이션 유틸들을 전부 화이트로 교정(뷰어 범위 내부만) */
+.viewer-light
+  :is(
+    .bg-black,
+    .bg-gray-900,
+    .bg-neutral-900,
+    .bg-zinc-900,
+    .bg-slate-900,
+    .dark\:bg-black,
+    .dark\:bg-gray-900,
+    .dark\:bg-neutral-900,
+    .dark\:bg-slate-900,
+    .from-black,
+    .via-black,
+    .to-black,
+    .from-gray-900,
+    .via-gray-900,
+    .to-gray-900
+  ) {
+  background-color: #fff !important;
+  background-image: none !important;
+}
+
+/* 인라인 스타일로 준 그라데이션까지 차단 */
+.viewer-light [style*='linear-gradient'],
+.viewer-light [style*='gradient'] {
+  background-image: none !important;
+}
+
+/* 수평 구분선/디바이더가 어둡게 칠해지는 경우(검은 띠의 흔한 원인) */
+.viewer-light hr,
+.viewer-light .divider,
+.viewer-light .separator,
+.viewer-light .border-t,
+.viewer-light .divide-y > :not([hidden]) ~ :not([hidden]) {
+  background-color: #fff !important;
+  border-color: #e5e7eb !important; /* 연한 회색 보더 */
+}
+
+/* 커스텀 헥사 어두운 배경까지 커버(예: #0b1220 등) */
+.viewer-light [class*='bg-[#0b12'],
+.viewer-light [class*='bg-[#000'] {
+  background-color: #fff !important;
+}
