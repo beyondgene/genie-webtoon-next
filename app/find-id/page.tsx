@@ -9,6 +9,7 @@ import type { FieldErrors } from 'react-hook-form';
 import { findIdSchema, type FindIdInput } from '@/lib/validators/auth';
 import BackNavigator from '@/components/ui/BackNavigator';
 import { usePathname } from 'next/navigation'; // 추가
+import SpeechBubble from '@/components/ui/SpeechBubble';
 
 // 핸드폰 번호 로직
 function formatPhone(v: string) {
@@ -35,9 +36,9 @@ export default function FindIdPage() {
 
   const [foundId, setFoundId] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
-  const pathname = usePathname(); // ✅ 추가
+  const pathname = usePathname(); // 추가
 
-  // ✅ RHF/zod보다 먼저 실행되는 '캡처 단계' 가드
+  // RHF/zod보다 먼저 실행되는 '캡처 단계' 가드
   const onSubmitGate: React.FormEventHandler<HTMLFormElement> = useCallback(
     (e) => {
       const { name, phoneNumber } = getValues();
@@ -50,7 +51,7 @@ export default function FindIdPage() {
 
       const onlyOneFilled = (hasName && !hasPhone) || (!hasName && hasPhone);
 
-      // ⬇️ 둘 중 하나라도 미입력/형식 오류면: 무조건 팝업 → 즉시 재로딩
+      // 둘 중 하나라도 미입력/형식 오류면: 무조건 팝업 → 즉시 재로딩
       if (!hasName || !hasPhone || phoneLooksInvalid || onlyOneFilled) {
         e.preventDefault(); // RHF/zod/서버 요청 자체 차단
         alert('이름과 전화번호 모두 입력해주세요!');
@@ -71,7 +72,7 @@ export default function FindIdPage() {
       const onlyOneFilled = (hasName && (!hasPhone || phoneInvalid)) || (!hasName && hasPhone);
       if (onlyOneFilled) {
         alert('이름과 전화번호 모두 입력해주세요!');
-        setTimeout(() => window.location.replace(pathname), 0); // ✅ 재로딩 추가
+        setTimeout(() => window.location.replace(pathname), 0); // 재로딩 추가
         return;
       }
       // 그 외에는 필드별 에러 메시지를 그대로 노출
@@ -80,14 +81,14 @@ export default function FindIdPage() {
   );
 
   const onSubmit = async (data: FindIdInput) => {
-    // ✅ 선행 입력 체크(백업). 캡처 가드가 있으므로 정상 케이스엔 통과
+    // 선행 입력 체크(백업). 캡처 가드가 있으므로 정상 케이스엔 통과
     const name = data.name?.trim() ?? '';
     const phone = data.phoneNumber?.trim() ?? '';
     const phoneInvalid = phone.length > 0 && !/^\d{3}-\d{3,4}-\d{4}$/.test(phone);
 
     if (!name || !phone || phoneInvalid) {
       alert('이름과 전화번호 모두 입력해주세요!');
-      setTimeout(() => window.location.replace(pathname), 0); // ✅ 재로딩 추가
+      setTimeout(() => window.location.replace(pathname), 0); // 재로딩 추가
       return;
     }
 
@@ -127,15 +128,18 @@ export default function FindIdPage() {
       <BackNavigator />
       <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
         {/* 상단 로고 박스 (로그인/회원가입과 동일 톤) 기존 bg-[rgba(0,0,0,0.07)] */}
-        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[#696969]">
-          <span className="text-[22px] font-semibold tracking-wide text-white/90">
-            GENIE WEBTOON
-          </span>
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px]">
+          <SpeechBubble fill="#4f4f4f" className="w-[292px] h-[160px] px-5">
+            <div className="grid h-full w-full place-items-center text-center">
+              <span className="text-[22px] font-semibold tracking-wide text-white/90 translate-y-[1.5lh]">
+                GENIE WEBTOON
+              </span>
+            </div>
+          </SpeechBubble>
         </div>
-
         <form
           noValidate
-          onSubmitCapture={onSubmitGate} // ✅ 추가: 캡처 단계 가드
+          onSubmitCapture={onSubmitGate} // 추가: 캡처 단계 가드
           onSubmit={handleSubmit(onSubmit, onInvalid)} // 기존 핸들러 유지
           className="space-y-[14px]"
         >
@@ -181,7 +185,6 @@ export default function FindIdPage() {
             {isSubmitting ? '확인 중…' : '아이디 찾기'}
           </button>
         </form>
-
         {/* 결과/오류 */}
         <div className="mt-4 space-y-2">
           {foundId && (
@@ -195,7 +198,6 @@ export default function FindIdPage() {
           )}
           {serverError && <p className="text-[14px] text-red-100">{serverError}</p>}
         </div>
-
         {/* 하단 링크 */}
         <div className="mt-3 flex w-[300px] justify-between text-white">
           <a href="/login" className="text-[16px] font-medium hover:opacity-90">

@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { findPasswordSchema, type FindPasswordInput } from '@/lib/validators/auth';
 import BackNavigator from '@/components/ui/BackNavigator';
 import { usePathname } from 'next/navigation';
+import SpeechBubble from '@/components/ui/SpeechBubble';
 
 // 휴대폰 번호 하이픈 자동 삽입
 function formatPhone(v: string) {
@@ -37,7 +38,7 @@ export default function FindPasswordPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const pathname = usePathname();
 
-  // ✅ RHF/zod보다 먼저 실행되는 '캡처 단계' 가드
+  // RHF/zod보다 먼저 실행되는 '캡처 단계' 가드
   const onSubmitGate: React.FormEventHandler<HTMLFormElement> = useCallback(
     (e) => {
       const { memberId, name, phoneNumber } = getValues();
@@ -71,7 +72,7 @@ export default function FindPasswordPage() {
   }, [getValues, pathname]);
 
   const onSubmit = async (data: FindPasswordInput) => {
-    // ✅ 정상 케이스 외 방어적 체크(백업)
+    // 정상 케이스 외 방어적 체크(백업)
     const idOk = !!data.memberId?.trim();
     const nameOk = !!data.name?.trim();
     const phoneOk = !!data.phoneNumber?.trim();
@@ -127,15 +128,19 @@ export default function FindPasswordPage() {
       <BackNavigator />
       <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
         {/* 상단 로고 박스 */}
-        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[#696969]">
-          <span className="text-[22px] font-semibold tracking-wide text-white/90">
-            GENIE WEBTOON
-          </span>
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px]">
+          <SpeechBubble fill="#4f4f4f" className="w-[292px] h-[160px] px-5">
+            <div className="grid h-full w-full place-items-center text-center">
+              <span className="text-[22px] font-semibold tracking-wide text-white/90 translate-y-[1.5lh]">
+                GENIE WEBTOON
+              </span>
+            </div>
+          </SpeechBubble>
         </div>
 
         <form
           noValidate
-          onSubmitCapture={onSubmitGate} // ✅ 추가: 캡처 단계 가드
+          onSubmitCapture={onSubmitGate} // 추가: 캡처 단계 가드
           onSubmit={handleSubmit(onSubmit, onInvalid)} // 기존 핸들러 유지
           className="space-y-[14px]"
         >

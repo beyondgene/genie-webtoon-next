@@ -7,9 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
-// 기존 사용 이미지 유지
-import NaverBtn from '@/public/auth/naver_login.png';
+import SpeechBubble from '@/components/ui/SpeechBubble';
 import KakaoBtn from '@/public/auth/kakao_login.png';
 
 // (선택) 페이지 전용 폰트: 피그마가 Montserrat라면 같이 로드
@@ -75,11 +73,15 @@ export default function LoginPage() {
       {/* 가운데 컬럼 (피그마 기준 고정폭 요소들) */}
       <div className="w-[309px] sm:w-[309px] px-2 py-16 sm:py-0">
         {/* 로고 영역: 실제 이미지를 쓰실 거면 src 교체하세요, bg rgba(0,0,0,0.7) */}
-        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px] bg-[#696969]">
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px]">
           {/* 예비 텍스트 (이미지 없을 때) */}
-          <span className="text-[22px] font-semibold tracking-wide text-white/90">
-            GENIE WEBTOON
-          </span>
+          <SpeechBubble fill="#4f4f4f" className="w-[292px] h-[160px] px-5">
+            <div className="grid h-full w-full place-items-center text-center">
+              <span className="text-[22px] font-semibold tracking-wide text-white/90 translate-y-[1.5lh]">
+                GENIE WEBTOON
+              </span>
+            </div>
+          </SpeechBubble>
         </div>
 
         {/* 폼 */}

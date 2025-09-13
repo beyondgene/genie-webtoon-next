@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import BackNavigator from '@/components/ui/BackNavigator';
 import { Suspense } from 'react';
+import SpeechBubble from '@/components/ui/SpeechBubble';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -181,8 +182,14 @@ export default function SignupPage() {
       <main className="mx-auto max-w-[1040px] px-4 py-12">
         <BackNavigator />
         {/* 로고 영역 (임시) 기존 색상 bg-black/10 */}
-        <div className="mx-auto mb-10 grid h-[186px] w-[309px] place-content-center rounded bg-[#696969] text-white">
-          <span className="text-xl font-semibold tracking-wide">GENIE WEBTOON</span>
+        <div className="mx-auto mb-8 grid h-[186px] w-[309px] place-content-center rounded-[4px]">
+          <SpeechBubble fill="#4f4f4f" className="w-[292px] h-[160px] px-5">
+            <div className="grid h-full w-full place-items-center text-center">
+              <span className="text-[22px] font-semibold tracking-wide text-white/90 translate-y-[1.5lh]">
+                GENIE WEBTOON
+              </span>
+            </div>
+          </SpeechBubble>
         </div>
 
         {/* 소셜 로그인 온보딩 안내 */}

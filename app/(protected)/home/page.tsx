@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import SpeechBubble from '@/components/ui/SpeechBubble';
 
 type TileId = 'genre' | 'ranking' | 'genielife' | 'mypage';
 
@@ -51,14 +52,14 @@ export default function HomePage() {
         <div className="grid w-full h-full gap-0" style={{ gridTemplateColumns: '735fr 705fr' }}>
           {/* LEFT: 605 / 419 */}
           <div className="grid gap-0" style={{ gridTemplateRows: '59.082% 40.918%' }}>
-            {/* 좌상: 장르(오른쪽/아래 선) */}
+            {/* 좌상: 장르(오른쪽/아래 선) 00FF80 */}
             <motion.div
               layoutId="tile-genre"
               onMouseEnter={() => handleEnter('genre')}
               onClick={() => handleEnter('genre')}
               className="relative border-r border-b border-white "
             >
-              <Tile title="장르별" subtitle="원하는 장르로 빠르게" titleClass="text-[#00FF80]" />
+              <Tile title="장르별" subtitle="원하는 장르로 빠르게" titleClass="text-[#EF833A]" />
             </motion.div>
 
             {/* 좌하: 마이페이지(오른쪽 선) - 반응형 제목 적용 */}
@@ -72,7 +73,7 @@ export default function HomePage() {
             </motion.div>
           </div>
 
-          {/* RIGHT: 333 / 691 */}
+          {/* RIGHT: 333 / 691 FF00FF */}
           <div className="grid gap-0" style={{ gridTemplateRows: '32.52% 67.48%' }}>
             {/* 우상: 랭킹(아래 선) */}
             <motion.div
@@ -81,10 +82,10 @@ export default function HomePage() {
               onClick={() => handleEnter('ranking')}
               className="relative border-b border-white"
             >
-              <Tile title="랭킹" subtitle="이번 주 인기 TOP" titleClass="text-[#FF00FF]" />
+              <Tile title="랭킹" subtitle="이번 주 인기 TOP" titleClass="text-[#EF833A]" />
             </motion.div>
 
-            {/* 우하: 지니와 함께하는 웹툰생활 */}
+            {/* 우하: 지니와 함께하는 웹툰생활 00FFFF*/}
             <motion.div
               layoutId="tile-genielife"
               onMouseEnter={() => handleEnter('genielife')}
@@ -94,7 +95,7 @@ export default function HomePage() {
               <Tile
                 title="지니와 함께하는 웹툰생활"
                 subtitle="추천 & 도전골든벨"
-                titleClass="text-[#00FFFF]"
+                titleClass="text-[#EF833A]"
               />
             </motion.div>
           </div>
@@ -133,8 +134,8 @@ function ResponsiveMyPageTile() {
   return (
     <div className="w-full h-full bg-[#4f4f4f] flex items-center justify-center select-none">
       <div className="text-center">
-        <h3 className="font-mont uppercase leading-tight text-[44px] md:text-[56px] font-extrabold tracking-tight text-[#FFFF00]">
-          {/* 모바일에서는 줄바꿈, 데스크톱에서는 한 줄 */}
+        <h3 className="font-mont uppercase leading-tight text-[44px] md:text-[56px] font-extrabold tracking-tight text-[#EF833A]">
+          {/* 모바일에서는 줄바꿈, 데스크톱에서는 한 줄 FFFF00*/}
           <span className="block sm:hidden">
             마이
             <br />
@@ -204,28 +205,39 @@ function Expanded({ id, onClose }: { id: TileId; onClose: () => void }) {
       <div className="w-full h-full flex">
         {/* 좌측: 제목(왼쪽 상단 정렬) 메인화면 영역들 글씨색 갖고오는 명령어 */}
         <div className="basis-[32%] shrink-0 grow-0 flex items-start justify-start pl-16 pt-24">
-          <h2
-            className={`font-mont uppercase text-[40px] md:text-[52px] font-extrabold leading-none ${TITLE_COLOR[id] ?? ''}`}
-          >
-            {id === 'genielife' ? (
-              <>
-                <span>지니와 함께하는</span>
-                <br />
-                <span className="whitespace-nowrap">웹툰생활</span>
-              </>
-            ) : id === 'mypage' ? (
-              // 마이페이지 확장 시에도 반응형 적용
-              <>
-                <span className="block sm:hidden">
-                  마이
+          <h2 className="font-mont uppercase text-[40px] md:text-[52px] font-extrabold leading-none text-[#ff6d00]">
+            <SpeechBubble
+              fill="transparent" // 내부 배경은 그대로, 테두리만 표시
+              thickness={5} // 굵은 테두리 유지
+              tailSize={12}
+              tailOffset={10}
+              className="
+      inline-block
+      text-[inherit] leading-[inherit]   // 글자 크기/줄간격은 h2 그대로
+      px-5 sm:px-6 md:px-8               // 가로 여백 ↑
+      py-3 sm:py-3.5 md:py-4             // 세로 여백 ↑ (두 줄 텍스트에도 여유)
+      rounded-2xl                        // 모서리 약간 더 둥글게(선택)
+    "
+            >
+              {id === 'genielife' ? (
+                <>
+                  <span>지니와 함께하는</span>
                   <br />
-                  페이지
-                </span>
-                <span className="hidden sm:block">마이페이지</span>
-              </>
-            ) : (
-              title
-            )}
+                  <span className="whitespace-nowrap">웹툰생활</span>
+                </>
+              ) : id === 'mypage' ? (
+                <>
+                  <span className="block sm:hidden">
+                    마이
+                    <br />
+                    페이지
+                  </span>
+                  <span className="hidden sm:block">마이페이지</span>
+                </>
+              ) : (
+                title
+              )}
+            </SpeechBubble>
           </h2>
         </div>
 

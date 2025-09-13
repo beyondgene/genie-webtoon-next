@@ -2,6 +2,7 @@ import Link from 'next/link';
 import db from '@/models';
 import ImageFallback from '@/components/ui/ImageFallBack';
 import BackNavigator from '@/components/ui/BackNavigator';
+import SpeechBubble from '@/components/ui/SpeechBubble';
 
 export const revalidate = 300; // 5분 단위 ISR
 export const preferredRegion = ['icn1', 'hnd1'];
@@ -122,7 +123,7 @@ export default async function GenrePage({
   const { Webtoon } = db as any;
   const { rows, count } = (await Webtoon.findAndCountAll({
     where: { genre: slug },
-    // ✅ 실제 존재하는 컬럼만 선택
+    // 실제 존재하는 컬럼만 선택
     attributes: ['idx', 'webtoonName', 'wbthumbnailUrl', 'createdAt'],
     order: [['createdAt', 'DESC']],
     limit: pageSize,
@@ -142,13 +143,21 @@ export default async function GenrePage({
       <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="grid grid-cols-12 gap-6 items-start">
           {/* 왼쪽: 선택된 장르 멘트 */}
-          <aside className="col-span-12 md:col-span-3 rounded-3xl border border-white/20 p-6 md:sticky md:top-8 md:h-fit">
-            <p className="text-sm uppercase tracking-widest text-white/80">Selected Genre</p>
-            <h1 className="mt-1 text-3xl font-bold">{label}</h1>
-            <p className="mt-4 text-white/80">
-              {label} 장르의 작품들을 3×3 썸네일로 모아봤어요. 더 많은 작품은 페이지 넘김으로
-              확인해보세요!
-            </p>
+          <aside className="col-span-12 md:col-span-3 md:sticky md:top-8 md:h-fit">
+            <SpeechBubble
+              fill="transparent" // 내부 배경은 그대로, 테두리만 #ff6d00
+              thickness={5} // 선 두께 업
+              tailSize={12}
+              tailOffset={14}
+              className="block w-full rounded-3xl p-6 md:p-7"
+            >
+              <p className="text-sm uppercase tracking-widest text-white/80">Selected Genre</p>
+              <h1 className="mt-1 text-3xl font-bold text-[#ff6d00]">{label}</h1>
+              <p className="mt-4 text-white/80">
+                {label} 장르의 작품들을 3×3 썸네일로 모아봤어요. 더 많은 작품은 페이지 넘김으로
+                확인해보세요!
+              </p>
+            </SpeechBubble>
           </aside>
 
           {/* 오른쪽: 3x3 그리드 + 페이지네이션 */}
