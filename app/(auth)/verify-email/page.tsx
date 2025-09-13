@@ -7,7 +7,6 @@
 import VerifyEmailClient from './Client';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 export const preferredRegion = ['icn1', 'hnd1'];
 // ↑ (선택) 정적 프리렌더를 강제하지 않고 매 요청/빌드 시점에서 동작하도록 설정.
 //    인증 토큰 검증 페이지 특성상 캐싱을 원치 않으면 유지하세요. 필요 없으면 제거해도 무방합니다.

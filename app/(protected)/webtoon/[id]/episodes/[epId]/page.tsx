@@ -4,6 +4,7 @@ import CommentSection from '@/components/viewer/CommentSection'; // 추가
 import { headers, cookies } from 'next/headers';
 
 export const revalidate = 60; // 페이지 자체도 1분 기준 ISR
+export const preferredRegion = ['icn1', 'hnd1'];
 
 // env파일에 있는 baseUrl 호출해오는 로직
 async function getBaseUrl() {
