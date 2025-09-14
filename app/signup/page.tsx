@@ -31,7 +31,7 @@ export default function SignupPage() {
     formState: { errors, isSubmitting },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { gender: 'MALE' },
+    defaultValues: { gender: 'OTHER' },
   });
 
   useEffect(() => {
@@ -78,6 +78,13 @@ export default function SignupPage() {
   const onSubmitGate: React.FormEventHandler<HTMLFormElement> = (e) => {
     const raw = getValues(); // RHF 입력값
     const parsed = signupSchema.safeParse(raw); // 프로젝트 정책 그대로 적용
+    // 성별 선택 여부 추가 검사
+    if (raw.gender !== 'MALE' && raw.gender !== 'FEMALE') {
+      e.preventDefault();
+      e.stopPropagation();
+      alert('성별을 선택해주세요.');
+      return;
+    }
 
     if (parsed.success) return; // 통과 시 RHF/zod/서버 제출 진행
 
@@ -296,17 +303,19 @@ export default function SignupPage() {
             <select
               className={inputClass}
               style={inputStyle}
-              {...register('gender')}
-              defaultValue="OTHER"
+              {...register('gender', {
+                validate: (v) => v === 'MALE' || v === 'FEMALE' || '성별을 선택해주세요',
+              })}
+              defaultValue="OTHER" // RHF defaultValues와 일치
             >
+              <option value="OTHER" className="text-black">
+                성별
+              </option>
               <option value="MALE" className="text-black">
                 남자
               </option>
               <option value="FEMALE" className="text-black">
                 여자
-              </option>
-              <option value="OTHER" className="text-black">
-                이외
               </option>
             </select>
             {errors.gender && <p className={labelClass}>{errors.gender.message}</p>}
