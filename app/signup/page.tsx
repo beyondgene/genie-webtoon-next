@@ -153,6 +153,17 @@ export default function SignupPage() {
     }
   };
 
+  const formatPhone = (raw: string) => {
+    const digits = (raw ?? '').replace(/\D/g, '');
+    if (digits.length === 11) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+    }
+    if (digits.length === 10) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    }
+    return raw; // 그 외 길이는 그대로 둠(검증은 스키마가 처리)
+  };
+
   // 회원가입
   const onSubmit = async (raw: SignupInput) => {
     // 소셜 로그인 온보딩인 경우 추가 처리
@@ -171,7 +182,7 @@ export default function SignupPage() {
       })(),
       gender: raw.gender ?? 'OTHER',
       email: s(raw.email),
-      phoneNumber: s(raw.phoneNumber),
+      phoneNumber: formatPhone(s(raw.phoneNumber)),
       address: s(raw.address),
       // 소셜 로그인 정보가 있으면 함께 전송
       ...(isSocialOnboarding && {
@@ -356,7 +367,14 @@ export default function SignupPage() {
               placeholder="전화번호(010-1234-5678)"
               className={inputClass}
               style={inputStyle}
-              {...register('phoneNumber')}
+              {...register('phoneNumber', {
+                onBlur: (e) => {
+                  const v = formatPhone(String(e.target.value));
+                  if (v !== e.target.value) {
+                    setValue('phoneNumber', v, { shouldValidate: true, shouldDirty: true });
+                  }
+                },
+              })}
             />
             {errors.phoneNumber && <p className={labelClass}>{errors.phoneNumber.message}</p>}
           </div>
