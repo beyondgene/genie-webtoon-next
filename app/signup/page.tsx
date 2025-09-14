@@ -77,7 +77,7 @@ export default function SignupPage() {
 
   const onSubmitGate: React.FormEventHandler<HTMLFormElement> = (e) => {
     const raw = getValues(); // RHF 입력값
-    const parsed = signupSchema.safeParse(raw); // ✅ 프로젝트 정책 그대로 적용
+    const parsed = signupSchema.safeParse(raw); // 프로젝트 정책 그대로 적용
 
     if (parsed.success) return; // 통과 시 RHF/zod/서버 제출 진행
 
@@ -87,55 +87,62 @@ export default function SignupPage() {
     // 1) 비밀번호 규칙 불일치
     if (fieldErrors.password?.length) {
       e.preventDefault();
+      e.stopPropagation();
       alert(fieldErrors.password[0] || '비밀번호가 입력 규칙에 맞지 않습니다.');
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
 
     // 2) 비밀번호 재입력 불일치(스키마에서 passwordConfirm/refine, 혹은 formErrors)
     if (fieldErrors.passwordConfirm?.length || formErrors?.length) {
       e.preventDefault();
+      e.stopPropagation();
       // formErrors에 불일치 메시지를 넣는 스키마라면 우선 사용
       const msg =
         fieldErrors.passwordConfirm?.[0] || formErrors[0] || '재입력 비밀번호가 일치하지 않습니다.';
       alert(msg);
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
 
     // 3) 이름(최대 글자수 이슈로 비워지거나 규칙 불일치 포함)
     if (fieldErrors.name?.length) {
       e.preventDefault();
+      e.stopPropagation();
       alert(fieldErrors.name[0] || '이름을 입력해주세요.');
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
 
     // 4) 이메일 형식 오류
     if (fieldErrors.email?.length) {
       e.preventDefault();
+      e.stopPropagation();
       alert(fieldErrors.email[0] || '이메일 형식이 올바르지 않습니다.');
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
 
     // 5) 전화번호 형식 오류
     if (fieldErrors.phoneNumber?.length) {
       e.preventDefault();
+      e.stopPropagation();
       alert(
         fieldErrors.phoneNumber[0] || '전화번호 입력 형식이 올바르지 않습니다. 예) 010-1234-5678'
       );
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
 
     // 6) 생년월일 형식 오류
     if (fieldErrors.birthday?.length) {
       e.preventDefault();
+      e.stopPropagation();
       alert(fieldErrors.birthday[0] || '생년월일 입력 형식이 올바르지 않습니다. 예) 1990-01-01');
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
 
     // 7) 주소 미입력
     if (fieldErrors.address?.length) {
       e.preventDefault();
+      e.stopPropagation();
       alert(fieldErrors.address[0] || '주소를 입력해주세요.');
-      return void setTimeout(() => window.location.replace(pathname), 0);
+      return;
     }
   };
 
@@ -147,7 +154,14 @@ export default function SignupPage() {
       memberPassword: raw.password,
       nickname: (raw.nickname ?? raw.name).trim(),
       name: s(raw.name),
-      birthDate: (raw.birthday ?? '').trim().replace(/\//g, '-'),
+      birthDate: (() => {
+        const b = (raw.birthday ?? '').trim();
+        const digits = b.replace(/\D/g, '');
+        if (digits.length === 8) {
+          return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+        }
+        return b.replace(/[./]/g, '-');
+      })(),
       gender: raw.gender ?? 'OTHER',
       email: s(raw.email),
       phoneNumber: s(raw.phoneNumber),
@@ -214,7 +228,7 @@ export default function SignupPage() {
           {/* ID */}
           <div className="sm:col-span-7">
             <input
-              placeholder="ID"
+              placeholder="아이디"
               className={inputClass}
               style={inputStyle}
               {...register('memberId')}
@@ -231,7 +245,7 @@ export default function SignupPage() {
               style={{ border: '1px solid white' }}
               aria-live="polite"
             >
-              {checking ? 'Checking…' : 'Double Check'}
+              {checking ? '확인중…' : '중복 확인'}
             </button>
             {available !== null && (
               <p className={`mt-1 text-xs ${available ? 'text-green-200' : 'text-red-200'}`}>
@@ -244,7 +258,7 @@ export default function SignupPage() {
           <div className="sm:col-span-12">
             <input
               type="password"
-              placeholder="PW"
+              placeholder="비밀번호"
               className={inputClass}
               style={inputStyle}
               {...register('password')}
@@ -256,7 +270,7 @@ export default function SignupPage() {
           <div className="sm:col-span-12">
             <input
               type="password"
-              placeholder="PASSWORD CONFIRM"
+              placeholder="비밀번호 재입력"
               className={inputClass}
               style={inputStyle}
               {...register('passwordConfirm')}
@@ -269,7 +283,7 @@ export default function SignupPage() {
           {/* NAME */}
           <div className="sm:col-span-12">
             <input
-              placeholder="NAME"
+              placeholder="이름"
               className={inputClass}
               style={inputStyle}
               {...register('name')}
@@ -286,13 +300,13 @@ export default function SignupPage() {
               defaultValue="OTHER"
             >
               <option value="MALE" className="text-black">
-                MALE
+                남자
               </option>
               <option value="FEMALE" className="text-black">
-                FEMALE
+                여자
               </option>
               <option value="OTHER" className="text-black">
-                OTHER
+                이외
               </option>
             </select>
             {errors.gender && <p className={labelClass}>{errors.gender.message}</p>}
@@ -301,7 +315,7 @@ export default function SignupPage() {
           {/* NICKNAME */}
           <div className="sm:col-span-12">
             <input
-              placeholder="NICKNAME"
+              placeholder="닉네임"
               className={inputClass}
               style={inputStyle}
               {...register('nickname')}
@@ -313,7 +327,7 @@ export default function SignupPage() {
           <div className="sm:col-span-12">
             <input
               type="email"
-              placeholder="EMAIL"
+              placeholder="이메일"
               className={inputClass}
               style={inputStyle}
               {...register('email')}
@@ -330,7 +344,7 @@ export default function SignupPage() {
           {/* PHONE */}
           <div className="sm:col-span-12">
             <input
-              placeholder="PHONE (010-1234-5678)"
+              placeholder="전화번호(010-1234-5678)"
               className={inputClass}
               style={inputStyle}
               {...register('phoneNumber')}
@@ -341,10 +355,18 @@ export default function SignupPage() {
           {/* BIRTH */}
           <div className="sm:col-span-12">
             <input
-              placeholder="BIRTH(YYYY-MM-DD)"
+              placeholder="생년월일(YYYY-MM-DD)"
               className={inputClass}
               style={inputStyle}
-              {...register('birthday')}
+              {...register('birthday', {
+                onBlur: (e) => {
+                  const digits = String(e.target.value).replace(/\D/g, '');
+                  if (digits.length === 8) {
+                    const v = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+                    setValue('birthday', v, { shouldValidate: true, shouldDirty: true });
+                  }
+                },
+              })}
             />
             {errors.birthday && <p className={labelClass}>{errors.birthday.message}</p>}
           </div>
@@ -352,7 +374,7 @@ export default function SignupPage() {
           {/* ADDRESS */}
           <div className="sm:col-span-12">
             <input
-              placeholder="ADDRESS"
+              placeholder="주소"
               className={inputClass}
               style={inputStyle}
               {...register('address')}
@@ -368,7 +390,7 @@ export default function SignupPage() {
               className="h-[46px] w-[300px] rounded-[4px] uppercase text-white disabled:opacity-60"
               style={{ border: '1px solid white' }}
             >
-              {isSubmitting ? 'Registering…' : 'Register'}
+              {isSubmitting ? '등록중..' : '등록'}
             </button>
           </div>
         </form>
