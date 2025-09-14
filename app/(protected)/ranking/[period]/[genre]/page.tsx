@@ -9,7 +9,7 @@ import {
   getRankingCached,
 } from '@/app/api/(protected)/ranking/_lib';
 
-export const revalidate = 600; // 10분
+export const revalidate = 30; // 10분
 export const preferredRegion = ['icn1', 'hnd1'];
 
 export default async function Page({

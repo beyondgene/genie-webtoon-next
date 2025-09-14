@@ -1,5 +1,6 @@
 // app/api/(protected)/metrics/webtoon-view/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import db from '@/models';
 
 export const runtime = 'nodejs';
@@ -33,6 +34,14 @@ export async function POST(req: NextRequest) {
        ON DUPLICATE KEY UPDATE views = views + 1, updatedAt = NOW();`,
       { replacements: [id, ymd] }
     );
+
+    try {
+      revalidateTag('ranking');
+      revalidateTag('ranking:daily');
+      revalidateTag('ranking:weekly');
+      revalidateTag('ranking:monthly');
+      revalidateTag('ranking:yearly');
+    } catch {}
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {

@@ -145,12 +145,21 @@ export type FindIdInput = z.infer<typeof findIdSchema>;
 // 비밀번호 찾기: 아이디 + (이메일 또는 휴대폰) 중 하나는 필수
 export const findPasswordSchema = z
   .object({
-    memberId: memberIdSchema,
-    name: emailSchema.optional(),
-    phoneNumber: phoneSchema.optional(),
+    memberId: memberIdSchema, // 예: z.string().min(3) 등 프로젝트 기존 규칙 그대로
+    name: nameSchema, // 예: z.string().min(2)
+    phoneNumber: phoneSchema, // 예: ^010-(\d{3}|\d{4})-\d{4}$
   })
-  .refine((v) => !!v.name || !!v.phoneNumber, {
-    message: '이메일 또는 휴대폰 중 하나는 반드시 입력해야 합니다.',
-    path: ['email'],
+  .superRefine((v, ctx) => {
+    const hasId = !!v.memberId?.trim();
+    const hasName = !!v.name?.trim();
+    const hasPhone = !!v.phoneNumber?.trim();
+    if (!hasId || !hasName || !hasPhone) {
+      // 폼 전역 에러로 묶어서 한 번에 안내
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '아이디, 이름, 전화번호를 모두 입력해주세요!',
+        path: ['form'], // 페이지에서 공통 팝업/배너로 처리하기 좋게 'form'에 부착
+      });
+    }
   });
 export type FindPasswordInput = z.infer<typeof findPasswordSchema>;

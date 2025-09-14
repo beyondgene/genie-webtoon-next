@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SpeechBubble from '@/components/ui/SpeechBubble';
 import KakaoBtn from '@/public/auth/kakao_login.png';
 
@@ -41,8 +41,53 @@ export default function LoginPage() {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+    getValues,
+    formState: { errors, submitCount },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    criteriaMode: 'all', // 여러 규칙 위반도 수집
+    mode: 'onSubmit',
+  });
+
+  // 1) 회원가입 폼과 같은 캡처 단계 가드
+  const onSubmitGate: React.FormEventHandler<HTMLFormElement> = (e) => {
+    const raw = getValues();
+    const parsed = schema.safeParse(raw);
+    if (parsed.success) return; // 통과 → 정상 제출
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const { fieldErrors } = parsed.error.flatten();
+    // PW 우선
+    if (fieldErrors.password?.length) {
+      alert(
+        fieldErrors.password[0] || '비밀번호는 영문+숫자+특수문자를 포함해 8자 이상이어야 합니다.'
+      );
+      return;
+    }
+    // ID(회원 ID)
+    if (fieldErrors.id?.length) {
+      alert(fieldErrors.id[0] || '아이디를 입력해주세요.');
+      return;
+    }
+    alert('입력값을 확인해주세요. (비밀번호는 영문+숫자+특수문자, 8자 이상)');
+  };
+
+  // 2) onInvalid가 호출되지 않는 환경까지 커버: 제출 시도 후 에러가 있으면 팝업 1회 보장
+  const prevSubmitCount = useRef(0);
+  useEffect(() => {
+    if (submitCount > prevSubmitCount.current) {
+      prevSubmitCount.current = submitCount;
+      const hasErrors = !!errors && Object.keys(errors).length > 0;
+      if (hasErrors) {
+        const pwMsg = errors.password?.message as string | undefined;
+        const idMsg = errors.id?.message as string | undefined;
+        const fallback = '입력값을 확인해주세요. (비밀번호는 영문+숫자+특수문자, 8자 이상)';
+        alert(pwMsg || idMsg || fallback);
+      }
+    }
+  }, [submitCount, errors]);
 
   const onSubmit = async (data: FormValues) => {
     setSubmitting(true);
@@ -60,6 +105,13 @@ export default function LoginPage() {
       reset({ id: '', password: '' });
       alert('로그인 실패: ID/PW를 확인하세요.');
     }
+  };
+
+  // (선택) onInvalid도 함께 두면 가장 먼저 팝업
+  const onInvalid = (errs: typeof errors) => {
+    const pwMsg = errs?.password?.message as string | undefined;
+    const idMsg = errs?.id?.message as string | undefined;
+    alert(pwMsg || idMsg || '입력값을 확인해주세요. (비밀번호는 영문+숫자+특수문자, 8자 이상)');
   };
 
   return (
@@ -85,7 +137,12 @@ export default function LoginPage() {
         </div>
 
         {/* 폼 */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-[14px]">
+        <form
+          noValidate
+          onSubmitCapture={onSubmitGate} // ✅ 회원가입 폼과 동일한 캡처 가드
+          onSubmit={handleSubmit(onSubmit, onInvalid)}
+          className="space-y-[14px]"
+        >
           {/* ID */}
           <div className="relative">
             <input
@@ -95,6 +152,7 @@ export default function LoginPage() {
               className="w-[300px] h-[45px] rounded-[4px] bg-transparent text-white placeholder-white/80 px-[14px] outline-none"
               style={{ border: '1px solid white', lineHeight: '20px' }}
               {...register('id')}
+              aria-invalid={!!errors.id || undefined}
             />
             {errors.id && <p className="mt-1 text-xs text-white/90">{errors.id.message}</p>}
           </div>
@@ -108,6 +166,7 @@ export default function LoginPage() {
               className="w-[300px] h-[45px] rounded-[4px] bg-transparent text-white placeholder-white/80 px-[14px] outline-none"
               style={{ border: '1px solid white', lineHeight: '20px' }}
               {...register('password')}
+              aria-invalid={!!errors.password || undefined}
             />
             {errors.password && (
               <p className="mt-1 text-xs text-white/90">{errors.password.message}</p>

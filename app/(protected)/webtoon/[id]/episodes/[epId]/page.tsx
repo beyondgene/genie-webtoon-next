@@ -3,7 +3,6 @@ import EpisodeViewer from '@/components/viewer/EpisodeViewer';
 // 댓글은 무거워서 클라에서 늦게 붙임(SSR 비용/하이드레이션 지연 완화)
 import CommentSectionClient from './CommentSectionClient';
 import { headers, cookies } from 'next/headers';
-
 export const revalidate = 60; // 페이지 자체도 1분 기준 ISR
 export const runtime = 'nodejs';
 export const preferredRegion = ['icn1', 'hnd1'];
@@ -28,6 +27,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; e
   const episodeId = Number(epId);
   const base = await getBaseUrl();
   const cookie = await getCookieHeader();
+
   // 에피소드 기반으로 baseUrl에 해당 화면들 표시
   const [episodeRes, listRes, adRes] = await Promise.all([
     fetch(`${base}/api/episode/${webtoonId}/${episodeId}`, {

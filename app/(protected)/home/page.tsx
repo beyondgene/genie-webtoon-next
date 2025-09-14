@@ -18,8 +18,29 @@ const TITLE_COLOR: Record<TileId, string> = {
 // 회원으로 로그인하면 제일 먼저 나오는 메인 화면
 export default function HomePage() {
   const [active, setActive] = useState<TileId | null>(null);
+  const [expanded, setExpanded] = useState(false); // 확대 단계
   const [cooldown, setCooldown] = useState(false);
   const COOLDOWN_MS = 500;
+  const OVERLAY_HOLD_MS = 500; // 오버레이 유지 시간(2.5s)
+  // 로딩 직후 호버 비활성화 → 사용자가 '처음으로' 마우스를 움직여야 호버 가능
+  const [hoverReady, setHoverReady] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 최신 상태를 타이머에서 안전하게 읽기 위한 ref
+  const activeRef = useRef<TileId | null>(null);
+  const hoveringRef = useRef<TileId | null>(null);
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  // 최초 1회 마우스 이동이 있기 전까지는 호버 금지
+  useEffect(() => {
+    const enable = () => {
+      setHoverReady(true);
+      window.removeEventListener('pointermove', enable);
+    };
+    window.addEventListener('pointermove', enable, { passive: true });
+    return () => window.removeEventListener('pointermove', enable);
+  }, []);
 
   // ESC로 닫기
   useEffect(() => {
@@ -35,10 +56,36 @@ export default function HomePage() {
   }, [active]); // 오버레이가 열렸을 때만 바인딩
 
   const handleEnter = (id: TileId) => {
-    if (!cooldown) setActive(id);
+    if (cooldown || !hoverReady) return; // 로딩 직후엔 호버 무시
+    hoveringRef.current = id; // 지금 올라간 타일만 기록
+    setExpanded(false);
+    clearHoverTimer();
+    // 2.5초 유지되면 그때 바로 확대 화면을 띄움(그 전엔 아무 것도 안 띄움)
+    hoverTimerRef.current = setTimeout(() => {
+      if (hoveringRef.current === id) {
+        setActive(id);
+        setExpanded(true);
+      }
+    }, OVERLAY_HOLD_MS);
   };
+
+  const handleLeave = (id: TileId) => {
+    // 호버에서 빠지면 예약만 취소 (확대 전이라면 아무 것도 안 보임)
+    if (hoveringRef.current === id) hoveringRef.current = null;
+    clearHoverTimer();
+  };
+
+  const clearHoverTimer = () => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  };
+
   // 종료시 재호버 방지
   const close = () => {
+    clearHoverTimer();
+    setExpanded(false);
     setActive(null);
     setCooldown(true);
     setTimeout(() => setCooldown(false), COOLDOWN_MS);
@@ -56,7 +103,13 @@ export default function HomePage() {
             <motion.div
               layoutId="tile-genre"
               onMouseEnter={() => handleEnter('genre')}
-              onClick={() => handleEnter('genre')}
+              onMouseLeave={() => handleLeave('genre')}
+              onClick={() => {
+                if (cooldown) return;
+                clearHoverTimer();
+                setActive('genre');
+                setExpanded(true);
+              }}
               className="relative border-r border-b border-white "
             >
               <Tile title="장르별" subtitle="원하는 장르로 빠르게" titleClass="text-[#EF833A]" />
@@ -66,7 +119,13 @@ export default function HomePage() {
             <motion.div
               layoutId="tile-mypage"
               onMouseEnter={() => handleEnter('mypage')}
-              onClick={() => handleEnter('mypage')}
+              onMouseLeave={() => handleLeave('mypage')}
+              onClick={() => {
+                if (cooldown) return;
+                clearHoverTimer();
+                setActive('mypage');
+                setExpanded(true);
+              }}
               className="relative border-r border-white"
             >
               <ResponsiveMyPageTile />
@@ -79,7 +138,13 @@ export default function HomePage() {
             <motion.div
               layoutId="tile-ranking"
               onMouseEnter={() => handleEnter('ranking')}
-              onClick={() => handleEnter('ranking')}
+              onMouseLeave={() => handleLeave('ranking')}
+              onClick={() => {
+                if (cooldown) return;
+                clearHoverTimer();
+                setActive('ranking');
+                setExpanded(true);
+              }}
               className="relative border-b border-white"
             >
               <Tile title="랭킹" subtitle="이번 주 인기 TOP" titleClass="text-[#EF833A]" />
@@ -89,7 +154,12 @@ export default function HomePage() {
             <motion.div
               layoutId="tile-genielife"
               onMouseEnter={() => handleEnter('genielife')}
-              onClick={() => handleEnter('genielife')}
+              onClick={() => {
+                if (cooldown) return;
+                clearHoverTimer();
+                setActive('genielife');
+                setExpanded(true);
+              }}
               className="relative"
             >
               <Tile
@@ -102,7 +172,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 오버레이(확대) */}
+      {/* 오버레이(호버 2.5초 뒤에 바로 확대 표시) */}
       <AnimatePresence>
         {active && (
           <>
@@ -113,15 +183,17 @@ export default function HomePage() {
               exit={{ opacity: 0 }}
               onClick={close}
             />
-            <motion.div
-              layoutId={`tile-${active}`}
-              className="fixed inset-0 z-50"
-              initial={{ borderRadius: 0 }}
-              animate={{ borderRadius: 0 }}
-              exit={{ borderRadius: 0 }}
-            >
-              <Expanded id={active} onClose={close} />
-            </motion.div>
+            {expanded && (
+              <motion.div
+                layoutId={`tile-${active}`}
+                className="fixed inset-0 z-50"
+                initial={{ borderRadius: 0 }}
+                animate={{ borderRadius: 0 }}
+                exit={{ borderRadius: 0 }}
+              >
+                <Expanded id={active} onClose={close} />
+              </motion.div>
+            )}
           </>
         )}
       </AnimatePresence>
@@ -290,7 +362,7 @@ function getVerticalMenu(id: TileId): { title: string; items: { href: string; la
       return {
         title: '지니와 함께하는 웹툰생활',
         items: [
-          { label: '작품 추천 받기', href: '/genieai/recommendation' },
+          { label: '웹툰 추천 받기', href: '/genieai/recommendation' },
           { label: '도전! 골든벨', href: '/genieai/golden-bell' },
         ],
       };

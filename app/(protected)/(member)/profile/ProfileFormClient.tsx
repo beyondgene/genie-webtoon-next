@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 
 // 프로필 형태 정의
@@ -29,6 +29,35 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
   const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('OTHER');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 최초 로딩된 값 스냅샷을 저장해 두고, 이후 변경 여부를 판별
+  const originalRef = useRef<ProfileFormInput | null>(null);
+
+  const snapshot = (src: ProfileFormInput) => ({
+    nickname: (src.nickname ?? '').trim(),
+    name: (src.name ?? '').trim(),
+    age: src.age === '' ? '' : Number(src.age as any),
+    email: (src.email ?? '').trim(),
+    phoneNumber: (src.phoneNumber ?? '').trim(),
+    address: (src.address ?? '').trim(),
+    gender: src.gender ?? 'OTHER',
+  });
+
+  const isSame = (a: ProfileFormInput | null, b: ProfileFormInput | null) => {
+    if (!a || !b) return false;
+    const A = snapshot(a);
+    const B = snapshot(b);
+    return (
+      A.nickname === B.nickname &&
+      A.name === B.name &&
+      A.age === B.age &&
+      A.email === B.email &&
+      A.phoneNumber === B.phoneNumber &&
+      A.address === B.address &&
+      A.gender === B.gender
+    );
+  };
   // any/string/number 등을 number | '' 로 정규화
   const toAgeState = (v: unknown): number | '' => {
     if (v === null || v === undefined || v === '') return '';
@@ -50,29 +79,70 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
         const r = await fetch('/api/member/profile', { cache: 'no-store' });
         const d = await r.json().catch(() => ({}));
         const me = d?.data ?? d ?? {};
-        setNickname(me.nickname ?? '');
-        setName(me.name ?? '');
-        setAge(toAgeState(me.age));
-        setEmail(me.email ?? '');
-        setPhoneNumber(me.phoneNumber ?? '');
-        setAddress(me.address ?? '');
-        setGender(me.gender ?? 'OTHER');
+        const base: ProfileFormInput = {
+          nickname: me.nickname ?? '',
+          name: me.name ?? '',
+          age: toAgeState(me.age),
+          email: me.email ?? '',
+          phoneNumber: me.phoneNumber ?? '',
+          address: me.address ?? '',
+          gender: me.gender ?? 'OTHER',
+        };
+        originalRef.current = base;
+        setNickname(base.nickname ?? '');
+        setName(base.name ?? '');
+        setAge(toAgeState(base.age));
+        setEmail(base.email ?? '');
+        setPhoneNumber(base.phoneNumber ?? '');
+        setAddress(base.address ?? '');
+        setGender(base.gender ?? 'OTHER');
       })();
       return;
     }
     // 서버가 initial 제공 시(SSR 경로) 그대로 세팅
-    setNickname(initial?.nickname ?? '');
-    setName(initial?.name ?? '');
-    setAge(toAgeState(initial?.age));
-    setEmail(initial?.email ?? '');
-    setPhoneNumber(initial?.phoneNumber ?? '');
-    setAddress(initial?.address ?? '');
-    setGender(initial?.gender ?? 'OTHER');
+    const base: ProfileFormInput = {
+      nickname: initial?.nickname ?? '',
+      name: initial?.name ?? '',
+      age: toAgeState(initial?.age),
+      email: initial?.email ?? '',
+      phoneNumber: initial?.phoneNumber ?? '',
+      address: initial?.address ?? '',
+      gender: initial?.gender ?? 'OTHER',
+    };
+    originalRef.current = base;
+    setNickname(base.nickname ?? '');
+    setName(base.name ?? '');
+    setAge(toAgeState(base.age));
+    setEmail(base.email ?? '');
+    setPhoneNumber(base.phoneNumber ?? '');
+    setAddress(base.address ?? '');
+    setGender(base.gender ?? 'OTHER');
   }, [initial]);
+
+  // 변경 여부(프로필 값 또는 비밀번호 변경 입력)가 있을 때만 활성화
+  const isProfileDirty = useMemo(() => {
+    const current: ProfileFormInput = {
+      nickname,
+      name,
+      age,
+      email,
+      phoneNumber,
+      address,
+      gender,
+    };
+    const base = originalRef.current;
+    if (!base) return false;
+    return !isSame(current, base);
+  }, [nickname, name, age, email, phoneNumber, address, gender]);
+
+  const isPasswordDirty = currentPassword.trim().length > 0 || newPassword.trim().length > 0;
+  const isDirty = isProfileDirty || isPasswordDirty;
 
   // 수정 버튼 누를때 값들 push
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isDirty || isSubmitting) return;
+    setIsSubmitting(true);
     const payload: any = {
       nickname,
       name,
@@ -95,6 +165,7 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       alert(data?.error || data?.message || res.statusText || '수정 실패');
+      setIsSubmitting(false);
       return;
     }
     alert('회원정보가 수정되었습니다.');
@@ -242,7 +313,9 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
         <div className="flex items-center justify-center pt-6">
           <button
             type="submit"
-            className="btn-gray h-11 px-8 rounded shadow text-white border border-white"
+            disabled={!isDirty || isSubmitting}
+            aria-disabled={!isDirty || isSubmitting}
+            className="btn-gray h-11 px-8 rounded shadow text-white border border-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             수정
           </button>

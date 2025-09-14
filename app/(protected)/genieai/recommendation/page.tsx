@@ -377,17 +377,6 @@ ${GENRES.join(', ')}`),
           )}
         </div>
 
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={stop}
-            className="bubble-btn px-3 py-2 uppercase font-semibold text-[16px]"
-            style={btnStyle}
-          >
-            정지
-          </button>
-        </div>
-
         {/* 정리된 CSS 스타일 */}
         <style jsx>{`
           .bubble-btn {
