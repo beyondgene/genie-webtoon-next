@@ -70,10 +70,25 @@ async function DELETEHandler(req: NextRequest) {
   await deactivateMember(memberId);
 
   const res = NextResponse.json({ message: '회원 탈퇴 처리되었습니다.' });
-  res.cookies.delete('next-auth.session-token');
-  res.cookies.delete('__Secure-next-auth.session-token');
-  res.cookies.delete('next-auth.callback-url');
-  res.cookies.delete('__Secure-next-auth.callback-url');
+
+  const cookieNames = [
+    'next-auth.session-token',
+    '__Secure-next-auth.session-token',
+    'next-auth.callback-url',
+    '__Secure-next-auth.callback-url',
+    'next-auth.csrf-token',
+    '__Host-next-auth.csrf-token',
+    'next-auth.pkce.code_verifier',
+    '__Secure-next-auth.pkce.code_verifier',
+  ];
+
+  for (const name of cookieNames) {
+    res.cookies.delete(name);
+    res.cookies.set({ name, value: '', expires: new Date(0), path: '/' });
+  }
+
+  res.headers.set('Clear-Site-Data', '"cookies"');
+  res.headers.set('Cache-Control', 'no-store');
   return res;
 }
 
