@@ -377,13 +377,15 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
       </form>
 
       {/* 회원탈퇴 버튼: 프로필 영역 밖(배경) 중앙 하단 고정 */}
-      <button
-        type="button"
-        onClick={() => setShowDeleteModal(true)}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded shadow bg-[#4f4f4f] text-#929292 text-sm font-medium hover:bg-[#4f4f4f]/90 transition-colors border border-#929292 z-40"
-      >
-        회원탈퇴
-      </button>
+      <div className="mt-6 flex justify-center sm:mt-0">
+        <button
+          type="button"
+          onClick={() => setShowDeleteModal(true)}
+          className="w-full max-w-xs px-6 py-3 rounded shadow bg-[#4f4f4f] text-[#929292] text-sm font-medium hover:bg-[#4f4f4f]/90 transition-colors border border-[#929292] sm:fixed sm:bottom-6 sm:left-1/2 sm:w-auto sm:-translate-x-1/2 sm:z-40"
+        >
+          회원탈퇴
+        </button>
+      </div>
 
       {/* 회원탈퇴 확인 모달 */}
       {showDeleteModal && (
