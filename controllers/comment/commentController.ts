@@ -214,6 +214,15 @@ export async function updateComment(commentId: number, content: string) {
  * 댓글 삭제
  */
 export async function deleteComment(commentId: number, memberId: number) {
+  // 작성자 본인만 삭제되도록 comment가 실제 본인 것인지 먼저 확인
+  const comment = await db.Comment.findOne({ where: { idx: commentId, memberId } });
+  if (!comment) {
+    return false;
+  }
+
+  // 댓글에 달린 반응을 먼저 삭제하여 FK 제약 조건을 피한다
+  await db.CommentReaction.destroy({ where: { commentId } });
+
   // 작성자 본인만 삭제되도록 memberId 조건을 함께 건다
   const deleted = await db.Comment.destroy({ where: { idx: commentId, memberId } });
   // true/false를 반환하여 라우트에서 상태코드를 제어
