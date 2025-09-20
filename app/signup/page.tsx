@@ -19,6 +19,15 @@ declare global {
   }
 }
 
+const missingPasswordCategories = (value: string) => {
+  if (!value) return [] as string[];
+  const missing: string[] = [];
+  if (!/[A-Za-z]/.test(value)) missing.push('영문');
+  if (!/\d/.test(value)) missing.push('숫자');
+  if (!/[^A-Za-z0-9]/.test(value)) missing.push('특수문자');
+  return missing;
+};
+
 export default function SignupPage() {
   const router = useRouter();
   const pathname = usePathname(); // 하드 리로드용(새로고침후 재로딩)
@@ -74,6 +83,7 @@ export default function SignupPage() {
     if (!pw || !pwc) return null;
     return pw === pwc;
   }, [pw, pwc]);
+  const pwMissing = useMemo(() => missingPasswordCategories(pw ?? ''), [pw]);
 
   // 공통 스타일(피그마 지정값)
   const inputClass =
@@ -334,23 +344,30 @@ export default function SignupPage() {
 
           {/* PW */}
           <div className="sm:col-span-12 relative">
-            <input
-              type={showPw ? 'text' : 'password'}
-              placeholder="비밀번호(8자리 이상, 영문/숫자/특수문자 포함)"
-              className={`${inputClass} pr-12`}
-              style={inputStyle}
-              {...register('password')}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPw((v) => !v)}
-              aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보이기'}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white focus:outline-none"
-              tabIndex={-1}
-            >
-              {showPw ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-            </button>
+            <div className="relative">
+              <input
+                type={showPw ? 'text' : 'password'}
+                placeholder="비밀번호(8자리 이상, 영문/숫자/특수문자 포함)"
+                className={`${inputClass} pr-12`}
+                style={inputStyle}
+                {...register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보이기'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPw ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+              </button>
+            </div>
             {errors.password && <p className={labelClass}>{errors.password.message}</p>}
+            {!errors.password && pw && pwMissing.length > 0 && (
+              <p className="absolute top-full left-0 mt-1 text-xs text-white/90 z-10">
+                비밀번호에 {pwMissing.join(', ')}을(를) 포함해주세요.
+              </p>
+            )}
           </div>
 
           {/* PW 확인 */}

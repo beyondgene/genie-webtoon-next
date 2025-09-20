@@ -3,6 +3,15 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 
+const missingPasswordCategories = (value: string) => {
+  if (!value) return [] as string[];
+  const missing: string[] = [];
+  if (!/[A-Za-z]/.test(value)) missing.push('영문');
+  if (!/\d/.test(value)) missing.push('숫자');
+  if (!/[^A-Za-z0-9]/.test(value)) missing.push('특수문자');
+  return missing;
+};
+
 // 프로필 형태 정의
 // initial을 선택적으로 받도록 변경
 type ProfileFormInput = Partial<{
@@ -30,6 +39,11 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentPwMissing = useMemo(
+    () => missingPasswordCategories(currentPassword ?? ''),
+    [currentPassword]
+  );
+  const newPwMissing = useMemo(() => missingPasswordCategories(newPassword ?? ''), [newPassword]);
 
   // 최초 로딩된 값 스냅샷을 저장해 두고, 이후 변경 여부를 판별
   const originalRef = useRef<ProfileFormInput | null>(null);
@@ -300,7 +314,7 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
           </div>
 
           {/* 새 비밀번호 (선택) */}
-          <div className="field sm:col-span-2">
+          <div className="field sm:col-span-2 relative">
             <span className="field__label text-white">새 비밀번호</span>
             <input
               type="password"
@@ -308,6 +322,11 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
+            {newPassword && newPwMissing.length > 0 && (
+              <p className="absolute -bottom-5 left-0 text-xs text-white z-10">
+                비밀번호에 {newPwMissing.join(', ')}을(를) 포함해주세요.
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-center pt-6">
