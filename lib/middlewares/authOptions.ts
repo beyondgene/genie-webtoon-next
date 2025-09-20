@@ -312,7 +312,27 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // 3) 관리자 재확인(기존 유지)
+      // 3) 기존 회원 상태 재확인 - 탈퇴/정지 시 세션 즉시 만료
+      if (!user) {
+        const roleNow = (token as any).role ?? 'MEMBER';
+        const onboarding = Boolean((token as any).onboarding);
+        const numericId =
+          typeof token.id === 'number'
+            ? token.id
+            : typeof token.sub === 'string' && /^\d+$/.test(token.sub)
+              ? Number(token.sub)
+              : undefined;
+
+        if (!onboarding && roleNow !== 'ADMIN' && typeof numericId === 'number') {
+          const member = await db.Member.findByPk(numericId, { attributes: ['status'] });
+          if (!member || member.status !== 'ACTIVE') {
+            return {} as any;
+          }
+          token.status = member.status;
+        }
+      }
+
+      // 4) 관리자 재확인(기존 유지)
       const roleNow = (token as any).role;
       const nuid =
         typeof token.id === 'number'
