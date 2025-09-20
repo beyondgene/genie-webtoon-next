@@ -68,7 +68,13 @@ async function DELETEHandler(req: NextRequest) {
     return NextResponse.json({ error: '현재 비밀번호가 일치하지 않습니다.' }, { status: 401 });
   }
   await deactivateMember(memberId);
-  return NextResponse.json({ message: '회원 탈퇴 처리되었습니다.' });
+
+  const res = NextResponse.json({ message: '회원 탈퇴 처리되었습니다.' });
+  res.cookies.delete('next-auth.session-token');
+  res.cookies.delete('__Secure-next-auth.session-token');
+  res.cookies.delete('next-auth.callback-url');
+  res.cookies.delete('__Secure-next-auth.callback-url');
+  return res;
 }
 
 export const PATCH = withErrorHandler(PATCHHandler);
