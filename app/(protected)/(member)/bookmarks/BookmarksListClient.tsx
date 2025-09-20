@@ -87,7 +87,7 @@ export default function BookmarksListClient({ items: initialItems }: Props) {
   if (error) {
     return (
       <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
-        북마크를 불러오지 못했습니다.
+        구독 목록을 불러오지 못했습니다.
       </div>
     );
   }

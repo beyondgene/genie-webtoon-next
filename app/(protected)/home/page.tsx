@@ -370,7 +370,7 @@ function getVerticalMenu(id: TileId): { title: string; items: { href: string; la
       return {
         title: '마이페이지',
         items: [
-          { label: '북마크', href: '/bookmarks' },
+          { label: '구독', href: '/bookmarks' },
           { label: '프로필', href: '/profile' },
           { label: '로그아웃', href: '/logout' },
         ],

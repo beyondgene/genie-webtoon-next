@@ -10,6 +10,14 @@ import { useSession } from 'next-auth/react';
 import BackNavigator from '@/components/ui/BackNavigator';
 import { Suspense } from 'react';
 import SpeechBubble from '@/components/ui/SpeechBubble';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+
+// window.daum 타입 선언(간단)
+declare global {
+  interface Window {
+    daum?: any;
+  }
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -21,6 +29,21 @@ export default function SignupPage() {
 
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<null | boolean>(null);
+  const [showPw, setShowPw] = useState(false);
+  const [postcodeReady, setPostcodeReady] = useState(false);
+
+  // hexicons 아이콘 사용 시:
+  // import { HiEye, HiEyeOff } from 'hexicons-react' (혹은 실제 패키지명)
+  // 아래 EyeIcon/EyeOffIcon 대신 <HiEye/> / <HiEyeOff/> 사용
+  const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M12 5c-5 0-9 4.5-9 7s4 7 9 7 9-4.5 9-7-4-7-9-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"
+      />
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+    </svg>
+  );
 
   const {
     register,
@@ -43,12 +66,49 @@ export default function SignupPage() {
   }, [session, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const memberId = watch('memberId');
+  const pw = watch('password');
+  const pwc = watch('passwordConfirm');
+  const pwMatch = useMemo<null | boolean>(() => {
+    // 둘 다 비어있으면 표시 안 함, 둘 중 하나라도 없으면 표시 안 함
+    if (!pw && !pwc) return null;
+    if (!pw || !pwc) return null;
+    return pw === pwc;
+  }, [pw, pwc]);
 
   // 공통 스타일(피그마 지정값)
   const inputClass =
     'h-[46px] w-full rounded-[4px] bg-transparent px-4 text-white placeholder-white/85 outline-none';
   const inputStyle = useMemo(() => ({ border: '1px solid white' }), []);
   const labelClass = 'mt-1 text-xs text-white/90';
+
+  // (1) 다음 우편번호 스크립트 로드
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.daum?.Postcode) {
+      setPostcodeReady(true);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    s.onload = () => setPostcodeReady(true);
+    s.onerror = () => setPostcodeReady(false);
+    document.body.appendChild(s);
+  }, []);
+
+  // (2) 주소 검색 열기
+  const openPostcode = () => {
+    if (!window.daum?.Postcode) {
+      alert('주소 검색 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+    new window.daum.Postcode({
+      oncomplete: (data: any) => {
+        const addr = data.roadAddress || data.jibunAddress || '';
+        // 필요 시 우편번호: data.zonecode
+        setValue('address', addr, { shouldValidate: true, shouldDirty: true });
+      },
+    }).open();
+  };
 
   // ID 중복 확인
   const onDoubleCheck = async () => {
@@ -273,14 +333,23 @@ export default function SignupPage() {
           </div>
 
           {/* PW */}
-          <div className="sm:col-span-12">
+          <div className="sm:col-span-12 relative">
             <input
-              type="password"
-              placeholder="비밀번호"
-              className={inputClass}
+              type={showPw ? 'text' : 'password'}
+              placeholder="비밀번호(8자리 이상, 영문/숫자/특수문자 포함)"
+              className={`${inputClass} pr-12`}
               style={inputStyle}
               {...register('password')}
             />
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
+              aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보이기'}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80 hover:text-white focus:outline-none"
+              tabIndex={-1}
+            >
+              {showPw ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+            </button>
             {errors.password && <p className={labelClass}>{errors.password.message}</p>}
           </div>
 
@@ -295,6 +364,11 @@ export default function SignupPage() {
             />
             {errors.passwordConfirm && (
               <p className={labelClass}>{errors.passwordConfirm.message}</p>
+            )}
+            {pwMatch !== null && !errors.passwordConfirm && (
+              <p className={`mt-1 text-xs ${pwMatch ? 'text-green-200' : 'text-red-200'}`}>
+                {pwMatch ? '비밀번호가 일치합니다.' : '비밀번호가 일치하지 않습니다.'}
+              </p>
             )}
           </div>
 
@@ -399,13 +473,23 @@ export default function SignupPage() {
           </div>
 
           {/* ADDRESS */}
-          <div className="sm:col-span-12">
+          <div className="sm:col-span-12 relative">
             <input
               placeholder="주소"
-              className={inputClass}
+              className={`${inputClass} pr-28`} // 버튼 공간 확보
               style={inputStyle}
               {...register('address')}
             />
+            <button
+              type="button"
+              onClick={openPostcode}
+              disabled={!postcodeReady}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-[34px] px-3 rounded-[4px] uppercase text-white disabled:opacity-60"
+              style={{ border: '1px solid white' }}
+              aria-label="주소 검색"
+            >
+              주소 검색
+            </button>
             {errors.address && <p className={labelClass}>{errors.address.message}</p>}
           </div>
 

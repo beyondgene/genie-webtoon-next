@@ -66,7 +66,7 @@ export default async function MyBookmarksPage() {
     <div className="min-h-[100svh] w-screen bg-[#4f4f4f] text-white">
       <BackNavigator />
       <section className="mx-auto max-w-6xl px-4 py-6 md:py-10">
-        <h1 className="mb-4 text-xl font-semibold md:text-2xl">북마크</h1>
+        <h1 className="mb-4 text-xl font-semibold md:text-2xl">구독 목록</h1>
         <BookmarksListClient />
       </section>
     </div>
