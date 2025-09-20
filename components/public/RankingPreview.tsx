@@ -37,6 +37,12 @@ export default function RankingPreview({ endpoint = '/api/ranking/weekly', limit
             wbthumbnailUrl: r.wbthumbnailUrl ?? '/next.svg',
             rank: r.rank ?? i + 1,
             href: r.href ?? `/webtoon/${r.idx ?? r.webtoonId ?? i + 1}`,
+            views:
+              typeof r.views === 'number'
+                ? r.views
+                : typeof r.periodViews === 'number'
+                  ? r.periodViews
+                  : undefined,
           }));
           if (!abort) setItems(mapped);
           break;

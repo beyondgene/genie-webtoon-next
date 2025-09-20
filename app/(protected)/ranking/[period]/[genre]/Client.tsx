@@ -131,6 +131,26 @@ const Podium = styled.section`
   align-items: flex-end; /* 하단 정렬로 시상대 효과 */
   justify-content: center;
   gap: clamp(8px, 2vw, 20px);
+  @media (max-width: 960px) {
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'center center'
+      'left right';
+    justify-items: center;
+    align-items: stretch;
+    gap: clamp(12px, 3vw, 24px);
+    padding: clamp(8px, 2vw, 16px) 0;
+  }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'center'
+      'left'
+      'right';
+  }
 `;
 
 const Empty = styled.p`
@@ -150,6 +170,8 @@ const CardWrap = styled(Link)<{ $pos: 'left' | 'center' | 'right' }>`
     'badge' auto
     'thumb' 1fr
     'meta' auto / 1fr;
+  flex-shrink: 0;
+  grid-area: ${({ $pos }) => $pos};
 
   /* 순위별 크기와 높이 설정 */
   width: ${
@@ -167,6 +189,21 @@ const CardWrap = styled(Link)<{ $pos: 'left' | 'center' | 'right' }>`
           ? 'clamp(170px, 28vw, 280px)' // 2등 - 중간 높이
           : 'clamp(150px, 24vw, 250px)' // 3등 - 가장 낮음
   };
+
+  @media (max-width: 960px) {
+    width: ${({ $pos }) =>
+      $pos === 'center' ? 'clamp(220px, 55vw, 300px)' : 'clamp(200px, 45vw, 260px)'};
+
+    height: ${({ $pos }) =>
+      $pos === 'center' ? 'clamp(260px, 65vw, 340px)' : 'clamp(220px, 55vw, 300px)'};
+  }
+
+  @media (max-width: 540px) {
+    width: clamp(220px, 86vw, 320px);
+
+    height: ${({ $pos }) =>
+      $pos === 'center' ? 'clamp(260px, 92vw, 360px)' : 'clamp(240px, 88vw, 340px)'};
+  }
 
   border-radius: 18px;
   text-decoration: none;

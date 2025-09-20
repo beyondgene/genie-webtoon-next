@@ -88,7 +88,7 @@ async function DELETEHandler(req: NextRequest) {
     res.cookies.set({ name, value: '', expires: new Date(0), path: '/' });
   }
 
-  // BFCache 방지를 위한 강화된 헤더
+  // BFCache(앞으로가기/뒤로가기) 방지를 위한 강화된 헤더
   res.headers.set('Clear-Site-Data', '"cookies", "storage", "cache"');
   res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.headers.set('Pragma', 'no-cache');

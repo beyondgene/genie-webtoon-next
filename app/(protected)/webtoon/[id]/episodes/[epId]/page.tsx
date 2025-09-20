@@ -3,6 +3,8 @@ import EpisodeViewer from '@/components/viewer/EpisodeViewer';
 // 댓글은 무거워서 클라에서 늦게 붙임(SSR 비용/하이드레이션 지연 완화)
 import CommentSectionClient from './CommentSectionClient';
 import { headers, cookies } from 'next/headers';
+import ScrollButtons from '@/components/viewer/ScrollButtons';
+
 export const revalidate = 60; // 페이지 자체도 1분 기준 ISR
 export const runtime = 'nodejs';
 export const preferredRegion = ['icn1', 'hnd1'];
@@ -57,6 +59,7 @@ export default async function Page({ params }: { params: Promise<{ id: string; e
     <div className="viewer-light min-h-dvh w-full bg-white text-gray-900">
       {/* 에피소드 본문 */}
       <section className="bg-white">
+        <ScrollButtons commentSelector="#comment" />
         <EpisodeViewer
           webtoonId={webtoonId}
           episodeId={episodeId}

@@ -176,7 +176,7 @@ export default function CommentSection({ webtoonId, episodeId, pageSize = 20 }: 
         className="pointer-events-none absolute -inset-y-2 left-1/2 -translate-x-1/2 w-screen -z-10 bg-white"
       />
       {/* 댓글 영역 전체도 흰색 + 기본 글자색 #4f4f4f */}
-      <section className="space-y-4 rounded-xl p-4 bg-white text-[#4f4f4f]">
+      <section id="comment" className="space-y-4 rounded-xl p-4 bg-white text-[#4f4f4f]">
         <header className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">댓글</h2>
         </header>
