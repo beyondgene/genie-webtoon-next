@@ -119,13 +119,30 @@
 /* 에피소드 스트립줄 설정 */
 .episodeStrip {
   width: 100%;
-  overflow-x: auto;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(160px, 1fr);
+  grid-auto-columns: 160px; /* 고정 가로 폭 */
   gap: 16px;
   padding: 8px 6px 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  overscroll-behavior-x: contain; /* 가로 스크롤 제어 */
+  scroll-snap-type: x proximity; /* 카드 단위 스냅 */
 }
+
+/* 가로 스크롤 바(선택) */
+.episodeStrip::-webkit-scrollbar {
+  height: 8px;
+}
+.episodeStrip::-webkit-scrollbar-thumb {
+  background: #cfcfcf;
+  border-radius: 999px;
+}
+.episodeStrip::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* 에피소드 섬네일 설정 */
 .epThumb {
   display: grid;
@@ -137,6 +154,7 @@
   border-radius: 8px;
   cursor: pointer;
   padding: 8px;
+  width: 160px; /* 고정 폭 */
   min-width: 160px;
   text-align: left;
   transition:
@@ -144,6 +162,7 @@
     box-shadow 0.12s ease,
     outline-color 0.12s ease;
   outline: 2px solid transparent;
+  scroll-snap-align: start; /* 스냅 정렬 */
 }
 .epThumb:hover {
   transform: translateY(-1px);
