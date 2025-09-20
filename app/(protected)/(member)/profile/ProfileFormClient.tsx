@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { signOut } from 'next-auth/react';
+import { getSession, signOut } from 'next-auth/react';
 
 const missingPasswordCategories = (value: string) => {
   if (!value) return [] as string[];
@@ -84,6 +84,40 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 회원탈퇴시 세션 체크 및 강제 로그아웃 처리
+  useEffect(() => {
+    let active = true;
+
+    const checkSession = async () => {
+      const session = await getSession();
+      if (!active) return;
+      const status = (session?.user as any)?.status;
+      if (!session || status !== 'ACTIVE') {
+        window.location.replace('/login');
+      }
+    };
+
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        void checkSession();
+      }
+    };
+
+    const handlePopState = () => {
+      window.location.replace('/login');
+    };
+
+    void checkSession();
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // 회원가입시 db에 저장된 정보 불러오기
   useEffect(() => {
@@ -209,8 +243,9 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
       }
 
       alert('회원탈퇴가 완료되었습니다.');
-      // 세션 종료 후 홈페이지로 리다이렉트
-      await signOut({ callbackUrl: '/' });
+      // 세션 종료 후 로그인 페이지로 교체 이동
+      await signOut({ redirect: false });
+      window.location.replace('/login');
     } catch (error) {
       alert('탈퇴 처리 중 오류가 발생했습니다.');
     } finally {

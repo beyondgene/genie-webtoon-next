@@ -82,13 +82,18 @@ async function DELETEHandler(req: NextRequest) {
     '__Secure-next-auth.pkce.code_verifier',
   ];
 
+  // 기존 쿠키 삭제 및 만료 처리
   for (const name of cookieNames) {
     res.cookies.delete(name);
     res.cookies.set({ name, value: '', expires: new Date(0), path: '/' });
   }
 
-  res.headers.set('Clear-Site-Data', '"cookies"');
-  res.headers.set('Cache-Control', 'no-store');
+  // BFCache 방지를 위한 강화된 헤더
+  res.headers.set('Clear-Site-Data', '"cookies", "storage", "cache"');
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.headers.set('Pragma', 'no-cache');
+  res.headers.set('Expires', '0');
+
   return res;
 }
 
