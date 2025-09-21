@@ -1,64 +1,24 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import BackNavigator from '@/components/ui/BackNavigator';
+import { routes } from '@/lib/route';
+import type { GoldenBellQuestion } from '@/data/goldenBell/questions';
 
-type Quiz = { q: string; choices: string[]; answer: number };
-// 도전 골든벨에 나올 문제와 정답을 미리 저장하고 있는 배열
-const DEMO_QUIZ: Quiz[] = [
-  {
-    q: '나 혼자만 레벨업의 주인공 이름은?',
-    choices: ['지니', '성진우', '이현수', '강지훈'],
-    answer: 1,
-  },
-  {
-    q: '김부장의 주인공은 과거 어떤 직업을 가졌나?',
-    choices: ['형사', '특수요원', '정보원', '경호원'],
-    answer: 1,
-  },
-  {
-    q: '사신소년에서 소년은 무엇을 대가로 죽은 자의 능력을 빌리나?',
-    choices: ['돈', '수명', '기억', '감정'],
-    answer: 1,
-  },
-  {
-    q: '재벌집 막내아들에서 윤현우가 깨어난 인물의 이름은?',
-    choices: ['진도준', '진서준', '진하준', '진우진'],
-    answer: 0,
-  },
-  {
-    q: '백수세끼에서 각 에피소드의 연애 이야기를 잇는 매개는?',
-    choices: ['음식 메뉴', '취업 공고', '중고 거래', '여행 일정'],
-    answer: 0,
-  },
-  {
-    q: '전지적 독자 시점에서 주인공이 오직 혼자 완주했던 것은?',
-    choices: ['드라마 대본', '소설', '만화', '게임'],
-    answer: 1,
-  },
-  {
-    q: '방구석 재민이에서 “스펙터클한 사투”가 벌어지는 장소는?',
-    choices: ['방구석', '학교 운동장', '회사 회의실', '지하철'],
-    answer: 0,
-  },
-  {
-    q: '귀혼에서 천령이 가진 특별한 능력은?',
-    choices: ['영안', '순간이동', '투명화', '치유'],
-    answer: 0,
-  },
-  {
-    q: '레베카의 기도에서 레베카가 훔친 것은?',
-    choices: ['상속녀의 운명', '왕실 보석', '비밀 요리법', '발명 특허'],
-    answer: 0,
-  },
-  { q: '위닝샷!에서 안시윤의 포지션은?', choices: ['타자', '포수', '투수', '외야수'], answer: 2 },
-  {
-    q: '사변괴담에서 영남 가족이 피난 간 곳은?',
-    choices: ['이웃집', '숙부의 집', '군부대', '학교 체육관'],
-    answer: 1,
-  },
-];
+type QuestionSetMeta = {
+  webtoonId: number;
+  webtoonName: string;
+  questionCount: number;
+};
+
+type QuestionSetResponse = {
+  webtoonId: number;
+  webtoonName: string;
+  questions: GoldenBellQuestion[];
+};
+
 // 버튼 스타일 디자인
 const btnStyle: React.CSSProperties = {
   background: 'white',
@@ -68,20 +28,127 @@ const btnStyle: React.CSSProperties = {
 };
 // 도전 골든벨 페이지
 export default function GoldenBellPage() {
+  const router = useRouter();
   const [step, setStep] = useState<'idle' | 'playing' | 'done'>('idle');
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [chosen, setChosen] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const current = useMemo(() => DEMO_QUIZ[idx], [idx]);
-  // 시작 버튼 로직
-  const start = () => {
+  const [metas, setMetas] = useState<QuestionSetMeta[]>([]);
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
+  const [selectedWebtoon, setSelectedWebtoon] = useState<number | ''>('');
+  const [activeWebtoon, setActiveWebtoon] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<GoldenBellQuestion[]>([]);
+  const [questionSetTitle, setQuestionSetTitle] = useState('');
+  const [questionError, setQuestionError] = useState<string | null>(null);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const current = useMemo(() => questions[idx], [idx, questions]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadMetas() {
+      setMetaLoading(true);
+      setMetaError(null);
+      try {
+        const res = await fetch(routes.genieai.goldenBell, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          const message =
+            typeof data?.error === 'string' ? data.error : '문제 목록을 불러오지 못했습니다.';
+          throw new Error(message);
+        }
+        const sets = (data?.sets ?? []) as QuestionSetMeta[];
+        if (!cancelled) {
+          setMetas(sets);
+          if (sets.length) {
+            setSelectedWebtoon(sets[0]!.webtoonId);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : '문제 목록을 불러오지 못했습니다.';
+          setMetaError(message);
+        }
+      } finally {
+        if (!cancelled) {
+          setMetaLoading(false);
+        }
+      }
+    }
+    loadMetas();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const resetProgress = () => {
     setScore(0);
     setIdx(0);
     setStep('playing');
     setChosen(null);
     setIsCorrect(null);
   };
+
+  const restart = () => {
+    if (!questions.length) return;
+    resetProgress();
+  };
+
+  const start = async () => {
+    if (!selectedWebtoon) return;
+    setQuestionError(null);
+
+    if (activeWebtoon === selectedWebtoon && questions.length) {
+      resetProgress();
+      return;
+    }
+
+    setIsLoadingQuestions(true);
+    try {
+      const res = await fetch(routes.genieai.goldenBellByWebtoon(selectedWebtoon), {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      if (res.status === 403) {
+        window.alert('구독 후 이용해주세요.');
+        router.replace('/genieai/golden-bell');
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as QuestionSetResponse | null;
+      if (!res.ok || !data) {
+        const message =
+          data && typeof (data as any).error === 'string'
+            ? (data as any).error
+            : '문제를 불러오지 못했습니다.';
+        throw new Error(message);
+      }
+
+      if (!Array.isArray(data.questions) || data.questions.length === 0) {
+        throw new Error('등록된 문제가 없습니다.');
+      }
+
+      setQuestions(data.questions);
+      setQuestionSetTitle(data.webtoonName);
+      setActiveWebtoon(data.webtoonId);
+      resetProgress();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '문제를 불러오지 못했습니다.';
+      setQuestionError(message);
+      setStep('idle');
+      setActiveWebtoon(null);
+      setQuestions([]);
+      setQuestionSetTitle('');
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
+
   // 마우스로 정답 클릭 로직
   const pick = (i: number) => {
     if (chosen !== null) return; // 이미 선택했으면 무시
@@ -92,7 +159,7 @@ export default function GoldenBellPage() {
   };
 
   const goNext = () => {
-    if (idx + 1 >= DEMO_QUIZ.length) {
+    if (idx + 1 >= questions.length) {
       // 결과 화면 전환 전 선택/정오 상태 초기화
       setChosen(null);
       setIsCorrect(null);
@@ -105,6 +172,11 @@ export default function GoldenBellPage() {
     // 스크롤 상단 정렬이 필요하면 다음 줄 주석 해제
     // window?.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const totalQuestions = questions.length;
+  const showIdleStart = step === 'idle';
+  const disableStartButton = !selectedWebtoon || isLoadingQuestions || metaLoading;
+
   // STEP 3개 순서대로 시작 로직, 문제 푸는 도중 로직, 문제를 다풀고 점수가 나온 후 로직
   return (
     <>
@@ -117,26 +189,78 @@ export default function GoldenBellPage() {
           <div>
             <h1 className="text-2xl font-bold md:text-3xl">도전! 골든벨</h1>
             <p className="mt-1 text-sm text-white/80">웹툰 퀴즈를 풀고 1등에 도전하세요.</p>
+            {questionSetTitle && step !== 'idle' && (
+              <p className="mt-2 text-sm text-white/70">선택한 웹툰: {questionSetTitle}</p>
+            )}
           </div>
         </header>
 
-        {step === 'idle' && (
-          <div className="rounded-2xl border border-white/70 p-8 text-center">
-            <p className="text-lg">준비되셨나요?</p>
+        <section className="mb-6 rounded-2xl border border-white/70 p-6">
+          <h2 className="text-lg font-semibold">문제 선택</h2>
+          <p className="mt-1 text-sm text-white/70">구독 중인 웹툰을 선택하고 퀴즈를 시작하세요.</p>
+          {metaError && <p className="mt-3 text-sm text-red-300">{metaError}</p>}
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label className="flex flex-1 flex-col gap-2 text-sm">
+              <span className="text-white/80">웹툰 선택</span>
+              <select
+                value={selectedWebtoon}
+                onChange={(event) => {
+                  const { value } = event.target;
+                  setSelectedWebtoon(value === '' ? '' : Number(value));
+                  setStep('idle');
+                  setScore(0);
+                  setIdx(0);
+                  setChosen(null);
+                  setIsCorrect(null);
+                  setQuestions([]);
+                  setActiveWebtoon(null);
+                  setQuestionSetTitle('');
+                  setQuestionError(null);
+                }}
+                disabled={metaLoading || !metas.length}
+                className="w-full rounded-md bg-white/90 px-3 py-2 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {metas.length === 0 ? (
+                  <option value="">
+                    {metaLoading ? '목록을 불러오는 중...' : '선택 가능한 웹툰이 없습니다'}
+                  </option>
+                ) : (
+                  metas.map((meta) => (
+                    <option key={meta.webtoonId} value={meta.webtoonId}>
+                      {meta.webtoonName} (문제 {meta.questionCount}개)
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
             <button
               onClick={start}
-              className="mt-4 uppercase font-semibold text-[16px] shadow-md px-5 py-2"
-              style={btnStyle}
+              disabled={disableStartButton}
+              className="rounded-md bg-white px-4 py-2 text-sm font-semibold uppercase text-[#2148C0] shadow-md disabled:cursor-not-allowed disabled:opacity-60"
             >
-              시작하기
+              {isLoadingQuestions
+                ? '불러오는 중...'
+                : activeWebtoon === selectedWebtoon && questions.length
+                  ? '다시 시작'
+                  : '시작하기'}
             </button>
+          </div>
+          {questionError && <p className="mt-3 text-sm text-red-300">{questionError}</p>}
+        </section>
+
+        {showIdleStart && !isLoadingQuestions && !questionError && (
+          <div className="rounded-2xl border border-white/70 p-8 text-center">
+            <p className="text-lg">준비되셨나요?</p>
+            <p className="mt-2 text-sm text-white/70">
+              웹툰을 선택하고 시작하기 버튼을 눌러주세요.
+            </p>
           </div>
         )}
 
         {step === 'playing' && current && (
           <section className="rounded-2xl border border-white/70 p-6">
             <div className="text-sm text-white/80">
-              문제 {idx + 1} / {DEMO_QUIZ.length}
+              문제 {idx + 1} / {totalQuestions}
             </div>
             <h2 className="mt-2 text-xl font-semibold">{current.q}</h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -183,7 +307,7 @@ export default function GoldenBellPage() {
                 className="uppercase font-semibold text-[16px] shadow-md px-4 py-2"
                 style={btnStyle}
               >
-                {idx + 1 >= DEMO_QUIZ.length ? '결과 보기' : '다음 문제'}
+                {idx + 1 >= totalQuestions ? '결과 보기' : '다음 문제'}
               </button>
             </div>
           </div>
@@ -193,11 +317,11 @@ export default function GoldenBellPage() {
           <section className="rounded-2xl border border-white/70 p-8 text-center">
             <div className="text-lg font-semibold">종료!</div>
             <div className="mt-1">
-              점수: {score} / {DEMO_QUIZ.length}
+              점수: {score} / {totalQuestions}
             </div>
             <div className="mt-6 flex items-center justify-center gap-3">
               <button
-                onClick={start}
+                onClick={restart}
                 className="uppercase font-semibold text-[16px] shadow-md px-4 py-2"
                 style={btnStyle}
               >

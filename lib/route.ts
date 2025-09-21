@@ -97,5 +97,7 @@ export const routes = {
   genieai: {
     recommendation: `${API_BASE}/genieai/recommendation`,
     goldenBell: `${API_BASE}/genieai/golden-bell`,
+    goldenBellByWebtoon: (webtoonId: number | string) =>
+      `${API_BASE}/genieai/golden-bell/${webtoonId}`,
   },
 } as const;
