@@ -71,18 +71,39 @@ export default function GoldenBellPage() {
   const [step, setStep] = useState<'idle' | 'playing' | 'done'>('idle');
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const current = useMemo(() => DEMO_QUIZ[idx], [idx]);
   // 시작 버튼 로직
   const start = () => {
     setScore(0);
     setIdx(0);
     setStep('playing');
+    setChosen(null);
+    setIsCorrect(null);
   };
   // 마우스로 정답 클릭 로직
   const pick = (i: number) => {
-    if (current?.answer === i) setScore((s) => s + 1);
-    if (idx + 1 >= DEMO_QUIZ.length) setStep('done');
-    else setIdx((v) => v + 1);
+    if (chosen !== null) return; // 이미 선택했으면 무시
+    setChosen(i);
+    const ok = current?.answer === i;
+    setIsCorrect(ok);
+    if (ok) setScore((s) => s + 1);
+  };
+
+  const goNext = () => {
+    if (idx + 1 >= DEMO_QUIZ.length) {
+      // 결과 화면 전환 전 선택/정오 상태 초기화
+      setChosen(null);
+      setIsCorrect(null);
+      setStep('done');
+      return;
+    }
+    setIdx((v) => v + 1);
+    setChosen(null);
+    setIsCorrect(null);
+    // 스크롤 상단 정렬이 필요하면 다음 줄 주석 해제
+    // window?.scrollTo({ top: 0, behavior: 'smooth' });
   };
   // STEP 3개 순서대로 시작 로직, 문제 푸는 도중 로직, 문제를 다풀고 점수가 나온 후 로직
   return (
@@ -123,7 +144,17 @@ export default function GoldenBellPage() {
                 <li key={i}>
                   <button
                     onClick={() => pick(i)}
-                    className="w-full text-left px-4 py-3 uppercase font-semibold text-[16px] shadow-md"
+                    disabled={chosen !== null}
+                    className={[
+                      'w-full text-left px-4 py-3 uppercase font-semibold text-[16px] shadow-md rounded',
+                      chosen === null
+                        ? ''
+                        : i === current.answer
+                          ? 'ring-2 ring-green-500'
+                          : i === chosen
+                            ? 'ring-2 ring-red-500 opacity-90'
+                            : 'opacity-60',
+                    ].join(' ')}
                     style={btnStyle}
                   >
                     {c}
@@ -132,6 +163,30 @@ export default function GoldenBellPage() {
               ))}
             </ul>
           </section>
+        )}
+
+        {step === 'playing' && chosen !== null && (
+          <div className="mt-4 rounded-lg border border-white/50 bg-white/10 p-4">
+            {isCorrect ? (
+              <p className="font-semibold">✅ 정답입니다!</p>
+            ) : (
+              <div>
+                <p className="font-semibold">❌ 오답입니다.</p>
+                <p className="mt-1 text-white/90">
+                  정답: <span className="font-bold">{current.choices[current.answer]}</span>
+                </p>
+              </div>
+            )}
+            <div className="mt-3">
+              <button
+                onClick={goNext}
+                className="uppercase font-semibold text-[16px] shadow-md px-4 py-2"
+                style={btnStyle}
+              >
+                {idx + 1 >= DEMO_QUIZ.length ? '결과 보기' : '다음 문제'}
+              </button>
+            </div>
+          </div>
         )}
 
         {step === 'done' && (

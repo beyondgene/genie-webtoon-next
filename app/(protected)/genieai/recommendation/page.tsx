@@ -72,7 +72,9 @@ function getMessageText(m: UIMessage): string {
     .join(' ')
     .trim();
 }
+
 const truncate = (s = '', n = 120) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
+
 // 버튼 디자인
 const btnStyle: React.CSSProperties = {
   background: 'white',
@@ -80,6 +82,16 @@ const btnStyle: React.CSSProperties = {
   boxShadow: '0px 4px 4px rgba(0,0,0,0.30)',
   borderRadius: 16,
 };
+
+// 상세페이지와 동일한 규칙으로 S3 경로 해석 (NEXT_PUBLIC_만 클라이언트에서 사용 가능)
+function resolveThumb(u?: string | null, fallback = '/images/placeholder-webtoon.png') {
+  const base = process.env.NEXT_PUBLIC_S3_PUBLIC_BASE || '';
+  const v = (u || '').trim();
+  if (!v) return fallback;
+  if (/^https?:\/\//i.test(v)) return v;
+  if (!base) return fallback;
+  return `${base.replace(/\/$/, '')}/${v.replace(/^\/+/, '')}`;
+}
 
 export default function RecommendationChatPage() {
   const [mode, setMode] = useState<Mode>('idle');
@@ -179,7 +191,8 @@ ${GENRES.join(', ')}`),
         title: r.title ?? r.webtoonName ?? '',
         genre: String(r.genre ?? '').toUpperCase(),
         views: r.views ? Number(r.views) : undefined,
-        thumbnail: r.thumbnail ?? '',
+        // S3 경로 해석을 위해 우선순위: wbthumbnailUrl > thumbnail > poster
+        thumbnail: r.wbthumbnailUrl ?? r.thumbnail ?? r.poster ?? '',
         description: r.description ?? r.discription ?? '',
       }));
 
@@ -212,7 +225,7 @@ ${GENRES.join(', ')}`),
   }
   // 추천 웹툰의 정보를 가져오고 바로가기 버튼을 클릭시 해당 웹툰으로 넘어가도록 작업
   const onClickGenre = async (g: GenreSlug) => {
-    setMode('genre');
+    setMode('idle');
     setApiError(null);
     setLinkItems([]);
     currentGenreRef.current = g;
@@ -238,7 +251,8 @@ ${GENRES.join(', ')}`),
         title: r.title ?? r.webtoonName ?? '',
         genre: String(r.genre ?? '').toUpperCase(),
         views: r.views ? Number(r.views) : undefined,
-        thumbnail: r.thumbnail ?? '',
+        // 상세와 동일 우선순위로 썸네일 매핑
+        thumbnail: r.wbthumbnailUrl ?? r.thumbnail ?? r.poster ?? '',
         description: r.description ?? r.discription ?? '',
       }));
 
@@ -301,8 +315,23 @@ ${GENRES.join(', ')}`),
           <BackNavigator />
         </header>
 
+        {/* 채팅 메시지 */}
+        <ul className="space-y-3">
+          {messages.map((m) => {
+            const text = getMessageText(m);
+            if (!text) return null;
+            return (
+              <li key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
+                <div className="inline-block max-w-[90%] whitespace-pre-wrap rounded-2xl border border-white bg-white px-3 py-2 text-[#4f4f4f] shadow">
+                  {text}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
         {mode === 'choose' && (
-          <div className="mb-6 flex gap-3">
+          <div className="mt-4 mb-6 flex flex-wrap gap-3">
             <button
               onClick={() => onClickChoose('genre')}
               className="bubble-btn px-4 py-2 uppercase font-semibold text-[16px]"
@@ -321,26 +350,11 @@ ${GENRES.join(', ')}`),
         )}
 
         {mode === 'genre' && (
-          <section className="mb-4">
-            <p className="text-sm text-white/80">* 아래 장르 버튼 중 하나를 선택하세요.</p>
+          <section className="mt-3 mb-4">
+            <p className="mb-2 text-sm text-white/80">* 아래 장르 버튼 중 하나를 선택하세요.</p>
             {GenreButtons}
           </section>
         )}
-
-        {/* 채팅 메시지 */}
-        <ul className="space-y-3">
-          {messages.map((m) => {
-            const text = getMessageText(m);
-            if (!text) return null;
-            return (
-              <li key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
-                <div className="inline-block max-w-[90%] whitespace-pre-wrap rounded-2xl border border-white bg-white px-3 py-2 text-[#4f4f4f] shadow">
-                  {text}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
 
         {/* 추천 링크 패널 */}
         <div className="mt-6">
@@ -354,18 +368,36 @@ ${GENRES.join(', ')}`),
                 {linkItems.map((it) => (
                   <li
                     key={it.id}
-                    className="flex items-start justify-between gap-4 rounded-xl border border-white/70 bg-transparent p-3 overflow-visible"
+                    className="flex items-center md:items-start justify-between gap-3 md:gap-4 rounded-xl border border-white/70 bg-transparent p-3 overflow-visible flex-wrap md:flex-nowrap"
                   >
-                    <div className="min-w-0">
+                    {/* 썸네일 */}
+                    <img
+                      src={resolveThumb(it.thumbnail)}
+                      alt={it.title || 'thumbnail'}
+                      className="h-16 w-12 md:h-20 md:w-16 object-cover rounded-md border border-white/40 bg-white/10"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        if (t.src !== '/images/placeholder-webtoon.png') {
+                          t.src = '/images/placeholder-webtoon.png';
+                        }
+                      }}
+                    />
+
+                    {/* 텍스트 */}
+                    <div className="min-w-0 flex-1">
                       <div className="truncate text-base font-medium">{it.title}</div>
                       <div className="mt-0.5 text-sm text-white/80">
                         {(genreKo[it.genre] ?? it.genre) + ' · '} {truncate(it.description, 80)}
                       </div>
                     </div>
+
+                    {/* CTA */}
                     <Link
                       href={detailUrlFor(it)}
                       prefetch={false}
-                      className="bubble-btn bubble-btn--tail-left shrink-0 px-3 py-1.5 uppercase font-semibold text-[16px]"
+                      className="bubble-btn bubble-btn--tail-left shrink-0 px-3 py-1.5 uppercase font-semibold text-[15px]"
                       style={btnStyle}
                     >
                       바로가기

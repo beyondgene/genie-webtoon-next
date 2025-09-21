@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { getSession, signOut } from 'next-auth/react';
+import { passwordSchema } from '@/lib/validators/auth';
 
 const missingPasswordCategories = (value: string) => {
   if (!value) return [] as string[];
@@ -191,6 +192,17 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
     e.preventDefault();
     if (!isDirty || isSubmitting) return;
     setIsSubmitting(true);
+
+    if (newPassword && typeof passwordSchema?.safeParse === 'function') {
+      const parsed = passwordSchema.safeParse(newPassword);
+      if (!parsed.success) {
+        const reasons = parsed.error.issues?.map((i) => i.message).filter(Boolean);
+        alert(reasons?.length ? reasons.join('\n') : '새 비밀번호가 정책에 맞지 않습니다.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const payload: any = {
       nickname,
       name,
