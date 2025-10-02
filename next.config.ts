@@ -31,6 +31,8 @@ const nextConfig: NextConfig = {
     // Sequelize와 mysql2는 서버 컴포넌트 외부 패키지로 처리(번들 축소/충돌 방지)
   },
   images: {
+    // 브라우저 지원 시 AVIF 우선, 그 다음 WEBP로 응답 (용량↓ 체감↑)
+    formats: ['image/avif', 'image/webp'],
     remotePatterns,
     // CloudFront로 전환 시 여기에 CDN 도메인 추가
     // { protocol: 'https', hostname: 'dxxxx.cloudfront.net' },
@@ -44,6 +46,24 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   compiler: { styledComponents: true },
+
+  async headers() {
+    // 정적 썸네일(예: /public/src/**)은 1년 캐시 + immutable
+    return [
+      {
+        source: '/src/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
+        source: '/auth/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ];
+  },
 
   // pg / pg-hstore는 선택적 의존성이라 서버 번들에서 제외
   webpack: (config, { isServer }) => {
