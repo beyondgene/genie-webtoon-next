@@ -5,7 +5,6 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import Link from 'next/link';
 import BackNavigator from '@/components/ui/BackNavigator';
-import SmartImage from '@/components/ui/SmartImage';
 
 type Mode = 'idle' | 'choose' | 'genre' | 'taste';
 // 슬러그 모음
@@ -372,13 +371,18 @@ ${GENRES.join(', ')}`),
                     className="flex items-center md:items-start justify-between gap-3 md:gap-4 rounded-xl border border-white/70 bg-transparent p-3 overflow-visible flex-wrap md:flex-nowrap"
                   >
                     {/* 썸네일 */}
-                    <SmartImage
+                    <img
                       src={resolveThumb(it.thumbnail)}
-                      alt={it.title}
-                      width={96}
-                      height={96}
-                      sizes="96px"
-                      className="h-24 w-24 rounded-xl object-cover"
+                      alt={it.title || 'thumbnail'}
+                      className="h-16 w-12 md:h-20 md:w-16 object-cover rounded-md border border-white/40 bg-white/10"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        if (t.src !== '/images/placeholder-webtoon.png') {
+                          t.src = '/images/placeholder-webtoon.png';
+                        }
+                      }}
                     />
 
                     {/* 텍스트 */}

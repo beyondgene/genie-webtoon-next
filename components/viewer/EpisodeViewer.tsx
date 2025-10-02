@@ -4,8 +4,6 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdViewLog } from '@/hooks/useAdViewLog';
 import styles from './EpisodeViewer.module.css';
-import SmartImage from '@/components/ui/SmartImage';
-import { title } from 'process';
 
 // 웹툰 속성 데이터 타입 사전 정의
 type EpisodeRow = {
@@ -105,20 +103,14 @@ export default function EpisodeViewer({ webtoonId, episodeId, episode, episodes,
           <div className={styles.empty}>이 에피소드에 표시할 이미지가 없습니다.</div>
         ) : (
           images.map((src, i) => (
-            // eslint-disable-next-line react/jsx-key
-            <div className={styles.cutWrap}>
-              <SmartImage
-                key={`${src}-${i}`}
-                src={src}
-                alt={title ?? `컷 ${i + 1}`}
-                // 긴 세로 이미지: 가로 폭 기준으로 보이도록 fill
-                fill
-                // 스타일에서 부모를 position:relative로 두세요
-                className={styles.cutImg}
-                sizes="(max-width: 768px) 92vw, 720px"
-                priority={i === 0}
-              />
-            </div>
+            <img
+              key={`${src}-${i}`}
+              src={src}
+              alt={`cut-${i + 1}`}
+              className={styles.cut}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
           ))
         )}
       </div>
@@ -177,13 +169,7 @@ export default function EpisodeViewer({ webtoonId, episodeId, episode, episodes,
                 title={title}
               >
                 {thumb ? (
-                  <SmartImage
-                    src={thumb}
-                    alt={title ?? '광고'}
-                    width={640}
-                    height={360}
-                    className={styles.adImg}
-                  />
+                  <img src={thumb} alt={title} />
                 ) : (
                   <div className={styles.noThumb}>No Image</div>
                 )}
