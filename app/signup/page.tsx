@@ -221,6 +221,17 @@ export default function SignupPage() {
       alert(fieldErrors.address[0] || '주소를 입력해주세요.');
       return;
     }
+
+    // 8) 닉네임 규칙 불일치
+    if (fieldErrors.nickname?.length) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert(
+        fieldErrors.nickname[0] ||
+          '닉네임은 2~20자 사이의 한글, 영문, 숫자, 공백만 사용할 수 있습니다.'
+      );
+      return;
+    }
   };
 
   const formatPhone = (raw: string) => {
